@@ -9,11 +9,11 @@ const links = [
   { label: "Início", href: "/" },
   { label: "Serviços", href: "/#servicos" },
   { label: "Segmentos", href: "/#segmentos" },
+  { label: "Contato", href: "/#contato" },
+  { label: "Templates", href: "/templates" },
   { label: "Aplicativos", href: "/apps" },
   { label: "Design", href: "/design" },
-  { label: "Templates", href: "/templates" },
   { label: "Blog", href: "/blog" },
-  { label: "Contato", href: "/#contato" },
 ];
 
 const WA = "https://wa.me/5554996436023?text=" + encodeURIComponent("Olá! Gostaria de solicitar um orçamento para o meu site.");
@@ -34,19 +34,18 @@ export function Navbar() {
       initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${scrolled
           ? "backdrop-blur-xl bg-background/80 border-b border-border shadow-elegant"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="container-luxe flex h-20 items-center justify-between gap-6">
         <Link href="/" aria-label="FocusPulse — início" className="logo-pulse flex items-center gap-2 group">
-         <img
+          <img
             src="/images/logo-icon.png"
             alt="Logo do site"
-          className="h-8 w-8 transition-transform duration-300 group-hover:rotate-[360deg]"
-            />
+            className="h-8 w-8 transition-transform duration-300 group-hover:rotate-[360deg]"
+          />
           <img
             src="/images/logo-text.png"
             alt="Logo do site"

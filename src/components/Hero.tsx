@@ -34,7 +34,7 @@ export function Hero() {
             />
 
             <div className="relative z-10 w-full max-w-5xl px-6 text-center mt-10">
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -47,7 +47,7 @@ export function Hero() {
                     <span className="text-xs uppercase tracking-widest text-blue-400 font-bold">
                         Disponibilidade para novos projetos
                     </span>
-                </motion.div>
+                </motion.div> */}
 
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
