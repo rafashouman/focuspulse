@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 
 const links = [
   { label: "Início", href: "/" },
   { label: "Serviços", href: "/#servicos" },
   { label: "Segmentos", href: "/#segmentos" },
-  { label: "Portfólio", href: "/webdev" },
   { label: "Aplicativos", href: "/apps" },
   { label: "Design", href: "/design" },
+  { label: "Templates", href: "/templates" },
   { label: "Blog", href: "/blog" },
   { label: "Contato", href: "/#contato" },
 ];
@@ -40,7 +41,7 @@ export function Navbar() {
       }`}
     >
       <div className="container-luxe flex h-20 items-center justify-between gap-6">
-        <a href="/" aria-label="FocusPulse — início" className="logo-pulse flex items-center gap-2 group">
+        <Link href="/" aria-label="FocusPulse — início" className="logo-pulse flex items-center gap-2 group">
          <img
             src="/images/logo-icon.png"
             alt="Logo do site"
@@ -51,7 +52,7 @@ export function Navbar() {
             alt="Logo do site"
             className="h-6 w-auto transition-transform duration-300 group-hover:scale-105"
           />
-        </a>
+        </Link>
 
         <nav className="hidden xl:flex items-center gap-5">
           {links.map((l) => (
