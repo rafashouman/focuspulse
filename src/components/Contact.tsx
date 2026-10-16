@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Mail, Phone, Globe2 } from "lucide-react";
 
-const WA_NUMBER = "5554996436023";
+const WA_NUMBER = "5551993583936";
 
 export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -16,7 +16,7 @@ const links = [
   { label: "Blog", href: "/blog" },
 ];
 
-const WA = "https://wa.me/5554996436023?text=" + encodeURIComponent("Olá! Gostaria de solicitar um orçamento para o meu site.");
+const WA = "https://wa.me/5551993583936?text=" + encodeURIComponent("Olá! Gostaria de solicitar um orçamento para o meu site.");
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
-const WA = "https://wa.me/5554996436023?text=" + encodeURIComponent("Olá! Vi seu portfólio e quero solicitar um projeto.");
+const WA = "https://wa.me/5551993583936?text=" + encodeURIComponent("Olá! Vi seu portfólio e quero solicitar um projeto.");
 
 export function Hero() {
     return (

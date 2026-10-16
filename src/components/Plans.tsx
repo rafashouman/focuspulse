@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Check, ArrowRight } from "lucide-react";
 
-const WA_NUMBER = "5554996436023"; // O número definido nas diretrizes
+const WA_NUMBER = "5551993583936"; // O número definido nas diretrizes
 
 const plans = [
   {

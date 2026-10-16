@@ -3,7 +3,7 @@
 import { MessageCircle } from "lucide-react";
 
 export function FloatingWA() {
-  const WA_NUMBER = "5554996436023";
+  const WA_NUMBER = "5551993583936";
   const MESSAGE = "Olá! Vim através do site e gostaria de conversar sobre um projeto.";
 
   return (
