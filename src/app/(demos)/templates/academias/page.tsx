@@ -170,7 +170,7 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl sm:text-6xl font-black italic tracking-tighter text-white mb-6 leading-none uppercase"
           >
-            Transforme seu corpo e ultrapasse seus <GradientText>limites físicos</GradientText>
+            Transforme seu <GradientText>corpo</GradientText> e ultrapasse seus <GradientText>limites!</GradientText>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
