@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { Sora, Plus_Jakarta_Sans } from "next/font/google";
-import { FloatingWA } from "@/components/FloatingWA";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import "./globals.css";
+import "./globals.css"; // Ajuste o caminho se necessário
 
-// Fonte para Títulos (Moderna, Geométrica, Tech)
+// Fonte para Títulos
 const sora = Sora({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
 });
 
-// Fonte para Textos (Limpa, Sofisticada, Legível)
+// Fonte para Textos
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -20,8 +17,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FocusPulse |  Soluções Digitais",
-  description: "Desenvolvimento de sites institucionais, plataformas digitais e e-commerces de alta performance. Transformamos a sua presença digital através de interfaces rápidas e design responsivo ",
+  title: "FocusPulse | Soluções Digitais",
+  description: "Desenvolvimento de sites institucionais, plataformas digitais e e-commerces de alta performance.",
 };
 
 export default function RootLayout({
@@ -30,17 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // A classe "dark" fixa o tema escuro como padrão
     <html lang="pt-BR" className="scroll-smooth dark">
       <body
         className={`${sora.variable} ${jakarta.variable} antialiased bg-background text-foreground selection:bg-blue-500/30 font-sans`}
       >
-        <Navbar />
-        <main className="relative flex min-h-screen flex-col overflow-hidden">
-          {children}
-        </main>
-        <Footer />
-        <FloatingWA />
+        {/* O children aqui vai renderizar ou o SiteLayout ou a página do Template */}
+        {children}
       </body>
     </html>
   );

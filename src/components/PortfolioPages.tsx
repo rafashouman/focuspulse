@@ -1,5 +1,6 @@
 import Link from "next/link";
 import NextImage from "next/image";
+
 import {
   ArrowUpRight,
   Code2,
@@ -352,16 +353,25 @@ export function DesignPageContent() {
 export function TemplatesPageContent() {
   const templates = [
     {
-      title: "Landing pages",
-      description: "Modelos para apresentar produtos, serviços e campanhas.",
+      title: "Academias & Esportes",
+      description: "Página de alta conversão focada em matrículas, exibição de planos e horários.",
+      href: "/templates/academias",
+      status: "Disponível",
+      isReady: true,
     },
     {
       title: "Sites institucionais",
-      description: "Estruturas para apresentar empresas e suas soluções.",
+      description: "Estruturas para apresentar empresas, serviços e suas soluções.",
+      href: "/templates/institucional",
+      status: "Em breve",
+      isReady: false,
     },
     {
       title: "Lojas virtuais",
-      description: "Layouts pensados para catálogos e experiências de compra.",
+      description: "Layouts pensados para catálogos fluidos e experiências de compra.",
+      href: "/templates/ecommerce",
+      status: "Em breve",
+      isReady: false,
     },
   ];
 
@@ -375,26 +385,56 @@ export function TemplatesPageContent() {
           Seu próximo site começa <span className="text-blue-gradient">por aqui.</span>
         </h1>
         <p className="text-lg leading-relaxed text-muted-foreground">
-          Estamos preparando modelos de sites para diferentes tipos de
-          negócios. Em breve, você poderá conhecer cada opção por aqui.
+          Explore nossos modelos de alta conversão prontos para diferentes tipos de negócios. 
+          Escolha a arquitetura ideal e nós personalizamos para a sua marca.
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {templates.map((template) => (
-          <article
-            key={template.title}
-            className="rounded-3xl border border-border bg-card p-8 sm:p-10"
-          >
-            <span className="mb-8 inline-flex rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-400">
-              Em breve
-            </span>
-            <h2 className="mb-3 text-xl font-bold font-display">{template.title}</h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {template.description}
-            </p>
-          </article>
-        ))}
+        {templates.map((template) => {
+          const CardContent = (
+            <>
+              <span className={`mb-8 inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${
+                template.isReady 
+                  ? "border-blue-500/20 bg-blue-500/5 text-blue-400" 
+                  : "border-zinc-800 bg-zinc-800/50 text-zinc-400"
+              }`}>
+                {template.status}
+              </span>
+              <div className="mb-3 flex items-center justify-between gap-4">
+                <h2 className="text-xl font-bold font-display">{template.title}</h2>
+                {template.isReady && (
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-blue-400" />
+                )}
+              </div>
+              <p className="leading-relaxed text-muted-foreground">
+                {template.description}
+              </p>
+            </>
+          );
+
+          // Se estiver pronto, renderiza como um Link clicável. Se não, renderiza como um artigo inativo.
+          return template.isReady ? (
+            <Link
+              key={template.title}
+              href={template.href}
+              className="group block rounded-3xl border border-border bg-card p-8 sm:p-10 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:shadow-blue-glow relative overflow-hidden"
+            >
+               {/* Glow subtil no hover */}
+              <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-500 pointer-events-none" />
+              <div className="relative z-10">
+                {CardContent}
+              </div>
+            </Link>
+          ) : (
+            <article
+              key={template.title}
+              className="rounded-3xl border border-border bg-card/40 p-8 sm:p-10 opacity-60 grayscale cursor-not-allowed"
+            >
+              {CardContent}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
