@@ -168,7 +168,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black italic tracking-tighter text-white mb-6 leading-none uppercase"
+            className="text-4xl sm:text-6xl font-black tracking-tighter text-white mb-6 leading-none uppercase"
           >
             Transforme seu <GradientText>corpo</GradientText> e ultrapasse seus <GradientText>limites!</GradientText>
           </motion.h1>
