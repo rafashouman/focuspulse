@@ -150,84 +150,117 @@ const Hero = () => {
   return (
     <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden">
       {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-
+      <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-orange-600/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Badge>
-              <Flame className="w-3.5 h-3.5" /> A Melhora Começa Hoje
-            </Badge>
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black tracking-tighter text-white mb-6 leading-none uppercase"
-          >
-            Transforme seu <GradientText>corpo</GradientText> e ultrapasse seus <GradientText>limites!</GradientText>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg sm:text-xl text-zinc-400 mb-8 leading-relaxed"
-          >
-            Treinos de alta performance, equipamentos de última geração e acompanhamento profissional completo para você alcançar sua melhor versão.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black italic tracking-wider text-lg transition-all duration-300 shadow-orange-glow hover:scale-105 -skew-x-12 uppercase"
+        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center">
+          
+          {/* Coluna da Esquerda: Textos e Botões */}
+          <div className="text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <MessageCircle className="w-5 h-5" />
-              <span className="skew-x-12 inline-flex items-center gap-2">Iniciar Projeto no WhatsApp</span>
-            </a>
-            <a
-              href="#planos"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-lg transition-all"
+              <Badge>
+                <Flame className="w-3.5 h-3.5" /> A Melhora Começa Hoje
+              </Badge>
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter text-white mb-6 leading-none uppercase"
             >
-              Ver Planos <ArrowRight className="w-4 h-4" />
-            </a>
+              Transforme seu corpo, <br></br>
+              ultrapasse seus <GradientText>limites!</GradientText>
+            </motion.h1>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-lg text-zinc-400 mb-8 leading-relaxed max-w-lg"
+            >
+              Treinos de alta performance, equipamentos de última geração e acompanhamento profissional completo para você alcançar sua melhor versão.
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start gap-4"
+            >
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black italic tracking-wider text-lg transition-all duration-300 shadow-orange-glow hover:scale-105 -skew-x-12 uppercase"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span className="skew-x-12 inline-flex items-center gap-2">Matricule-se Agora</span>
+              </a>
+              <a
+                href="#planos"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-lg transition-all"
+              >
+                Ver Planos <ArrowRight className="w-4 h-4" />
+              </a>
+            </motion.div>
+
+            {/* Prova Social Integrada à Esquerda */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-12 pt-8 border-t border-zinc-800/80 grid grid-cols-2 gap-6 max-w-lg"
+            >
+              <div>
+                <p className="text-3xl font-black italic text-white mb-1">+2.500</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Alunos Ativos</p>
+              </div>
+              <div>
+                <p className="text-3xl font-black italic text-white mb-1">100%</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Equipamentos Pro</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Coluna da Direita: Imagem de Destaque */}
+          <motion.div
+            initial={{ opacity: 0, x: 20, rotate: 2 }}
+            animate={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="relative w-full aspect-[4/5] lg:aspect-[3/4] xl:aspect-square rounded-[3rem] overflow-hidden border border-zinc-800 shadow-orange-glow group"
+          >
+            {/* Tonalidade sutil de laranja por cima da imagem para unificar as cores */}
+            <div className="absolute inset-0 bg-orange-600/10 mix-blend-overlay z-10" />
+            
+            <Image 
+              src="/images/templates/academia/hero-gym.png" 
+              alt="Ambiente de alta performance"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            
+            {/* Elemento gráfico extra na imagem */}
+            <div className="absolute bottom-6 left-6 right-6 z-20 p-6 rounded-3xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-500 text-white shrink-0">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm">Energia & Foco</p>
+                  <p className="text-zinc-400 text-xs">O ambiente ideal para o seu treino diário.</p>
+                </div>
+              </div>
+            </div>
           </motion.div>
 
-          {/* Social Proof Badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-12 pt-12 border-t border-zinc-800/80 grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">+2.500</p>
-              <p className="text-xs text-zinc-500 uppercase tracking-wider">Alunos Ativos</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">99.8%</p>
-              <p className="text-xs text-zinc-500 uppercase tracking-wider">Satisfação</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">100%</p>
-              <p className="text-xs text-zinc-500 uppercase tracking-wider">Equipamentos Pro</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">24/7</p>
-              <p className="text-xs text-zinc-500 uppercase tracking-wider">Suporte Técnico</p>
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>
