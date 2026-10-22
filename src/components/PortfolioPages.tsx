@@ -300,25 +300,28 @@ export function DesignPageContent() {
 export function TemplatesPageContent() {
   const templates = [
     {
+      number: "01",
+      category: "Fitness & bem-estar",
       title: "Academias & Esportes",
       description: "Página de alta conversão focada em matrículas, exibição de planos e horários.",
       href: "/templates/academias",
-      status: "Disponível",
-      isReady: true,
+      theme: "from-orange-500/20 via-[#181512] to-[#0c0d0f]",
     },
     {
+      number: "02",
+      category: "Gastronomia",
       title: "Cardápios & Restaurantes",
-      description: "Estruturas para apresentar empresas, serviços e suas soluções.",
+      description: "Um cardápio digital com identidade marcante, pensado para apresentar pratos e facilitar pedidos.",
       href: "/templates/cardapio",
-      status: "Disponível",
-      isReady: true,
+      theme: "from-amber-200/15 via-[#1c1713] to-[#0c0d0f]",
     },
     {
+      number: "03",
+      category: "E-commerce & moda",
       title: "Lojas virtuais",
-      description: "Layouts pensados para catálogos fluidos e experiências de compra.",
+      description: "Uma vitrine editorial para apresentar coleções e criar uma experiência de compra envolvente.",
       href: "/templates/streetwear",
-      status: "Disponível",
-      isReady: true,
+      theme: "from-violet-300/20 via-[#17111f] to-[#0c0d0f]",
     },
   ];
 
@@ -337,48 +340,67 @@ export function TemplatesPageContent() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         {templates.map((template) => {
-          const CardContent = (
-            <>
-              <span className={`mb-8 inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${
-                template.isReady 
-                  ? "border-violet-300/20 bg-violet-400/[0.06] text-violet-200"
-                  : "border-zinc-800 bg-zinc-800/50 text-zinc-400"
-              }`}>
-                {template.status}
-              </span>
-              <div className="mb-3 flex items-center justify-between gap-4">
-                <h2 className="text-xl font-bold font-display">{template.title}</h2>
-                {template.isReady && (
-                  <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-violet-200" />
-                )}
-              </div>
-              <p className="leading-relaxed text-muted-foreground">
-                {template.description}
-              </p>
-            </>
-          );
-
-          // Se estiver pronto, renderiza como um Link clicável. Se não, renderiza como um artigo inativo.
-          return template.isReady ? (
-            <Link
-              key={template.title}
-              href={template.href}
-              className="group block rounded-3xl border border-white/10 bg-white/[0.035] p-8 backdrop-blur-xl sm:p-10 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/25 hover:shadow-violet-glow relative overflow-hidden"
-            >
-               {/* Glow subtil no hover */}
-              <div className="absolute inset-0 bg-violet-400/0 group-hover:bg-violet-400/[0.06] transition-colors duration-500 pointer-events-none" />
-              <div className="relative z-10">
-                {CardContent}
-              </div>
-            </Link>
-          ) : (
+          return (
             <article
-              key={template.title}
-              className="rounded-3xl border border-border bg-card/40 p-8 sm:p-10 opacity-60 grayscale cursor-not-allowed"
+              key={template.href}
+              className="group min-w-0 overflow-hidden rounded-[1.6rem] border border-white/[0.1] bg-white/[0.035] shadow-xl shadow-black/10 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 hover:border-violet-200/20"
             >
-              {CardContent}
+              <Link
+                href={template.href}
+                className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-300"
+                aria-label={`Explorar o template ${template.title}`}
+              >
+                <div
+                  className={`relative h-[270px] overflow-hidden bg-gradient-to-br ${template.theme} sm:h-[310px]`}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(255,255,255,.09),transparent_55%)]" />
+                  <div className="absolute inset-x-4 top-4 overflow-hidden rounded-xl border border-white/15 bg-[#100d15]/70 shadow-2xl shadow-violet-950/20 backdrop-blur-xl transition-transform duration-500 group-hover:scale-[1.025] sm:inset-x-6 sm:top-6">
+                    <div className="flex h-8 items-center gap-1.5 border-b border-white/[0.08] px-3">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                      <span className="ml-auto font-mono text-[8px] text-white/35">
+                        focuspulse.site{template.href}
+                      </span>
+                    </div>
+                    <iframe
+                      src={template.href}
+                      title={`Prévia do template ${template.title}`}
+                      loading="lazy"
+                      scrolling="no"
+                      tabIndex={-1}
+                      className="pointer-events-none block h-[260px] w-full border-0 bg-[#0b0d10]/80 sm:h-[300px]"
+                    />
+                  </div>
+                  <span className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur transition-colors group-hover:border-white/50 group-hover:bg-white group-hover:text-black">
+                    <ArrowUpRight className="h-4 w-4" />
+                  </span>
+                </div>
+
+                <div className="p-6 sm:p-7">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-100/60">
+                      {template.category}
+                    </span>
+                    <span className="font-mono text-xs text-white/35">
+                      {template.number}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-5">
+                    <div>
+                      <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                        {template.title}
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {template.description}
+                      </p>
+                    </div>
+                    <ArrowUpRight className="mt-1 h-5 w-5 shrink-0 text-white/40 transition-colors group-hover:text-violet-200" />
+                  </div>
+                </div>
+              </Link>
             </article>
           );
         })}
