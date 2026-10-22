@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FloatingWA } from "@/components/FloatingWA";
 
-// Solução para o erro: Desativa a validação forçada de navegação instantânea neste segmento
-export const instant = false;
+export const metadata: Metadata = {
+  title: "FocusPulse — Sites e Aplicações de Alta Performance",
+  description: "Engenharia web focada em conversão, velocidade e experiências digitais fora da caixa.",
+};
 
-export default function SiteLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

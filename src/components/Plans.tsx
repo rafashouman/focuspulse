@@ -74,7 +74,7 @@ const itemVariants = {
 
 export function Plans() {
   return (
-    <section id="planos" className="relative py-24 sm:py-32 bg-background/50">
+    <section id="planos" className="relative py-24 sm:py-32 bg-background/25">
       <div className="container-luxe">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <motion.div
@@ -82,7 +82,7 @@ export function Plans() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-blue-500/20 bg-blue-500/5 text-xs font-bold uppercase tracking-widest text-blue-400"
+            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-violet-300/20 bg-violet-400/[0.06] text-xs font-bold uppercase tracking-widest text-violet-200"
           >
             Investimento
           </motion.div>
@@ -94,7 +94,7 @@ export function Plans() {
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
             className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight mb-6"
           >
-            Escolha a arquitetura ideal para o <span className="text-blue-gradient">seu negócio.</span>
+            Escolha a arquitetura ideal para o <span className="text-violet-gradient">seu negócio.</span>
           </motion.h2>
 
           <motion.p
@@ -104,7 +104,8 @@ export function Plans() {
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             className="text-muted-foreground text-lg"
           >
-            Estruturas dimensionadas para cada fase da sua empresa. Sem taxas ocultas, focadas em entregar velocidade e performance desde o primeiro dia.
+            Estruturas dimensionadas para cada fase da sua empresa. Sem taxas ocultas, focadas em entregar{" "}
+            <span className="font-medium text-violet-100">velocidade e performance</span> desde o primeiro dia.
           </motion.p>
         </div>
 
@@ -119,22 +120,22 @@ export function Plans() {
             <motion.div
               key={plan.name}
               variants={itemVariants}
-              className={`group relative flex flex-col p-8 rounded-3xl border transition-shadow duration-500 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.28)] ${plan.highlight
-                  ? "border-blue-500/50 bg-card shadow-blue-glow md:-translate-y-4"
-                  : "border-border bg-card/50 hover:bg-card hover:border-blue-500/30"
+              className={`group relative flex flex-col p-8 rounded-3xl border backdrop-blur-xl transition-shadow duration-500 hover:shadow-[0_0_40px_-10px_rgba(167,139,250,0.2)] ${plan.highlight
+                  ? "border-violet-300/35 bg-violet-300/[0.07] shadow-violet-glow md:-translate-y-4"
+                  : "border-white/[0.09] bg-white/[0.035] hover:bg-white/[0.07] hover:border-violet-300/25"
                 }`}
             >
-              <div className="pointer-events-none absolute inset-0 rounded-3xl bg-blue-500/[0.06] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-0 rounded-3xl bg-violet-300/[0.06] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
               {plan.badge && (
-                <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2 px-4 py-1 bg-blue-gradient rounded-full text-xs font-bold text-white uppercase tracking-wider shadow-blue-glow">
+                <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2 px-4 py-1 bg-violet-gradient rounded-full text-xs font-bold text-white uppercase tracking-wider shadow-violet-glow">
                   {plan.badge}
                 </div>
               )}
 
               <div className="relative z-10 flex flex-1 flex-col">
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold font-display text-foreground mb-2 transition-colors duration-300 group-hover:text-blue-400">
+                  <h3 className="text-xl font-bold font-display text-foreground mb-2 transition-colors duration-300 group-hover:text-violet-200">
                     {plan.name}
                   </h3>
                   <p className="text-sm text-muted-foreground h-10">
@@ -144,7 +145,7 @@ export function Plans() {
 
                 <div className="mb-8">
                   <span className="text-sm font-bold text-muted-foreground">R$</span>
-                  <span className={`text-5xl font-display tracking-tighter transition-colors duration-300 ${plan.highlight ? "text-blue-gradient" : "text-foreground group-hover:text-blue-400"}`}>
+                  <span className={`text-5xl font-display tracking-tighter transition-colors duration-300 ${plan.highlight ? "text-violet-gradient" : "text-foreground group-hover:text-violet-200"}`}>
                     {plan.price}
                   </span>
                 </div>
@@ -152,7 +153,7 @@ export function Plans() {
                 <ul className="flex flex-col gap-4 mb-8 flex-1">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <Check className={`w-5 h-5 shrink-0 transition-colors duration-300 ${plan.highlight ? "text-blue-500" : "text-muted-foreground group-hover:text-blue-400"}`} />
+                      <Check className={`w-5 h-5 shrink-0 transition-colors duration-300 ${plan.highlight ? "text-violet-300" : "text-muted-foreground group-hover:text-violet-200"}`} />
                       <span className="leading-tight">{feature}</span>
                     </li>
                   ))}
@@ -163,8 +164,8 @@ export function Plans() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`group flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold transition-all duration-300 ${plan.highlight
-                      ? "bg-blue-gradient text-white shadow-blue-glow hover:scale-[1.02]"
-                      : "bg-background border border-border text-foreground hover:border-blue-500/50 hover:text-blue-400"
+                      ? "bg-violet-gradient text-white shadow-violet-glow hover:scale-[1.02]"
+                      : "bg-white/[0.035] border border-white/10 text-foreground hover:border-violet-300/30 hover:text-violet-200"
                     }`}
                 >
                   {plan.buttonText}

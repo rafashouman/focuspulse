@@ -21,26 +21,26 @@
 }
 
 .dark {
-  /* Fundo ultra escuro e texto claro (Padrão HSL) */
-  --background: hsl(230, 25%, 7%);
+  /* Fundo violeta escuro e texto claro */
+  --background: hsl(258, 24%, 7%);
   --foreground: hsl(210, 40%, 98%);
 
   /* Elementos de Interface */
-  --card: hsl(230, 25%, 10%);
+  --card: hsla(258, 22%, 10%, 0.78);
   --card-foreground: hsl(210, 40%, 98%);
-  --popover: hsl(230, 25%, 10%);
+  --popover: hsla(258, 22%, 10%, 0.9);
   --popover-foreground: hsl(210, 40%, 98%);
 
-  /* Paleta Tech Blue */
-  --primary: hsl(221, 83%, 53%);
+  /* Paleta lilás e violeta */
+  --primary: hsl(267, 83%, 70%);
   --primary-foreground: hsl(210, 40%, 98%);
-  --muted: hsl(230, 25%, 15%);
-  --muted-foreground: hsl(215, 20%, 65%);
+  --muted: hsl(258, 20%, 15%);
+  --muted-foreground: hsl(255, 15%, 70%);
   
   /* Bordas e Inputs */
-  --border: hsl(230, 25%, 18%);
-  --input: hsl(230, 25%, 18%);
-  --ring: hsl(221, 83%, 53%);
+  --border: hsla(260, 18%, 25%, 0.7);
+  --input: hsla(260, 18%, 25%, 0.8);
+  --ring: hsl(267, 83%, 70%);
 }
 
 @layer base {
@@ -60,15 +60,15 @@
 }
 
 /* Utilitários no novo padrão do Tailwind v4 */
-@utility text-blue-gradient {
-  background-image: linear-gradient(to right, var(--color-blue-400), var(--color-blue-500), var(--color-indigo-500));
+@utility text-violet-gradient {
+  background-image: linear-gradient(to right, #e9d5ff, #c4b5fd, #8b5cf6);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-@utility bg-blue-gradient {
-  background-image: linear-gradient(to right, var(--color-blue-500), var(--color-indigo-600));
+@utility bg-violet-gradient {
+  background-image: linear-gradient(120deg, #a78bfa, #7c3aed 58%, #6d28d9);
 }
 
 @utility container-luxe {
@@ -79,11 +79,11 @@
 }
 
 @utility shadow-elegant {
-  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(192, 132, 252, 0.1);
 }
 
-@utility shadow-blue-glow {
-  box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.4);
+@utility shadow-violet-glow {
+  box-shadow: 0 0 40px -10px rgba(167, 139, 250, 0.32);
 }
 
 .hero-title {
@@ -108,11 +108,11 @@
 @keyframes logo-pulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(59, 130, 246, 0));
+    filter: drop-shadow(0 0 0 rgba(192, 132, 252, 0));
   }
   50% {
     transform: scale(1.04);
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.45));
+    filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.4));
   }
 }
 

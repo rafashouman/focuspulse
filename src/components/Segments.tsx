@@ -77,7 +77,7 @@ const itemVariants = {
 export function Segments() {
   return (
     <section id="segmentos" className="relative py-24 sm:py-32 bg-background">
-      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-300/20 to-transparent" />
 
       <div className="container-luxe">
         <div className="max-w-2xl mx-auto text-center mb-16">
@@ -86,7 +86,7 @@ export function Segments() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-blue-500/20 bg-blue-500/5 text-xs font-bold uppercase tracking-widest text-blue-400"
+            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-violet-300/20 bg-violet-400/[0.06] text-xs font-bold uppercase tracking-widest text-violet-200"
           >
             Soluções sob Medida
           </motion.div>
@@ -98,7 +98,7 @@ export function Segments() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight mb-6"
           >
-            Presença Digital Focada em <span className="text-blue-gradient">Resultados.</span>
+            Presença Digital Focada em <span className="text-violet-gradient">Resultados.</span>
           </motion.h2>
 
           <motion.p
@@ -108,7 +108,7 @@ export function Segments() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-muted-foreground text-lg"
           >
-            Construímos plataformas ágeis e otimizadas para as necessidades específicas do seu setor, garantindo a melhor experiência de navegação para o seu utilizador.
+            Construímos <span className="font-medium text-violet-100">plataformas ágeis e otimizadas</span> para as necessidades específicas do seu setor, garantindo a melhor experiência de navegação para o seu utilizador.
           </motion.p>
         </div>
 
@@ -125,12 +125,12 @@ export function Segments() {
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className="group relative flex flex-col p-8 rounded-3xl border border-border bg-card hover:bg-card/80 hover:border-blue-500/50 transition-colors duration-500 overflow-hidden"
+                className="group relative flex flex-col p-8 rounded-3xl border border-white/[0.09] bg-white/[0.035] backdrop-blur-xl hover:bg-white/[0.07] hover:border-violet-300/25 transition-colors duration-500 overflow-hidden"
               >
-                <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-500 pointer-events-none" />
+                <div className="absolute inset-0 bg-violet-400/0 group-hover:bg-violet-400/[0.06] transition-colors duration-500 pointer-events-none" />
 
-                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background group-hover:border-blue-500/50 group-hover:text-blue-400 transition-all duration-500 relative z-10">
-                  <Icon className="h-5 w-5 text-muted-foreground group-hover:text-blue-400 transition-colors" />
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035] group-hover:border-violet-300/30 group-hover:text-violet-200 transition-all duration-500 relative z-10">
+                  <Icon className="h-5 w-5 text-muted-foreground group-hover:text-violet-200 transition-colors" />
                 </div>
 
                 <h3 className="text-xl font-bold font-display mb-3 text-foreground relative z-10">

@@ -51,7 +51,7 @@ export function ArknoidGame() {
       context.fillRect(0, 0, WIDTH, HEIGHT);
 
       const glow = context.createRadialGradient(WIDTH / 2, 170, 20, WIDTH / 2, 170, 470);
-      glow.addColorStop(0, "rgba(37, 99, 235, 0.18)");
+      glow.addColorStop(0, "rgba(167, 139, 250, 0.18)");
       glow.addColorStop(1, "rgba(8, 13, 26, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, WIDTH, HEIGHT);
@@ -134,7 +134,7 @@ export function ArknoidGame() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <p aria-live="polite" className="text-sm text-muted-foreground">{message}</p>
-        <p className="text-sm font-bold uppercase tracking-wider text-blue-400">
+        <p className="text-sm font-bold uppercase tracking-wider text-violet-200">
           Pontos: {score}
         </p>
       </div>
@@ -152,7 +152,7 @@ export function ArknoidGame() {
         <button
           type="button"
           onClick={startGame}
-          className="rounded-full bg-blue-gradient px-6 py-3 text-sm font-bold text-white shadow-blue-glow transition-transform hover:scale-[1.02]"
+          className="rounded-full bg-violet-gradient px-6 py-3 text-sm font-bold text-white shadow-violet-glow transition-transform hover:scale-[1.02]"
         >
           {playing ? "Recomeçar" : "Iniciar jogo"}
         </button>

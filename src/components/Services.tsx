@@ -68,7 +68,7 @@ export function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" as const }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-blue-500/20 bg-blue-500/5 text-xs font-bold uppercase tracking-widest text-blue-400"
+            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-violet-300/20 bg-violet-400/[0.06] text-xs font-bold uppercase tracking-widest text-violet-200"
           >
             Nossas Especialidades
           </motion.div>
@@ -80,7 +80,7 @@ export function Services() {
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" as const }}
             className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight mb-6 text-foreground"
           >
-            Engenharia web focada em <span className="text-blue-gradient">Conversão.</span>
+            Engenharia web focada em <span className="text-violet-gradient">Conversão.</span>
           </motion.h2>
 
           <motion.p
@@ -90,7 +90,8 @@ export function Services() {
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" as const }}
             className="text-muted-foreground text-lg"
           >
-            A arquitetura ideal para o seu negócio. Estruturas escaláveis dimensionadas para cada fase da sua empresa. Sem taxas ocultas e com foco absoluto em velocidade, performance e resultados concretos.
+            A arquitetura ideal para o seu negócio. Estruturas escaláveis dimensionadas para cada fase da sua empresa. Sem taxas ocultas e com foco absoluto em{" "}
+            <span className="font-medium text-violet-100">velocidade, performance e resultados concretos.</span>
           </motion.p>
         </div>
 
@@ -107,16 +108,16 @@ export function Services() {
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className="group relative p-8 rounded-3xl border border-border bg-card/50 hover:bg-card hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-300"
+                className="group relative p-8 rounded-3xl border border-white/[0.09] bg-white/[0.035] backdrop-blur-xl hover:bg-white/[0.07] hover:border-violet-300/25 hover:-translate-y-1 transition-all duration-300"
               >
                 {/* Glow subtil que aparece no hover */}
-                <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 rounded-3xl transition-colors duration-300 pointer-events-none" />
+                <div className="absolute inset-0 bg-violet-400/0 group-hover:bg-violet-400/[0.06] rounded-3xl transition-colors duration-300 pointer-events-none" />
 
-                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-background border border-border group-hover:border-blue-500/50 transition-colors duration-300">
-                  <Icon className="h-6 w-6 text-blue-500 group-hover:text-blue-400 transition-colors" />
+                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.035] border border-white/10 group-hover:border-violet-300/30 transition-colors duration-300">
+                  <Icon className="h-6 w-6 text-violet-300 group-hover:text-violet-200 transition-colors" />
                 </div>
 
-                <h3 className="text-xl font-bold font-display mb-3 text-foreground group-hover:text-blue-400 transition-colors">
+                <h3 className="text-xl font-bold font-display mb-3 text-foreground group-hover:text-violet-200 transition-colors">
                   {service.title}
                 </h3>
 

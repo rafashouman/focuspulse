@@ -21,7 +21,7 @@ export function ImageBlendPlayground() {
           type="button"
           onClick={() => setShowBase((visible) => !visible)}
           aria-pressed={showBase}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-blue-500/40"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm font-semibold backdrop-blur-xl transition-colors hover:border-violet-300/25"
         >
           {showBase ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           Camada base
@@ -30,7 +30,7 @@ export function ImageBlendPlayground() {
           type="button"
           onClick={() => setShowOverlay((visible) => !visible)}
           aria-pressed={showOverlay}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-blue-500/40"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm font-semibold backdrop-blur-xl transition-colors hover:border-violet-300/25"
         >
           {showOverlay ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           Camada superior
@@ -48,7 +48,7 @@ export function ImageBlendPlayground() {
         <button
           type="button"
           onClick={reset}
-          className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-blue-400"
+          className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-violet-200"
         >
           <RotateCcw className="h-4 w-4" />
           Restaurar

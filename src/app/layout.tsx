@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="scroll-smooth dark">
       <body
-        className={`${sora.variable} ${jakarta.variable} antialiased bg-background text-foreground selection:bg-blue-500/30 font-sans`}
+        className={`${sora.variable} ${jakarta.variable} antialiased bg-background text-foreground selection:bg-violet-500/30 font-sans`}
       >
         {/* O children aqui vai renderizar ou o SiteLayout ou a página do Template */}
         {children}

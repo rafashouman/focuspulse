@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   MessageCircle,
   ArrowRight,
+  ArrowUpRight,
   Trophy,
   Users,
   Flame,
@@ -20,6 +21,11 @@ import {
   MapPin,
   Menu,
   X,
+  Activity,
+  Sparkles,
+  Gauge,
+  Compass,
+  Sliders,
 } from "lucide-react";
 
 // ==========================================
@@ -27,651 +33,1039 @@ import {
 // ==========================================
 const WHATSAPP_NUMBER = "5511999999999";
 const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Olá! Quero agendar minha aula experimental e conhecer os planos da academia."
+  "Olá! Quero agendar minha experiência VIP e conhecer a estrutura da PulseFit."
 );
 
 // ==========================================
-// HELPER COMPONENTS
+// HELPER & MICRO-UI COMPONENTS
 // ==========================================
-const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <span className={`bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-amber-400 to-orange-400 ${className}`}>
-    {children}
-  </span>
+const SectionTag = ({ children, index }: { children: React.ReactNode; index?: string }) => (
+  <div className="inline-flex items-center gap-3 mb-4">
+    {index && (
+      <span className="font-mono text-xs text-orange-500 font-bold tracking-widest px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20">
+        {index}
+      </span>
+    )}
+    <div className="h-[1px] w-6 bg-orange-500/50" />
+    <span className="text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 font-semibold">
+      {children}
+    </span>
+  </div>
 );
 
-const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-orange-glow mb-4 -skew-x-12">
-    <span className="skew-x-12 inline-flex items-center gap-1.5">{children}</span>
-  </span>
-);
-
 // ==========================================
-// SECTIONS & COMPONENTS
+// 1. FLOATING DOCK NAVBAR
 // ==========================================
-
-// --- MARQUEE ---
-const Marquee = () => {
-  const words = ["PERFORMANCE", "•", "FOCO", "•", "RESISTÊNCIA", "•", "FORÇA", "•", "DISCIPLINA", "•"];
-  return (
-    <div className="relative w-full overflow-hidden bg-orange-600/10 border-y border-orange-500/20 py-4 font-black italic tracking-tighter text-orange-500 uppercase text-lg sm:text-2xl select-none">
-      <motion.div
-        className="flex whitespace-nowrap gap-8"
-        animate={{ x: [0, -1000] }}
-        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-      >
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex gap-8 shrink-0 items-center">
-            {words.map((word, idx) => (
-              <span key={idx} className={word === "•" ? "text-amber-500 not-italic" : ""}>{word}</span>
-            ))}
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-};
-
-// --- NAVBAR ---
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#08090A]/80 backdrop-blur-md border-b border-zinc-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-orange-600/20 border border-orange-500/30 text-orange-400">
-            <Dumbbell className="w-6 h-6" />
-          </div>
-          <span className="text-xl font-bold tracking-wider text-white">
-            PULSE<span className="text-orange-500">FIT</span>
-          </span>
-        </div>
-
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="#vantagens" className="hover:text-white transition-colors">Vantagens</a>
-          <a href="#galeria" className="hover:text-white transition-colors">Galeria</a>
-          <a href="#planos" className="hover:text-white transition-colors">Planos</a>
-          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-          <a href="#contato" className="hover:text-white transition-colors">Contato</a>
-        </div>
-
-        <div className="hidden md:flex items-center">
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-medium text-sm transition-all shadow-orange-glow hover:scale-105"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Matricule-se Já
+    <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 pt-4 sm:pt-6 pointer-events-none">
+      <div
+        className={`max-w-6xl mx-auto transition-all duration-500 pointer-events-auto rounded-2xl border ${
+          scrolled
+            ? "bg-[#070809]/85 backdrop-blur-xl border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.6)] py-3 px-5"
+            : "bg-zinc-950/40 backdrop-blur-md border-zinc-800/40 py-4 px-6"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          {/* Brand */}
+          <a href="#" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-[1px] overflow-hidden">
+              <div className="w-full h-full bg-[#08090A] rounded-[11px] flex items-center justify-center group-hover:bg-transparent transition-colors duration-300">
+                <Dumbbell className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-tighter text-white leading-none">
+                PULSE<span className="text-orange-500">FIT</span>
+              </span>
+              <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-500">
+                Performance Lab
+              </span>
+            </div>
           </a>
-        </div>
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
+          {/* Desktop Links */}
+          <nav className="hidden md:flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-1">
+            {[
+              { label: "Engenharia", href: "#vantagens" },
+              { label: "O Espaço", href: "#galeria" },
+              { label: "Passaportes", href: "#planos" },
+              { label: "Dúvidas", href: "#faq" },
+            ].map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="px-4 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-zinc-900 border-b border-zinc-800 px-4 py-6 flex flex-col gap-4"
-          >
-            <a href="#vantagens" onClick={() => setIsOpen(false)} className="text-zinc-300 hover:text-white">Vantagens</a>
-            <a href="#galeria" onClick={() => setIsOpen(false)} className="text-zinc-300 hover:text-white">Galeria</a>
-            <a href="#planos" onClick={() => setIsOpen(false)} className="text-zinc-300 hover:text-white">Planos</a>
-            <a href="#faq" onClick={() => setIsOpen(false)} className="text-zinc-300 hover:text-white">FAQ</a>
-            <a href="#contato" onClick={() => setIsOpen(false)} className="text-zinc-300 hover:text-white">Contato</a>
+          {/* CTA & Live Status */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-2 text-xs font-mono text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-3 py-1.5 rounded-lg">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>LOTação: 38% (IDEAL)</span>
+            </div>
+
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-600 text-white font-medium text-sm shadow-orange-glow mt-4"
+              className="group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase tracking-wider transition-all overflow-hidden"
             >
-              <MessageCircle className="w-4 h-4" />
-              Matricule-se Já
+              <span className="relative z-10 flex items-center gap-1.5">
+                Day Pass Free
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
             </a>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+          </div>
+
+          {/* Mobile Toggle */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+            aria-label="Abrir Menu"
+          >
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Mobile Dropdown */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="pt-4 pb-2 mt-4 border-t border-zinc-800/80 flex flex-col gap-2">
+                {[
+                  { label: "Engenharia & Diferenciais", href: "#vantagens" },
+                  { label: "Tour pelo Espaço", href: "#galeria" },
+                  { label: "Planos & Passaportes", href: "#planos" },
+                  { label: "Perguntas Frequentes", href: "#faq" },
+                  { label: "Agendar Visita", href: "#contato" },
+                ].map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 w-full py-3 rounded-xl bg-orange-600 text-white font-bold text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Resgatar Day Pass Grátis
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </header>
   );
 };
 
-// --- HERO SECTION ---
+// ==========================================
+// 2. HERO SECTION (EDITORIAL + HUD TELEMETRY)
+// ==========================================
 const Hero = () => {
   return (
-    <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-orange-600/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center">
-          
-          {/* Coluna da Esquerda: Textos e Botões */}
-          <div className="text-left">
+    <section className="relative min-h-screen pt-32 pb-20 md:pt-40 md:pb-28 flex items-center overflow-hidden">
+      {/* Architectural Technical Grid Background */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+          backgroundSize: "64px 64px",
+        }}
+      />
+
+      {/* Ambient Glows */}
+      <div className="absolute top-20 left-1/4 w-[600px] h-[600px] bg-orange-600/15 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
+
+      {/* Giant Watermark Background Typography */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full overflow-hidden pointer-events-none select-none z-0 flex justify-center">
+        <span
+          className="text-[18vw] font-black uppercase tracking-tighter leading-none opacity-[0.03] whitespace-nowrap"
+          style={{ WebkitTextStroke: "2px #ffffff", color: "transparent" }}
+        >
+          UNSTOPPABLE
+        </span>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Column: Editorial Impact (7 cols) */}
+          <div className="lg:col-span-7 text-left">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 mb-6"
             >
-              <Badge>
-                <Flame className="w-3.5 h-3.5" /> A Melhora Começa Hoje
-              </Badge>
+              <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-mono text-[10px] font-bold uppercase">
+                V.2026
+              </span>
+              <span className="text-xs text-zinc-300 font-medium">
+                Biomecânica de Elite & Alta Performance
+              </span>
             </motion.div>
-            
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter text-white mb-6 leading-none uppercase"
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl sm:text-6xl xl:text-7xl font-black tracking-tighter text-white uppercase leading-[0.95] mb-6"
             >
-              Transforme seu corpo, <br></br>
-              ultrapasse seus <GradientText>limites!</GradientText>
+              Não treine. <br />
+              <span
+                className="block my-1"
+                style={{
+                  WebkitTextStroke: "1.5px rgba(255,255,255,0.6)",
+                  color: "transparent",
+                }}
+              >
+                Reprograme
+              </span>
+              sua <span className="text-orange-500 italic">biologia.</span>
             </motion.h1>
-            
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg text-zinc-400 mb-8 leading-relaxed max-w-lg"
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-base sm:text-lg text-zinc-400 mb-10 leading-relaxed max-w-xl border-l-2 border-orange-500/50 pl-5"
             >
-              Treinos de alta performance, equipamentos de última geração e acompanhamento profissional completo para você alcançar sua melhor versão.
+              Esqueça as academias convencionais. Combinamos maquinário importado de precisão,
+              design sensorial de iluminação e periodização guiada por dados para forjar resultados
+              reais.
             </motion.p>
-            
+
+            {/* Interactive CTA Group */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-start gap-4"
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
             >
               <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black italic tracking-wider text-lg transition-all duration-300 shadow-orange-glow hover:scale-105 -skew-x-12 uppercase"
+                className="group relative inline-flex items-center justify-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black uppercase tracking-wider text-sm transition-all shadow-[0_0_40px_rgba(234,88,12,0.35)] hover:shadow-[0_0_60px_rgba(234,88,12,0.55)] hover:scale-[1.02]"
               >
-                <MessageCircle className="w-5 h-5" />
-                <span className="skew-x-12 inline-flex items-center gap-2">Matricule-se Agora</span>
+                <span>Agendar Sessão Experimental</span>
+                <div className="w-8 h-8 rounded-xl bg-black/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </a>
+
               <a
-                href="#planos"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-semibold text-lg transition-all"
+                href="#galeria"
+                className="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold text-sm transition-all"
               >
-                Ver Planos <ArrowRight className="w-4 h-4" />
+                <Compass className="w-4 h-4 text-orange-400" />
+                Explorar Instalações
               </a>
             </motion.div>
 
-            {/* Prova Social Integrada à Esquerda */}
+            {/* Telemetry Metrics Bar */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-12 pt-8 border-t border-zinc-800/80 grid grid-cols-2 gap-6 max-w-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="mt-14 pt-8 border-t border-zinc-800/80 grid grid-cols-3 gap-6 max-w-lg"
             >
-              <div>
-                <p className="text-3xl font-black italic text-white mb-1">+2.500</p>
-                <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Alunos Ativos</p>
-              </div>
-              <div>
-                <p className="text-3xl font-black italic text-white mb-1">100%</p>
-                <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Equipamentos Pro</p>
-              </div>
+              {[
+                { val: "1.200m²", label: "Área Climatizada", code: "ZONE_01" },
+                { val: "Zero", label: "Filas em Horário Pico", code: "FLOW_99%" },
+                { val: "Hammer", label: "& Life Fitness Pro", code: "GEAR_MAX" },
+              ].map((stat, i) => (
+                <div key={i} className="flex flex-col">
+                  <span className="text-[10px] font-mono text-orange-500/80 mb-1">
+                    //{stat.code}
+                  </span>
+                  <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    {stat.val}
+                  </span>
+                  <span className="text-xs text-zinc-500 font-medium mt-0.5">{stat.label}</span>
+                </div>
+              ))}
             </motion.div>
           </div>
 
-          {/* Coluna da Direita: Imagem de Destaque */}
-          <motion.div
-            initial={{ opacity: 0, x: 20, rotate: 2 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative w-full aspect-[4/5] lg:aspect-[3/4] xl:aspect-square rounded-[3rem] overflow-hidden border border-zinc-800 shadow-orange-glow group"
-          >
-            {/* Tonalidade sutil de laranja por cima da imagem para unificar as cores */}
-            <div className="absolute inset-0 bg-orange-600/10 mix-blend-overlay z-10" />
-            
-            <Image 
-              src="/images/templates/academia/hero-gym.png" 
-              alt="Ambiente de alta performance"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            
-            {/* Elemento gráfico extra na imagem */}
-            <div className="absolute bottom-6 left-6 right-6 z-20 p-6 rounded-3xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-500 text-white shrink-0">
-                  <Zap className="w-6 h-6" />
+          {/* Right Column: Architectural Image + Floating HUDs (5 cols) */}
+          <div className="lg:col-span-5 relative">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="relative w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-zinc-800 bg-zinc-900 shadow-2xl group"
+            >
+              {/* Duotone & Vignette Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#08090A] via-transparent to-zinc-950/40 z-10" />
+              <div className="absolute inset-0 bg-orange-600/10 mix-blend-overlay z-10" />
+
+              <Image
+                src="/images/templates/academia/hero-gym.png"
+                alt="Ambiente de alta performance PulseFit"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+
+              {/* Top Right HUD Badge */}
+              <div className="absolute top-5 right-5 z-20 px-3.5 py-2 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-orange-500 animate-pulse" />
+                <span className="font-mono text-[11px] text-zinc-200 font-semibold">
+                  BIO-TRACKING ATIVO
+                </span>
+              </div>
+
+              {/* Bottom Floating Telemetry Card */}
+              <div className="absolute bottom-5 left-5 right-5 z-20 p-5 rounded-2xl bg-zinc-950/85 backdrop-blur-xl border border-zinc-800/90 shadow-2xl">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                      <Flame className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-mono uppercase text-zinc-400">Sessão em Destaque</p>
+                      <p className="text-sm font-bold text-white">HIIT Metabolic Burn • 45 min</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-md border border-orange-500/20">
+                    ~850 KCAL
+                  </span>
                 </div>
-                <div>
-                  <p className="text-white font-bold text-sm">Energia & Foco</p>
-                  <p className="text-zinc-400 text-xs">O ambiente ideal para o seu treino diário.</p>
+                {/* Progress bar simulation */}
+                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: "0%" }}
+                    animate={{ width: "82%" }}
+                    transition={{ duration: 1.5, delay: 0.8 }}
+                    className="bg-gradient-to-r from-orange-500 to-amber-400 h-full"
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5 text-[10px] font-mono text-zinc-500">
+                  <span>INTENSIDADE: ALTA</span>
+                  <span>PRÓXIMA TURMA: 19:00</span>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Decorative Corner Element */}
+            <div className="hidden sm:flex absolute -left-8 top-1/3 z-20 p-4 rounded-2xl bg-zinc-900/95 backdrop-blur-md border border-zinc-800 shadow-xl items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-black text-sm">
+                4.9★
+              </div>
+              <div className="pr-2">
+                <p className="text-xs font-bold text-white">+2.500 Membros</p>
+                <p className="text-[11px] text-zinc-400">Avaliação no Google</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ==========================================
+// 3. DUAL KINETIC MARQUEE
+// ==========================================
+const Marquee = () => {
+  const words = [
+    "BIOMECÂNICA DE PRECISÃO",
+    "•",
+    "HIPERTROFIA",
+    "•",
+    "METABOLIC CONDITIONING",
+    "•",
+    "FORÇA BRUTA",
+    "•",
+    "RECOVERY ZONE",
+    "•",
+  ];
+
+  return (
+    <div className="relative py-6 bg-[#08090A] overflow-hidden select-none border-y border-zinc-900">
+      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 py-3.5 -rotate-1 scale-105 shadow-[0_0_50px_rgba(234,88,12,0.25)]">
+        <motion.div
+          className="flex whitespace-nowrap gap-8 font-black italic tracking-tighter text-zinc-950 uppercase text-lg sm:text-xl"
+          animate={{ x: [0, -1000] }}
+          transition={{ repeat: Infinity, duration: 22, ease: "linear" }}
+        >
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-8 shrink-0 items-center">
+              {words.map((word, idx) => (
+                <span key={idx} className={word === "•" ? "text-white not-italic" : ""}>
+                  {word}
+                </span>
+              ))}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 4. BENTO GRID FEATURES (ASYMMETRIC)
+// ==========================================
+const Features = () => {
+  return (
+    <section id="vantagens" className="py-28 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <SectionTag index="01">Engenharia da Performance</SectionTag>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none">
+              Projetada para quem <br />
+              <span className="text-orange-500 italic">rejeita o mediano.</span>
+            </h2>
+          </div>
+          <p className="text-zinc-400 text-sm sm:text-base max-w-md leading-relaxed">
+            Cada metro quadrado foi desenhado usando princípios de fisiologia esportiva, acústica
+            motivacional e fluxo inteligente para eliminar distrações.
+          </p>
+        </div>
+
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {/* Card 1: Large Span (7 cols) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="md:col-span-7 relative p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950 border border-zinc-800/80 hover:border-orange-500/40 transition-all group overflow-hidden flex flex-col justify-between min-h-[320px]"
+          >
+            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl group-hover:bg-orange-500/20 transition-all" />
+
+            <div className="flex items-start justify-between relative z-10">
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
+                <Dumbbell className="w-7 h-7" />
+              </div>
+              <span className="font-mono text-xs text-zinc-500 border border-zinc-800 px-3 py-1 rounded-full">
+                BIOMECÂNICA PURA
+              </span>
+            </div>
+
+            <div className="relative z-10 mt-8">
+              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-3">
+                Maquinário Importado de Competição
+              </h3>
+              <p className="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-xl">
+                Equipamentos convergentes e articulados que respeitam a curva de força natural das
+                suas articulações. Tensão constante no músculo alvo, risco zero de lesão articular.
+              </p>
             </div>
           </motion.div>
 
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// --- FEATURES / SERVICES ---
-const Features = () => {
-  const items = [
-    {
-      icon: Dumbbell,
-      title: "Equipamentos de Ponta",
-      description: "Aparelhos de biomecânica avançada importados para garantir máxima eficiência e segurança no seu treino.",
-    },
-    {
-      icon: Zap,
-      title: "Aulas Dinâmicas",
-      description: "Modalidades exclusivas de Cross, HIIT, Spinning e Funcional com instrutores certificados.",
-    },
-    {
-      icon: Clock,
-      title: "Horários Flexíveis",
-      description: "Academia aberta do início da manhã até o fim da noite para adaptar-se perfeitamente à sua rotina.",
-    },
-    {
-      icon: Trophy,
-      title: "Treino Personalizado",
-      description: "Fichas digitais personalizadas via aplicativo com acompanhamento de progresso quinzenal.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Ambiente Climatizado",
-      description: "Estrutura premium de 1.200m² totalmente climatizada e com vestiários individuais completos.",
-    },
-    {
-      icon: Users,
-      title: "Comunidade Motivadora",
-      description: "Eventos, desafios mensais e uma comunidade engajada para impulsionar seus resultados continuamente.",
-    },
-  ];
-
-  return (
-    <section id="vantagens" className="py-24 bg-zinc-950/50 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-xs font-semibold text-orange-400 tracking-widest uppercase mb-2">Diferenciais Elite</h2>
-          <p className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white uppercase">
-            Por que escolher a nossa estrutura?
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {items.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              whileHover={{ scale: 1.05, rotate: idx % 2 === 0 ? -2 : 2, skewX: -2 }}
-              className="p-8 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 hover:border-orange-500/40 transition-all group"
-            >
-              <div className="w-12 h-12 rounded-xl bg-orange-600/10 border border-orange-500/20 text-orange-400 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-orange-600 group-hover:text-white transition-all">
-                <item.icon className="w-6 h-6" />
+          {/* Card 2: Medium Span (5 cols) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="md:col-span-5 relative p-8 sm:p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-orange-500/40 transition-all group flex flex-col justify-between min-h-[320px]"
+          >
+            <div className="flex items-start justify-between">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-zinc-700 text-orange-400 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                <Sliders className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">{item.description}</p>
-            </motion.div>
-          ))}
+              <span className="font-mono text-xs text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full">
+                APP EXCLUSIVO
+              </span>
+            </div>
+
+            <div className="mt-8">
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-3">
+                Periodização Guiada por Dados
+              </h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Abandone a ficha de papel. Receba progressão de carga automatizada, vídeos em 4K da
+                execução biomecânica e reavaliação quinzenal diretamente no seu smartphone.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Card 3: 4 cols */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
+          >
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-orange-400 flex items-center justify-center mb-6">
+              <Zap className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">Studios Imersivos</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Salas de Spinning, Cross e HIIT com iluminação cênica sincronizada e sistema de som
+                de festival para elevar sua adrenalina.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Card 4: 4 cols */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
+          >
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-orange-400 flex items-center justify-center mb-6">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">Climatização Hospitalar</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Renovação constante de ar com filtragem tripla e temperatura cravada em 21°C o ano
+                inteiro, além de vestiários estilo spa.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Card 5: 4 cols */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="md:col-span-4 p-8 rounded-3xl bg-gradient-to-br from-orange-600 to-amber-600 text-white flex flex-col justify-between shadow-orange-glow"
+          >
+            <div className="flex justify-between items-start">
+              <Clock className="w-8 h-8 text-zinc-950" />
+              <span className="text-[10px] font-mono uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full font-bold">
+                365 DIAS
+              </span>
+            </div>
+            <div className="mt-6">
+              <h3 className="text-2xl font-black uppercase tracking-tight mb-2">
+                Horário Estendido
+              </h3>
+              <p className="text-white/90 text-sm leading-relaxed mb-4">
+                Das 05h às 23h nos dias úteis. Domingos e feriados abertos para você nunca quebrar a
+                sua consistência.
+              </p>
+              <a
+                href="#planos"
+                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-zinc-950 text-white px-4 py-2.5 rounded-xl hover:bg-zinc-900 transition-colors"
+              >
+                Conferir Acesso <ArrowUpRight className="w-4 h-4" />
+              </a>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
   );
 };
 
-// --- GALLERY SECTION ---
+// ==========================================
+// 5. EXPANDING ACCORDION GALLERY (OUT OF THE BOX)
+// ==========================================
 const Gallery = () => {
-  // 1. Atualize aqui com o nome real e caminho das suas fotos na pasta public
-  const images = [
-    { aspect: "aspect-square", label: "Área de Musculação Premium", src: "/images/templates/academia/foto-1.png" },
-    { aspect: "aspect-square", label: "Espaço de Cardio & Running", src: "/images/templates/academia/foto-2.png" },
-    { aspect: "aspect-square", label: "Studio de Spinning", src: "/images/templates/academia/foto-3.png" },
-    { aspect: "aspect-square", label: "Box de Cross Training", src: "/images/templates/academia/foto-4.png" },
-    { aspect: "aspect-square", label: "Área de Peso Livre", src: "/images/templates/academia/foto-5.png" },
-    { aspect: "aspect-square", label: "Vestiários Climatizados", src: "/images/templates/academia/foto-6.png" },
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const zones = [
+    {
+      id: "01",
+      title: "Iron Sanctuary",
+      subtitle: "Musculação & Peso Livre",
+      specs: "Halteres até 60kg • 8 Gaiolas de Agachamento • Piso de Absorção Olímpica",
+      src: "/images/templates/academia/foto-1.png",
+    },
+    {
+      id: "02",
+      title: "Endurance Deck",
+      subtitle: "Cardio & Simulação",
+      specs: "Esteiras LifeFitness com Tela 4K • Escadas Simuladoras • Remo Concept2",
+      src: "/images/templates/academia/foto-2.png",
+    },
+    {
+      id: "03",
+      title: "Neon Cycle Lab",
+      subtitle: "Studio de Spinning Imersivo",
+      specs: "Bikes Magnéticas de Precisão • Áudio 3D • Painel de Telemetria Coletiva",
+      src: "/images/templates/academia/foto-3.png",
+    },
+    {
+      id: "04",
+      title: "The Box Arena",
+      subtitle: "Cross Training & Funcional",
+      specs: "Rig Oficial 12m • Pista de Sled em Grama Sintética • AirBikes & Wall Balls",
+      src: "/images/templates/academia/foto-4.png",
+    },
+    {
+      id: "05",
+      title: "Recovery Lounge",
+      subtitle: "Vestiários & Pós-Treino",
+      specs: "Duchas de Alta Pressão • Armários Biométricos • Shake Bar Integrado",
+      src: "/images/templates/academia/foto-6.png",
+    },
   ];
 
   return (
-    <section id="galeria" className="py-24 bg-zinc-950 border-t border-zinc-900 relative">
+    <section id="galeria" className="py-28 bg-zinc-950 border-y border-zinc-900 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <Badge>Conheça Nosso Espaço</Badge>
-          <h2 className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white uppercase mt-2">Galeria de Fotos</h2>
-          <p className="text-zinc-400 mt-4 text-sm sm:text-base">
-            Estrutura moderna planejada para oferecer conforto, alto rendimento e a melhor experiência de treino.
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div>
+            <SectionTag index="02">Tour Interativo</SectionTag>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase">
+              5 Zonas de <span className="text-orange-500 italic">Imersão</span>
+            </h2>
+          </div>
+          <p className="text-xs font-mono uppercase tracking-widest text-zinc-500">
+            [ PASSE O MOUSE OU TOQUE PARA EXPANDIR OS AMBIENTES ]
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {images.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              whileHover={{ scale: 1.05, skewY: -1, zIndex: 10 }}
-              className={`relative group overflow-hidden rounded-2xl border border-zinc-800/80 hover:border-orange-500/40 transition-all ${item.aspect} flex items-center justify-center p-6 text-center`}
-            >
-              {/* 2. A imagem real usando Next.js Image */}
-              <Image
-                src={item.src}
-                alt={item.label}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+        {/* Interactive Horizontal Accordion */}
+        <div className="flex flex-col lg:flex-row gap-4 h-[620px] lg:h-[520px] w-full">
+          {zones.map((zone, idx) => {
+            const isActive = activeIdx === idx;
+            return (
+              <div
+                key={zone.id}
+                onMouseEnter={() => setActiveIdx(idx)}
+                onClick={() => setActiveIdx(idx)}
+                className={`relative rounded-3xl overflow-hidden cursor-pointer border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                  isActive
+                    ? "flex-[4] border-orange-500/60 shadow-[0_0_40px_rgba(234,88,12,0.15)]"
+                    : "flex-[1] border-zinc-800/80 hover:border-zinc-700 opacity-70 hover:opacity-100"
+                }`}
+              >
+                <Image
+                  src={zone.src}
+                  alt={zone.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  className={`object-cover transition-transform duration-1000 ${
+                    isActive ? "scale-105" : "scale-100 grayscale-[50%]"
+                  }`}
+                />
 
-              {/* 3. Gradiente escuro por cima da imagem para garantir leitura do texto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/60 to-transparent opacity-70 group-hover:opacity-40 transition-opacity" />
+                {/* Dark Gradient Overlay */}
+                <div
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    isActive
+                      ? "bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"
+                      : "bg-zinc-950/75"
+                  }`}
+                />
 
-              <div className="relative z-10 flex flex-col items-center justify-center gap-2 mt-auto pb-4">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/90 border border-orange-500/20 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-orange-glow">
-                  <Dumbbell className="w-5 h-5" />
+                {/* Content Container */}
+                <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`font-mono text-sm font-bold px-3 py-1 rounded-lg border transition-colors ${
+                        isActive
+                          ? "bg-orange-500 text-white border-orange-400"
+                          : "bg-zinc-900/80 text-zinc-400 border-zinc-800"
+                      }`}
+                    >
+                      /{zone.id}
+                    </span>
+
+                    {isActive && (
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-orange-400 bg-zinc-950/80 backdrop-blur-md px-3 py-1 rounded-full border border-orange-500/30">
+                        <Sparkles className="w-3 h-3" /> Ambiente Climatizado
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Bottom Title & Specs */}
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-mono uppercase tracking-widest text-orange-400 mb-1 truncate">
+                      {zone.subtitle}
+                    </p>
+                    <h3
+                      className={`font-black uppercase tracking-tight text-white transition-all ${
+                        isActive ? "text-2xl sm:text-4xl mb-3" : "text-lg lg:rotate-0 truncate"
+                      }`}
+                    >
+                      {zone.title}
+                    </h3>
+
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                          className="pt-3 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                        >
+                          <p className="text-xs sm:text-sm text-zinc-300 font-medium max-w-md">
+                            {zone.specs}
+                          </p>
+                          <a
+                            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                              `Olá! Quero conhecer o espaço ${zone.title} da PulseFit.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-orange-500 hover:text-white transition-colors self-start sm:self-auto"
+                          >
+                            Visitar Zona <ArrowUpRight className="w-3.5 h-3.5" />
+                          </a>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
-                <span className="text-sm font-bold tracking-wide text-white drop-shadow-md">
-                  {item.label}
-                </span>
               </div>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
   );
 };
 
-// --- PRICING SECTION ---
+// ==========================================
+// 6. INTERACTIVE PRICING & GOAL RECOMMENDER
+// ==========================================
 const Pricing = () => {
+  const [billing, setBilling] = useState<"anual" | "mensal">("anual");
+  const [selectedGoal, setSelectedGoal] = useState<string>("all");
+
+  const goals = [
+    { id: "all", label: "Ver Todos", recommendedPlan: "Cross Pro" },
+    { id: "musculacao", label: "Foco em Hipertrofia", recommendedPlan: "Fit Básico" },
+    { id: "condicionamento", label: "Emagrecimento & Cross", recommendedPlan: "Cross Pro" },
+    { id: "exclusivo", label: "Acompanhamento 360°", recommendedPlan: "VIP Total" },
+  ];
+
   const plans = [
     {
       name: "Fit Básico",
-      price: "119",
-      period: "/mês",
-      description: "Ideal para quem quer focar na musculação diária em horário livre.",
+      monthlyPrice: 149,
+      annualPrice: 119,
+      description: "Acesso livre à nossa sala de musculação biomecânica e deck de cardio.",
       features: [
-        "Acesso à área de Musculação",
-        "Área de Cardio Completa",
-        "Avaliação Física Inicial",
-        "Armários no Vestiário",
+        "Musculação & Peso Livre sem restrição de horário",
+        "Deck de Cardio com telas integradas",
+        "Avaliação de Bioimpedância Inicial",
+        "Acesso ao App PulseFit (Fichas em Vídeo)",
       ],
-      highlight: false,
-      cta: "Matricular no Básico",
+      cta: "Iniciar no Fit Básico",
     },
     {
       name: "Cross Pro",
-      price: "189",
-      period: "/mês",
-      description: "Perfeito para quem busca treinos dinâmicos, alta intensidade e aulas em grupo.",
+      monthlyPrice: 229,
+      annualPrice: 189,
+      description: "A combinação definitiva de musculação livre com nossas arenas de alta intensidade.",
       features: [
-        "Tudo do Plano Fit Básico",
-        "Acesso ilimitado às Aulas de Cross",
-        "Aulas de Spinning e Funcional",
-        "Acompanhamento no App",
-        "Acesso a 2 Convidados/mês",
+        "Tudo do Passaporte Fit Básico",
+        "Acesso Ilimitado ao Box de Cross & HIIT",
+        "Studio Neon Cycle (Spinning Imersivo)",
+        "Reavaliação física a cada 45 dias",
+        "4 Acessos VIP/mês para levar convidados",
       ],
-      highlight: true,
-      badge: "Mais Popular",
-      cta: "Garantir Vaga Pro",
+      badge: "Mais Escolhido",
+      cta: "Garantir Passaporte Pro",
     },
     {
       name: "VIP Total",
-      price: "279",
-      period: "/mês",
-      description: "A experiência máxima em saúde com acompanhamento multidisciplinar.",
+      monthlyPrice: 349,
+      annualPrice: 279,
+      description: "Performance executiva com nutricionista e acompanhamento de perto.",
       features: [
-        "Acesso Total e Ilimitado",
-        "Consultoria Nutricional Mensal",
-        "Personal Trainer (2x na semana)",
-        "Acesso Livre a Convidados",
-        "Kit Exclusivo PulseFit",
+        "Acesso Total e Irrestrito a todas as Zonas",
+        "Consultoria Nutricional Esportiva Mensal",
+        "Small Group Personal (2x na semana)",
+        "Convidados ilimitados aos finais de semana",
+        "Kit Welcome PulseFit (Coqueteleira + Camiseta Tech)",
       ],
-      highlight: false,
-      cta: "Sejar Membro VIP",
+      cta: "Aplicar para Membro VIP",
     },
   ];
 
+  const activeRecommendation =
+    goals.find((g) => g.id === selectedGoal)?.recommendedPlan || "Cross Pro";
+
   return (
-    <section id="planos" className="py-24 relative">
+    <section id="planos" className="py-28 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-xs font-semibold text-orange-400 tracking-widest uppercase mb-2">Planos & Investimento</h2>
-          <p className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white uppercase">Escolha o plano ideal para sua rotina</p>
+        {/* Header + Billing Switch */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
+          <div>
+            <SectionTag index="03">Passaportes de Acesso</SectionTag>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase">
+              Invista na sua <span className="text-orange-500 italic">alta performance</span>
+            </h2>
+          </div>
+
+          {/* Billing Cycle Toggle */}
+          <div className="inline-flex items-center p-1.5 rounded-2xl bg-zinc-900 border border-zinc-800 self-start lg:self-auto">
+            <button
+              onClick={() => setBilling("mensal")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                billing === "mensal"
+                  ? "bg-zinc-800 text-white shadow"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Plano Flex (Mensal)
+            </button>
+            <button
+              onClick={() => setBilling("anual")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                billing === "anual"
+                  ? "bg-orange-600 text-white shadow-orange-glow"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <span>Passaporte Anual</span>
+              <span className="px-2 py-0.5 rounded-md bg-black/30 text-[10px] font-mono">
+                -20% OFF
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {plans.map((plan, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              className={`relative flex flex-col justify-between p-8 rounded-[3rem] text-center transition-all ${plan.highlight
-                  ? "bg-gradient-to-b from-zinc-900 via-zinc-900 to-zinc-950 border-2 border-orange-500 shadow-orange-glow scale-105 z-10"
-                  : "bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700"
+        {/* Interactive Goal Filter */}
+        <div className="mb-12 p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-mono uppercase text-zinc-400">
+            <Gauge className="w-4 h-4 text-orange-500" />
+            <span>Qual é a sua meta principal hoje?</span>
+          </div>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            {goals.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => setSelectedGoal(g.id)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  selectedGoal === g.id
+                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/40"
+                    : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
                 }`}
-            >
-              {plan.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-white text-xs font-bold uppercase tracking-wider shadow-md -skew-x-12">
-                  <span className="skew-x-12 inline-block">{plan.badge}</span>
-                </div>
-              )}
-
-              <div className="flex flex-col items-center">
-                <h3 className="text-2xl font-black italic tracking-tighter uppercase text-white mb-2">{plan.name}</h3>
-                <p className="text-zinc-400 text-xs mb-6 max-w-xs mx-auto min-h-[36px]">{plan.description}</p>
-
-                <div className="w-40 h-40 rounded-full flex flex-col items-center justify-center mx-auto mb-8 border-4 border-orange-500/30 bg-zinc-900/80 shadow-orange-glow shrink-0 transition-transform hover:scale-105">
-                  <span className="text-xs font-bold uppercase text-orange-400 tracking-wider">A partir de</span>
-                  <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-xs font-bold text-zinc-400">R$</span>
-                    <span className="text-4xl font-black italic tracking-tighter text-white">{plan.price}</span>
-                  </div>
-                  <span className="text-zinc-500 text-xs font-medium">{plan.period}</span>
-                </div>
-
-                <div className="space-y-3 mb-8 w-full text-left">
-                  {plan.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-center gap-3 text-sm text-zinc-300">
-                      <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Olá! Quero assinar o plano ${plan.name}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`w-full py-4 rounded-xl text-center font-bold uppercase tracking-wider text-sm transition-all duration-300 -skew-x-12 ${plan.highlight
-                    ? "bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-orange-glow"
-                    : "bg-zinc-800 hover:bg-zinc-700 text-white"
-                  }`}
               >
-                <span className="skew-x-12 inline-block">{plan.cta}</span>
-              </a>
-            </motion.div>
-          ))}
+                {g.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          {plans.map((plan, idx) => {
+            const isRecommended = plan.name === activeRecommendation;
+            const currentPrice = billing === "anual" ? plan.annualPrice : plan.monthlyPrice;
+
+            return (
+              <motion.div
+                key={idx}
+                layout
+                className={`relative flex flex-col justify-between p-8 sm:p-10 rounded-[2.5rem] transition-all duration-500 ${
+                  isRecommended
+                    ? "bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 border-2 border-orange-500 shadow-[0_0_50px_rgba(234,88,12,0.2)] lg:-translate-y-3 z-10"
+                    : "bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-700"
+                }`}
+              >
+                {isRecommended && (
+                  <div className="absolute -top-4 left-8 px-4 py-1 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {selectedGoal === "all" ? "Mais Popular" : "Recomendado para Você"}
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-2xl font-black uppercase tracking-tight text-white">
+                      {plan.name}
+                    </h3>
+                    <span className="font-mono text-xs text-zinc-500">0{idx + 1}</span>
+                  </div>
+                  <p className="text-zinc-400 text-sm mb-8 min-h-[40px]">{plan.description}</p>
+
+                  {/* Price Display */}
+                  <div className="p-6 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 mb-8">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 block mb-1">
+                      Investimento {billing === "anual" ? "no plano anual" : "no plano mensal"}
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-bold text-orange-500">R$</span>
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={currentPrice}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-5xl font-black tracking-tighter text-white"
+                        >
+                          {currentPrice}
+                        </motion.span>
+                      </AnimatePresence>
+                      <span className="text-zinc-500 text-xs font-mono">/mês</span>
+                    </div>
+                  </div>
+
+                  {/* Features List */}
+                  <div className="space-y-4 mb-10">
+                    {plan.features.map((feat, fIdx) => (
+                      <div key={fIdx} className="flex items-start gap-3 text-sm text-zinc-300">
+                        <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                    `Olá! Quero garantir o passaporte ${plan.name} na modalidade ${billing.toUpperCase()}.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full py-4 px-6 rounded-2xl font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all ${
+                    isRecommended
+                      ? "bg-orange-600 hover:bg-orange-500 text-white shadow-orange-glow"
+                      : "bg-zinc-800 hover:bg-zinc-700 text-white"
+                  }`}
+                >
+                  <span>{plan.cta}</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </a>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 };
 
-// --- FAQ SECTION ---
+// ==========================================
+// 7. FAQ SECTION (SPLIT EDITORIAL LAYOUT)
+// ==========================================
 const FAQ = () => {
   const faqs = [
     {
-      q: "Preciso pagar taxa de matrícula ou cancelamento?",
-      a: "Não trabalhamos com fidelidade compulsória nos planos mensais. A matrícula é simplificada e totalmente transparente.",
+      q: "Existe taxa de matrícula, manutenção ou multa de cancelamento?",
+      a: "Zero letras miúdas. Na modalidade Flex (Mensal), você não possui fidelidade e pode cancelar quando desejar com aviso prévio de 30 dias. No Passaporte Anual, você garante 20% de desconto fixo durante os 12 meses.",
     },
     {
-      q: "Como funciona a aula experimental?",
-      a: "Você pode agendar um dia de treino grátis através do nosso WhatsApp. Nossa equipe apresentará toda a estrutura e você poderá testar nossas instalações sem compromisso.",
+      q: "Como funciona o Day Pass Experimental Gratuito?",
+      a: "Basta clicar em qualquer botão de agendamento nesta página. Nosso concierge agendará um horário onde um treinador fará um tour rápido pelas 5 zonas e liberará seu acesso para um treino completo.",
     },
     {
-      q: "Qual o horário de funcionamento?",
-      a: "Funcionamos de segunda a sexta das 05h às 23h, aos sábados das 08h às 18h e aos domingos/feriados das 08h às 14h.",
+      q: "Sou iniciante, terei acompanhamento na sala de musculação?",
+      a: "Sim! Além do nosso aplicativo com vídeos em alta definição de cada máquina, temos professores de plantão em todas as zonas para corrigir sua postura, ajustar cargas e garantir segurança biomecânica.",
     },
     {
-      q: "Possuo acesso a aplicativo de treinos?",
-      a: "Sim! Todos os nossos alunos possuem acesso exclusivo ao aplicativo PulseFit, onde podem visualizar vídeos com execução correta dos exercícios e histórico de cargas.",
+      q: "Aceitam agregadores como Gympass (Wellhub) ou TotalPass?",
+      a: "Para mantermos o controle rigoroso de lotação, conforto térmico e disponibilidade imediata dos equipamentos para nossos membros, operamos exclusivamente com passaportes próprios.",
     },
   ];
 
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-24 bg-zinc-950/50 border-t border-zinc-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-xs font-semibold text-orange-400 tracking-widest uppercase mb-2">Tire suas dúvidas</h2>
-          <p className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white uppercase">Perguntas Frequentes</p>
-        </div>
-
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className="border border-zinc-800/80 rounded-2xl bg-zinc-900/40 overflow-hidden transition-colors"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="w-full text-left p-6 flex justify-between items-center gap-4 text-white font-semibold"
-              >
-                <span>{faq.q}</span>
-                <ChevronDown
-                  className={`w-5 h-5 text-zinc-400 transition-transform duration-300 ${openIndex === idx ? "rotate-180 text-orange-400" : ""
-                    }`}
-                />
-              </button>
-
-              <AnimatePresence>
-                {openIndex === idx && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed border-t border-zinc-800/40 pt-4"
-                  >
-                    {faq.a}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// --- CONTACT SECTION ---
-const Contact = () => {
-  return (
-    <section id="contato" className="py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-8 sm:p-12">
-          <div>
-            <Badge>Contato Rápido</Badge>
-            <h2 className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white uppercase mb-4">
-              Pronto para começar seu treino?
+    <section id="faq" className="py-24 bg-zinc-950/60 border-t border-zinc-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-5 lg:sticky lg:top-32">
+            <SectionTag index="04">Transparência Total</SectionTag>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none mb-6">
+              Dúvidas <br />
+              <span className="text-orange-500 italic">Frequentes</span>
             </h2>
-            <p className="text-zinc-400 mb-8 leading-relaxed">
-              Preencha os dados ao lado ou chame diretamente no WhatsApp para agendar uma visita guiada com avaliação grátis.
+            <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-8">
+              Ainda tem alguma pergunta específica sobre nossa metodologia ou estrutura? Fale
+              diretamente com nossa recepção técnica.
             </p>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 text-zinc-300">
-                <div className="p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-orange-400">
-                  <Phone className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">Telefone / WhatsApp</p>
-                  <p className="font-semibold">(11) 99999-9999</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-zinc-300">
-                <div className="p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-orange-400">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">E-mail</p>
-                  <p className="font-semibold">contato@pulsefit.com.br</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-zinc-300">
-                <div className="p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-orange-400">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">Localização</p>
-                  <p className="font-semibold">Av. Paulista, 1000 - Bela Vista, São Paulo - SP</p>
-                </div>
-              </div>
-            </div>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-6 py-3.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 text-white text-xs font-bold uppercase tracking-wider transition-all"
+            >
+              <MessageCircle className="w-4 h-4 text-orange-500" />
+              Chamar Concierge no WhatsApp
+            </a>
           </div>
 
-          <div className="bg-zinc-950/60 border border-zinc-800/80 p-6 sm:p-8 rounded-2xl">
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                  Nome Completo
-                </label>
-                <input
-                  type="text"
-                  placeholder="Seu nome"
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                  WhatsApp
-                </label>
-                <input
-                  type="tel"
-                  placeholder="(11) 99999-9999"
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                  Objetivo Principal
-                </label>
-                <select className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-orange-500 transition-colors">
-                  <option>Ganho de Massa (Hipertrofia)</option>
-                  <option>Perda de Peso / Emagrecimento</option>
-                  <option>Condicionamento Físico</option>
-                  <option>Aulas de Cross / Grupo</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-semibold text-base transition-all shadow-orange-glow"
-              >
-                Solicitar Contato Especializado
-              </button>
-            </form>
+          {/* Right Column: Accordion */}
+          <div className="lg:col-span-7 space-y-4">
+            {faqs.map((faq, idx) => {
+              const isOpen = openIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className={`rounded-2xl border transition-all ${
+                    isOpen
+                      ? "bg-zinc-900/70 border-orange-500/40"
+                      : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700"
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenIndex(isOpen ? null : idx)}
+                    className="w-full text-left p-6 flex justify-between items-center gap-4 text-white font-bold text-base sm:text-lg"
+                  >
+                    <span className="flex items-center gap-4">
+                      <span className="font-mono text-xs text-orange-500">0{idx + 1}</span>
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
+                        isOpen ? "rotate-180 text-orange-400" : "text-zinc-500"
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-6 pb-6 pt-2 text-sm text-zinc-400 leading-relaxed border-t border-zinc-800/50">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -679,27 +1073,149 @@ const Contact = () => {
   );
 };
 
-// --- FOOTER ---
-const Footer = () => {
-  const [year, setYear] = useState(2026);
+// ==========================================
+// 8. VIP PASS GENERATOR / CONTACT SECTION
+// ==========================================
+const Contact = () => {
+  const [name, setName] = useState("");
+  const [goal, setGoal] = useState("Hipertrofia & Estética");
 
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  const handleVipPassSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const customMsg = encodeURIComponent(
+      `Olá! Meu nome é ${name || "Visitante"}. Gerei meu VIP Pass pelo site com foco em [${goal}] e gostaria de agendar meu treino experimental.`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${customMsg}`, "_blank");
+  };
 
   return (
-    <footer className="bg-zinc-950 border-t border-zinc-900 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-orange-600/20 border border-orange-500/30 text-orange-400">
-            <Dumbbell className="w-5 h-5" />
+    <section id="contato" className="py-28 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="rounded-[3rem] bg-gradient-to-br from-zinc-900 via-zinc-950 to-[#08090A] border border-zinc-800 p-8 sm:p-14 lg:p-16 relative overflow-hidden">
+          {/* Glow */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-600/15 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6">
+              <SectionTag index="05">Acesso Imediato</SectionTag>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none mb-6">
+                Emita seu <span className="text-orange-500 italic">VIP Pass</span> Experimental.
+              </h2>
+              <p className="text-zinc-400 mb-10 leading-relaxed text-sm sm:text-base">
+                Configure seu passe ao lado e envie diretamente para nossa recepção no WhatsApp. Sem
+                formulários lentos ou espera por e-mail.
+              </p>
+
+              <div className="space-y-5 border-t border-zinc-800/80 pt-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-orange-400">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-mono uppercase text-zinc-500">Flagship Unit</p>
+                    <p className="text-sm font-semibold text-zinc-200">
+                      Av. Gaucha, 999 - Bairro Famoso, Porto Alegre - RS
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-orange-400">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-mono uppercase text-zinc-500">
+                      Concierge Direto
+                    </p>
+                    <p className="text-sm font-semibold text-zinc-200">(51) 99999-9999</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Ticket / Form */}
+            <div className="lg:col-span-6">
+              <form
+                onSubmit={handleVipPassSubmit}
+                className="p-8 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800 shadow-2xl space-y-6 relative"
+              >
+                <div className="flex items-center justify-between border-b border-dashed border-zinc-800 pb-4">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-orange-500 block">
+                      CREDENCIAL TEMPORÁRIA
+                    </span>
+                    <h3 className="text-lg font-black uppercase text-white">
+                      1 DIA DE ACESSO TOTAL FREE
+                    </h3>
+                  </div>
+                  <Dumbbell className="w-6 h-6 text-zinc-600" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                    Nome do Convidado(a)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Digite seu nome..."
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                    Foco do Treino Experimental
+                  </label>
+                  <select
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-orange-500 transition-colors text-sm"
+                  >
+                    <option value="Hipertrofia & Estética">Hipertrofia & Estética</option>
+                    <option value="Emagrecimento & Condicionamento">
+                      Emagrecimento & Condicionamento
+                    </option>
+                    <option value="Aulas de Cross & HIIT">Aulas de Cross & HIIT</option>
+                    <option value="Saúde & Longevidade">Saúde & Longevidade</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black uppercase tracking-wider text-xs transition-all shadow-orange-glow flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Emitir Credencial via WhatsApp
+                </button>
+              </form>
+            </div>
           </div>
-          <span className="text-lg font-bold tracking-wider text-white">
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ==========================================
+// 9. FOOTER
+// ==========================================
+const Footer = () => {
+  return (
+    <footer className="bg-[#050607] border-t border-zinc-900 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-500">
+            <Dumbbell className="w-4 h-4" />
+          </div>
+          <span className="text-sm font-black tracking-wider text-white">
             PULSE<span className="text-orange-500">FIT</span>
           </span>
         </div>
-        <p className="text-sm text-zinc-500">
-          © {year} PulseFit. Todos os direitos reservados.
+        <p className="text-xs font-mono text-zinc-600">
+          © {2026} PULSEFIT PERFORMANCE LAB. TODOS OS DIREITOS RESERVADOS.
         </p>
       </div>
     </footer>
@@ -707,7 +1223,7 @@ const Footer = () => {
 };
 
 // ==========================================
-// MAIN PAGE COMPONENT
+// MAIN PAGE EXPORT
 // ==========================================
 export default function LandingPage() {
   return (

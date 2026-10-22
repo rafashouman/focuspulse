@@ -53,15 +53,15 @@ export function FAQ() {
             transition={{ duration: 0.6, ease: "easeOut" as const }}
             className="sticky top-32"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-blue-500/20 bg-blue-500/5 text-xs font-bold uppercase tracking-widest text-blue-400">
+            <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-violet-300/20 bg-violet-400/[0.06] text-xs font-bold uppercase tracking-widest text-violet-200">
               Perguntas Frequentes
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight mb-6 text-foreground">
               Transparência em<br />
-              <span className="text-blue-gradient">Cada Etapa.</span>
+              <span className="text-violet-gradient">Cada Etapa.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Transparência do início ao fim. Respostas diretas sobre prazos, tecnologias e o nosso processo de desenvolvimento. Garantimos alinhamento e previsibilidade antes mesmo de iniciar o seu projeto.
+              <span className="font-medium text-violet-100">Transparência do início ao fim.</span> Respostas diretas sobre prazos, tecnologias e o nosso processo de desenvolvimento. Garantimos alinhamento e previsibilidade antes mesmo de iniciar o seu projeto.
             </p>
           </motion.div>
 
@@ -77,7 +77,7 @@ export function FAQ() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1, ease: "easeOut" as const }}
-                  className={`border rounded-2xl overflow-hidden transition-colors duration-300 ${isOpen ? "border-blue-500/50 bg-card/80 shadow-blue-glow" : "border-border bg-card/30 hover:bg-card/60 hover:border-blue-500/30"
+                  className={`border rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-300 ${isOpen ? "border-violet-300/30 bg-violet-300/[0.07] shadow-violet-glow" : "border-white/[0.09] bg-white/[0.025] hover:bg-white/[0.05] hover:border-violet-300/20"
                     }`}
                 >
                   <button
@@ -88,7 +88,7 @@ export function FAQ() {
                       {faq.q}
                     </span>
                     <ChevronDown
-                      className={`w-5 h-5 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-400" : "text-muted-foreground"
+                      className={`w-5 h-5 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-violet-200" : "text-muted-foreground"
                         }`}
                     />
                   </button>
