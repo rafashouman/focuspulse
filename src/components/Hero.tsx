@@ -140,11 +140,11 @@ export function Hero() {
                       Mais impacto.
                     </h2>
                   </div>
-                  <div className="absolute -bottom-20 -left-20 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl sm:-left-8 sm:px-5">
-                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="absolute -bottom-25 -left-20 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl sm: left-1 sm:px-7">
+                    <p className="font-mono text-[12px] uppercase tracking-[0.09em] text-muted-foreground">
                       Da ideia ao lançamento
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
+                    <p className="mt-1 text-[14px] font-semibold text-foreground">
                       Uma experiência completa
                     </p>
                   </div>
