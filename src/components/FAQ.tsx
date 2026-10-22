@@ -43,7 +43,7 @@ export function FAQ() {
   return (
     <section id="faq" className="relative py-24 sm:py-32 bg-background border-t border-border">
       <div className="container-luxe">
-        <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-start">
+        <div className="grid min-w-0 grid-cols-1 items-start gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
 
           {/* Coluna da Esquerda: Textos de ancoragem */}
           <motion.div
@@ -51,12 +51,12 @@ export function FAQ() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" as const }}
-            className="sticky top-32"
+            className="min-w-0 lg:sticky lg:top-32"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-violet-300/20 bg-violet-400/[0.06] text-xs font-bold uppercase tracking-widest text-violet-200">
               Perguntas Frequentes
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-tight mb-6 text-foreground">
+            <h2 className="mb-6 font-display text-[clamp(1.5rem,7.5vw,3.125rem)] uppercase tracking-tight text-foreground sm:text-4xl md:text-5xl">
               Transparência em<br />
               <span className="text-violet-gradient">Cada Etapa.</span>
             </h2>
@@ -66,7 +66,7 @@ export function FAQ() {
           </motion.div>
 
           {/* Coluna da Direita: Accordion */}
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             {faqs.map((faq, index) => {
               const isOpen = openIndex === index;
 

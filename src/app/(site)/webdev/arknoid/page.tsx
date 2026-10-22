@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArknoidGame } from "@/components/ArknoidGame";
+import { ArknoidGame } from "@/components/games/ArknoidGame";
 
 export default function ArknoidPage() {
   return (

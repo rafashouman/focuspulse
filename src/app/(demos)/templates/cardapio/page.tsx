@@ -24,6 +24,7 @@ import {
   Send,
   Mail,
 } from "lucide-react";
+import KobraTableBooking from "@/components/KobraTableBooking";
 
 // ==========================================
 // CONFIGURAÇÕES & DADOS DO CARDÁPIO
@@ -359,15 +360,12 @@ export default function DeliveryMenuPage() {
       })
       .join("\n\n");
 
-    const message = `*NOVO PEDIDO — KOBRA BURGER LAB* 🍔⚡\n----------------------------------\n*Modalidade:* ${
-      orderMode === "delivery" ? "🛵 Delivery" : "🏪 Retirada no Balcão"
-    }\n*Cliente:* ${customerName || "Não informado"}\n${
-      orderMode === "delivery" ? `*Endereço:* ${customerAddress}\n` : ""
-    }----------------------------------\n\n${itemsLines}\n\n----------------------------------\n*Subtotal:* R$ ${cartSubtotal.toFixed(
-      2
-    )}\n*Taxa de Entrega:* ${
-      isFreeDelivery ? "GRÁTIS" : `R$ ${finalDeliveryFee.toFixed(2)}`
-    }\n*TOTAL A PAGAR: R$ ${cartTotal.toFixed(2)}*\n*Pagamento:* ${paymentMethod}`;
+    const message = `*NOVO PEDIDO — KOBRA BURGER LAB* 🍔⚡\n----------------------------------\n*Modalidade:* ${orderMode === "delivery" ? "🛵 Delivery" : "🏪 Retirada no Balcão"
+      }\n*Cliente:* ${customerName || "Não informado"}\n${orderMode === "delivery" ? `*Endereço:* ${customerAddress}\n` : ""
+      }----------------------------------\n\n${itemsLines}\n\n----------------------------------\n*Subtotal:* R$ ${cartSubtotal.toFixed(
+        2
+      )}\n*Taxa de Entrega:* ${isFreeDelivery ? "GRÁTIS" : `R$ ${finalDeliveryFee.toFixed(2)}`
+      }\n*TOTAL A PAGAR: R$ ${cartTotal.toFixed(2)}*\n*Pagamento:* ${paymentMethod}`;
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
   };
@@ -410,22 +408,20 @@ export default function DeliveryMenuPage() {
           <div className="hidden sm:flex items-center bg-zinc-900/90 border border-zinc-800 p-1 rounded-xl">
             <button
               onClick={() => setOrderMode("delivery")}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                orderMode === "delivery"
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${orderMode === "delivery"
                   ? "bg-lime-400 text-zinc-950 shadow"
                   : "text-zinc-400 hover:text-white"
-              }`}
+                }`}
             >
               <Bike className="w-3.5 h-3.5" />
               Delivery
             </button>
             <button
               onClick={() => setOrderMode("pickup")}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                orderMode === "pickup"
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${orderMode === "pickup"
                   ? "bg-lime-400 text-zinc-950 shadow"
                   : "text-zinc-400 hover:text-white"
-              }`}
+                }`}
             >
               <Store className="w-3.5 h-3.5" />
               Retirada
@@ -462,13 +458,13 @@ export default function DeliveryMenuPage() {
         <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7">
+          <div className="grid min-w-0 grid-cols-1 items-center gap-12 lg:grid-cols-12">
+            <div className="min-w-0 lg:col-span-7">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-lime-400/10 border border-lime-400/20 text-lime-400 text-xs font-mono uppercase tracking-widest mb-6">
                 <Sparkles className="w-3.5 h-3.5" /> Eleito Melhor Smash Urbano 2026
               </div>
 
-              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tighter uppercase text-white leading-[0.93] mb-6">
+              <h1 className="mb-6 text-3xl font-black uppercase leading-[0.93] tracking-tighter text-white sm:text-6xl xl:text-7xl">
                 Crosta <span className="text-lime-400 italic">Caramelizada.</span> <br />
                 Suculência Absurda.
               </h1>
@@ -547,6 +543,13 @@ export default function DeliveryMenuPage() {
                   >
                     <Plus className="w-4 h-4" /> Personalizar & Pedir Agora
                   </button>
+                  <a
+                    href="#reserva-mesa"
+                    className="px-6 py-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-lime-400/30 text-lime-400 font-bold text-xs sm:text-sm transition-all flex items-center gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Reservar Mesa VIP
+                  </a>
                 </div>
               </div>
             </div>
@@ -601,11 +604,10 @@ export default function DeliveryMenuPage() {
                       <button
                         key={item.id}
                         onClick={() => column.setter(item)}
-                        className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${
-                          column.val.id === item.id
+                        className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${column.val.id === item.id
                             ? "bg-lime-400/15 border-lime-400 text-white"
                             : "bg-zinc-900/50 border-zinc-800/60 text-zinc-400 hover:text-white"
-                        }`}
+                          }`}
                       >
                         <span className="text-xs font-bold truncate pr-2">{item.name}</span>
                         <span className="text-[11px] font-mono shrink-0">R$ {item.price.toFixed(0)}</span>
@@ -629,17 +631,15 @@ export default function DeliveryMenuPage() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${
-                  activeCategory === cat.id
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id
                     ? "bg-lime-400 text-zinc-950 shadow-[0_0_15px_rgba(163,230,53,0.4)]"
                     : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-                }`}
+                  }`}
               >
                 <span>{cat.label}</span>
                 <span
-                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                    activeCategory === cat.id ? "bg-black/20 text-zinc-950" : "bg-zinc-800 text-zinc-500"
-                  }`}
+                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${activeCategory === cat.id ? "bg-black/20 text-zinc-950" : "bg-zinc-800 text-zinc-500"
+                    }`}
                 >
                   {cat.count}
                 </span>
@@ -709,6 +709,16 @@ export default function DeliveryMenuPage() {
         </div>
       </section>
 
+      <section
+        id="reserva-mesa"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
+      >
+        <KobraTableBooking
+          embedded
+          whatsappNumber={WHATSAPP_NUMBER}
+        />
+      </section>
+
       {/* ==========================================
           5. CONTACT & VIP NEWSLETTER
       ========================================== */}
@@ -735,7 +745,7 @@ export default function DeliveryMenuPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-zinc-900/60 p-8 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-xl">
             <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
               <h3 className="text-lg font-bold text-white uppercase tracking-tight mb-6">Acesso Privado</h3>

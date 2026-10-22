@@ -458,9 +458,9 @@ export default function StreetwearEcommerceLightPage() {
           </div>
 
           {/* Bottom Content Split: Giant Typography + Floating Quick-Shop Card */}
-          <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-end mt-auto pt-16">
+          <div className="relative z-10 mt-auto grid min-w-0 grid-cols-1 items-end gap-8 pt-16 lg:grid-cols-12">
             {/* Left Editorial Headline (7 Cols) */}
-            <div className="lg:col-span-7 text-white">
+            <div className="min-w-0 text-white lg:col-span-7">
               <motion.p
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -474,7 +474,7 @@ export default function StreetwearEcommerceLightPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-5xl sm:text-7xl xl:text-8xl font-black tracking-tighter uppercase leading-[0.88] mb-6"
+                className="mb-6 text-4xl font-black uppercase leading-[0.88] tracking-tighter sm:text-7xl xl:text-8xl"
               >
                 Forma Pura. <br />
                 <span className="italic font-light text-[#FAF9F5]/90">Peso</span> Absoluto.
@@ -498,7 +498,7 @@ export default function StreetwearEcommerceLightPage() {
               >
                 <a
                   href="#vitrine"
-                  className="px-8 py-4 rounded-full bg-white hover:bg-blue-600 text-zinc-950 hover:text-white font-black uppercase tracking-wider text-xs sm:text-sm transition-all flex items-center gap-3 shadow-xl"
+                  className="flex items-center gap-3 rounded-full bg-white px-5 py-4 text-xs font-black uppercase tracking-wider text-zinc-950 shadow-xl transition-all hover:bg-blue-600 hover:text-white sm:px-8 sm:text-sm"
                 >
                   <span>Explorar Coleção Completa</span>
                   <ArrowDown className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora, Plus_Jakarta_Sans } from "next/font/google";
+import { AnalyticsConsent } from "@/components/AnalyticsConsent";
 import "./globals.css"; // Ajuste o caminho se necessário
 
 // Fonte para Títulos
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         {/* O children aqui vai renderizar ou o SiteLayout ou a página do Template */}
         {children}
+        <AnalyticsConsent />
       </body>
     </html>
   );

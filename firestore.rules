@@ -1,0 +1,67 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function hasValidExpiry(days) {
+      return request.resource.data.deleteAfter is timestamp
+        && request.resource.data.deleteAfter > request.time
+        && request.resource.data.deleteAfter
+          <= request.time + duration.value(days + 1, 'd');
+    }
+
+    match /leads/{leadId} {
+      allow create: if request.resource.data.keys().hasAll([
+          'name',
+          'company',
+          'message',
+          'projectType',
+          'plan',
+          'route',
+          'consent',
+          'createdAt',
+          'deleteAfter'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'company',
+          'message',
+          'projectType',
+          'plan',
+          'route',
+          'consent',
+          'createdAt',
+          'deleteAfter'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.company is string
+        && request.resource.data.company.size() > 0
+        && request.resource.data.company.size() <= 120
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 1500
+        && request.resource.data.projectType in [
+          'Landing Page',
+          'Site Institucional',
+          'E-commerce / Catálogo',
+          'Redesign UX/UI',
+          'Projeto Sob Medida'
+        ]
+        && request.resource.data.plan in [
+          'Starter (R$ 297)',
+          'Profissional (R$ 499)',
+          'Premium (R$ 1.999)',
+          'Ainda não sei'
+        ]
+        && request.resource.data.route is string
+        && request.resource.data.route.matches('^/[A-Za-z0-9/_-]{0,120}$')
+        && request.resource.data.consent == true
+        && request.resource.data.createdAt == request.time
+        && hasValidExpiry(180);
+
+      allow read, update, delete: if false;
+    }
+
+  }
+}

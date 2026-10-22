@@ -12,6 +12,7 @@ const links = [
   { label: "Templates", href: "/templates" },
   { label: "Design", href: "/design" },
   { label: "Apps", href: "/apps" },
+  { label: "Arcade", href: "/arcade" },
 ];
 
 const WA = "https://wa.me/5551993583936?text=" + encodeURIComponent("Olá! Gostaria de solicitar um orçamento para o meu site.");

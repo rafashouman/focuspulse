@@ -41,6 +41,7 @@ export function Footer() {
               <li><Link href="/templates" className="hover:text-violet-200 transition-colors">Templates</Link></li>
               <li><Link href="/#planos" className="hover:text-violet-200 transition-colors">Planos & Preços</Link></li>
               <li><Link href="/#faq" className="hover:text-violet-200 transition-colors">FAQ</Link></li>
+              <li><Link href="/privacidade" className="hover:text-violet-200 transition-colors">Privacidade</Link></li>
             </ul>
           </div>
 

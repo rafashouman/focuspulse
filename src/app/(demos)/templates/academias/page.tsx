@@ -218,9 +218,9 @@ const Hero = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid min-w-0 grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Editorial Impact (7 cols) */}
-          <div className="lg:col-span-7 text-left">
+          <div className="min-w-0 text-left lg:col-span-7">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -239,7 +239,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl sm:text-6xl xl:text-7xl font-black tracking-tighter text-white uppercase leading-[0.95] mb-6"
+              className="mb-6 text-4xl font-black uppercase leading-[0.95] tracking-tighter text-white sm:text-6xl xl:text-7xl"
             >
               Não treine. <br />
               <span
