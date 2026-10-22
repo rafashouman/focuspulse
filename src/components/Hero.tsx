@@ -140,7 +140,7 @@ export function Hero() {
                       Mais impacto.
                     </h2>
                   </div>
-                  <div className="absolute -bottom-25 -left-20 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl sm: left-1 sm:px-7">
+                  <div className="absolute -bottom-18.5 -left-20 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl left-1 sm:px-5">
                     <p className="font-mono text-[12px] uppercase tracking-[0.09em] text-muted-foreground">
                       Da ideia ao lançamento
                     </p>
@@ -155,7 +155,7 @@ export function Hero() {
 
                 <div className="relative flex items-end justify-between gap-4 border-t border-white/10 pt-5">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+                    <p className="text-[8px] uppercase tracking-[0.18em] text-white/40">
                       Estratégia · Design · Código
                     </p>
                     <p className="mt-2 text-sm font-medium text-white/85 sm:text-base">
