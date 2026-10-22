@@ -50,13 +50,13 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.08 }}
-            className="max-w-4xl text-balance font-display text-[clamp(3.5rem,8.2vw,7.7rem)] font-semibold leading-[.91] tracking-[-.075em]"
+            className="max-w-3xl text-balance font-display text-[clamp(3rem,8.2vw,3.6rem)] font-semibold uppercase leading-[1.1] tracking-[-.050em]"
           >
-            Seja marcante. Seja memorável.
-            <br />
             <span className="text-violet-gradient">Presença digital</span>
             <br />
-            impossível de ignorar.
+            que gera resultados.
+            <br />
+            Sua marca em <span className="text-fuchsia-gradient">destaque</span>.
           </motion.h1>
 
           <motion.div
@@ -134,11 +134,19 @@ export function Hero() {
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-violet-200 sm:text-xs">
                       Design com intenção
                     </p>
-                    <h2 className="mt-5 max-w-sm font-display text-4xl font-semibold leading-[.96] tracking-[-.06em] text-white sm:text-6xl">
+                    <h2 className="mt-5 max-w-sm font-display text-4xl font-semibold leading-[.96] tracking-[-.06em] text-white sm:text-5xl">
                       Menos ruído.
                       <br />
                       Mais impacto.
                     </h2>
+                  </div>
+                  <div className="absolute -bottom-20 -left-20 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl sm:-left-8 sm:px-5">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Da ideia ao lançamento
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      Uma experiência completa
+                    </p>
                   </div>
                   <div className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-violet-200/15 bg-violet-300/[0.06] text-violet-200 sm:h-12 sm:w-12">
                     <Sparkles className="h-5 w-5" />
@@ -168,15 +176,6 @@ export function Hero() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="absolute -bottom-5 left-2 rounded-2xl border border-violet-200/15 bg-[#17111f]/70 px-4 py-3 shadow-xl shadow-violet-950/20 backdrop-blur-xl sm:-left-8 sm:px-5">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-                Da ideia ao lançamento
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                Uma experiência completa
-              </p>
             </div>
           </div>
         </motion.div>
