@@ -41,13 +41,6 @@ export function Navbar() {
       <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between gap-6 px-6 sm:px-10 lg:px-16">
         <Link href="/" aria-label="FocusPulse — início" className="logo-pulse flex items-center gap-2 group">
           <Image
-            src="/images/logo-icon.png"
-            alt=""
-            width={32}
-            height={32}
-            className="h-8 w-8 transition-transform duration-300 group-hover:rotate-[360deg]"
-          />
-          <Image
             src="/images/logo-text.png"
             alt="FocusPulse"
             width={202}
