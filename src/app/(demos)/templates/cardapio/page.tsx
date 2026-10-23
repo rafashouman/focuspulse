@@ -20,11 +20,12 @@ import {
   MessageCircle,
   Zap,
   Award,
-  Leaf,
+  Flame,
   Send,
   Mail,
 } from "lucide-react";
 import KobraTableBooking from "@/components/KobraTableBooking";
+import { trackMetaEvent } from "@/components/MetaPixel";
 
 // ==========================================
 // CONFIGURAÇÕES & DADOS DO CARDÁPIO
@@ -52,7 +53,7 @@ interface MenuItem {
   image: string;
   calories: string;
   prepTime: string;
-  spicy?: number; // 1 a 3
+  spicy?: number;
   badge?: string;
   featured?: boolean;
   allowDoneness?: boolean;
@@ -200,7 +201,7 @@ const MENU_ITEMS: MenuItem[] = [
 ];
 
 const CATEGORIES: { id: CategoryId; label: string; count: number }[] = [
-  { id: "todos", label: "Menu Completo", count: MENU_ITEMS.length },
+  { id: "todos", label: "Vitrine Completa", count: MENU_ITEMS.length },
   { id: "artesanais", label: "Hambúrgueres Altos", count: 2 },
   { id: "smash", label: "Ultra Smash", count: 2 },
   { id: "sides", label: "Para Compartilhar", count: 2 },
@@ -211,14 +212,21 @@ const CATEGORIES: { id: CategoryId; label: string; count: number }[] = [
 // ==========================================
 // COMPONENTES AUXILIARES
 // ==========================================
+
 const FloatingWhatsApp = () => (
   <a
     href={`https://wa.me/${WHATSAPP_NUMBER}`}
     target="_blank"
     rel="noopener noreferrer"
-    className="fixed bottom-6 right-6 z-40 group flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all hover:scale-110"
+    onClick={() =>
+      trackMetaEvent("Contact", {
+        content_name: "Botão Flutuante WhatsApp",
+        content_category: "Kobra Fire Landing",
+      })
+    }
+    className="fixed bottom-6 right-6 z-40 group flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.6)] transition-all hover:scale-110"
   >
-    <div className="absolute inset-0 rounded-full bg-emerald-500/30 animate-ping" />
+    <div className="absolute inset-0 rounded-full bg-orange-500/30 animate-ping" />
     <MessageCircle className="w-7 h-7 relative z-10" />
   </a>
 );
@@ -261,55 +269,6 @@ export default function DeliveryMenuPage() {
     );
   };
 
-  const handleAddToCart = () => {
-    if (!selectedProduct) return;
-    const addonsTotal = modalAddons.reduce((sum, a) => sum + a.price, 0);
-    const unitFinalPrice = selectedProduct.price + addonsTotal;
-
-    const newItem: CartItem = {
-      cartItemId: `${selectedProduct.id}-${Date.now()}`,
-      product: selectedProduct,
-      quantity: modalQty,
-      doneness: selectedProduct.allowDoneness ? modalDoneness : undefined,
-      addons: modalAddons,
-      notes: modalNotes.trim() || undefined,
-      unitFinalPrice,
-    };
-
-    setCart((prev) => [...prev, newItem]);
-    setSelectedProduct(null);
-    setIsCartOpen(true);
-  };
-
-  const handleAddComboToCart = () => {
-    const rawTotal = comboBurger.price + comboSide.price + comboDrink.price;
-    const discountedPrice = Number((rawTotal * 0.82).toFixed(2));
-
-    const comboVirtualItem: MenuItem = {
-      id: `combo-${Date.now()}`,
-      name: `KOBRA BOX: ${comboBurger.name}`,
-      tagline: "Combo Exclusivo (-18% OFF)",
-      description: `Inclui: 1x ${comboBurger.name} + 1x ${comboSide.name} + 1x ${comboDrink.name}`,
-      price: discountedPrice,
-      category: "todos",
-      image: comboBurger.image,
-      calories: "Combo Completo",
-      prepTime: "20 min",
-    };
-
-    setCart((prev) => [
-      ...prev,
-      {
-        cartItemId: comboVirtualItem.id,
-        product: comboVirtualItem,
-        quantity: 1,
-        addons: [],
-        notes: `${comboSide.name} + ${comboDrink.name}`,
-        unitFinalPrice: discountedPrice,
-      },
-    ]);
-    setIsCartOpen(true);
-  };
 
   const updateCartQty = (cartItemId: string, delta: number) => {
     setCart((prev) =>
@@ -341,10 +300,95 @@ export default function DeliveryMenuPage() {
       return matchesCat && matchesSearch;
     });
   }, [activeCategory, searchQuery]);
+  // 3. Dentro de DeliveryMenuPage(), substitua estas 3 funções para rastrear todo o funil:
+
+  const handleAddToCart = () => {
+    if (!selectedProduct) return;
+    const addonsTotal = modalAddons.reduce((sum, a) => sum + a.price, 0);
+    const unitFinalPrice = selectedProduct.price + addonsTotal;
+
+    const newItem: CartItem = {
+      cartItemId: `${selectedProduct.id}-${Date.now()}`,
+      product: selectedProduct,
+      quantity: modalQty,
+      doneness: selectedProduct.allowDoneness ? modalDoneness : undefined,
+      addons: modalAddons,
+      notes: modalNotes.trim() || undefined,
+      unitFinalPrice,
+    };
+
+    // Dispara AddToCart no Meta Pixel
+    trackMetaEvent("AddToCart", {
+      content_ids: [selectedProduct.id],
+      content_name: selectedProduct.name,
+      content_type: "product",
+      value: Number((unitFinalPrice * modalQty).toFixed(2)),
+      currency: "BRL",
+    });
+
+    setCart((prev) => [...prev, newItem]);
+    setSelectedProduct(null);
+    setIsCartOpen(true);
+  };
+
+  const handleAddComboToCart = () => {
+    const rawTotal = comboBurger.price + comboSide.price + comboDrink.price;
+    const discountedPrice = Number((rawTotal * 0.82).toFixed(2));
+
+    const comboVirtualItem: MenuItem = {
+      id: `combo-${Date.now()}`,
+      name: `KOBRA BOX: ${comboBurger.name}`,
+      tagline: "Combo Exclusivo (-18% OFF)",
+      description: `Inclui: 1x ${comboBurger.name} + 1x ${comboSide.name} + 1x ${comboDrink.name}`,
+      price: discountedPrice,
+      category: "todos",
+      image: comboBurger.image,
+      calories: "Combo Completo",
+      prepTime: "20 min",
+    };
+
+    // Dispara AddToCart para o Combo
+    trackMetaEvent("AddToCart", {
+      content_name: comboVirtualItem.name,
+      content_category: "Combo Kobra Box",
+      value: discountedPrice,
+      currency: "BRL",
+    });
+
+    setCart((prev) => [
+      ...prev,
+      {
+        cartItemId: comboVirtualItem.id,
+        product: comboVirtualItem,
+        quantity: 1,
+        addons: [],
+        notes: `${comboSide.name} + ${comboDrink.name}`,
+        unitFinalPrice: discountedPrice,
+      },
+    ]);
+    setIsCartOpen(true);
+  };
 
   const handleCheckoutWhatsApp = (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
+
+    // Dispara Purchase + Lead com o valor exato da sacola no Meta Pixel
+    trackMetaEvent("Purchase", {
+      content_ids: cart.map((i) => i.product.id),
+      content_type: "product",
+      num_items: totalItemsCount,
+      value: Number(cartTotal.toFixed(2)),
+      currency: "BRL",
+      delivery_category: orderMode,
+      payment_method: paymentMethod,
+    });
+
+    trackMetaEvent("Lead", {
+      content_name: "Pedido WhatsApp Kobra Burger",
+      value: Number(cartTotal.toFixed(2)),
+      currency: "BRL",
+    });
 
     const itemsLines = cart
       .map((item) => {
@@ -360,7 +404,7 @@ export default function DeliveryMenuPage() {
       })
       .join("\n\n");
 
-    const message = `*NOVO PEDIDO — KOBRA BURGER LAB* 🍔⚡\n----------------------------------\n*Modalidade:* ${orderMode === "delivery" ? "🛵 Delivery" : "🏪 Retirada no Balcão"
+    const message = `*NOVO PEDIDO — KOBRA BURGER LAB* 🍔🔥\n----------------------------------\n*Modalidade:* ${orderMode === "delivery" ? "🛵 Delivery" : "🏪 Retirada no Balcão"
       }\n*Cliente:* ${customerName || "Não informado"}\n${orderMode === "delivery" ? `*Endereço:* ${customerAddress}\n` : ""
       }----------------------------------\n\n${itemsLines}\n\n----------------------------------\n*Subtotal:* R$ ${cartSubtotal.toFixed(
         2
@@ -369,38 +413,37 @@ export default function DeliveryMenuPage() {
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
   };
-
   return (
-    <div className="min-h-screen bg-[#060608] text-zinc-100 selection:bg-lime-400 selection:text-zinc-950 font-sans antialiased pb-20 sm:pb-0">
+    <div className="min-h-screen bg-[#080606] text-zinc-100 selection:bg-orange-500 selection:text-white font-sans antialiased pb-20 sm:pb-0">
       <FloatingWhatsApp />
 
       {/* ==========================================
-          1. HEADER TELEMETRY
+          1. HEADER TELEMETRY (FIRE & EMBER THEME)
       ========================================== */}
       <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6 pt-4 pointer-events-none">
-        <div className="max-w-7xl mx-auto bg-[#0A0B0E]/85 backdrop-blur-xl border border-zinc-800/90 rounded-2xl px-4 sm:px-6 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto bg-[#0E0A09]/85 backdrop-blur-xl border border-zinc-800/90 rounded-2xl px-4 sm:px-6 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)] pointer-events-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <a href="#" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-lime-400 flex items-center justify-center text-zinc-950 shadow-[0_0_20px_rgba(163,230,53,0.4)]">
-                <Leaf className="w-5 h-5 fill-current" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]">
+                <Flame className="w-5 h-5 fill-current" />
               </div>
               <div>
                 <span className="text-lg font-black tracking-tighter text-white block leading-none">
-                  KOBRA<span className="text-lime-400">.LAB</span>
+                  KOBRA<span className="text-orange-500">.FIRE</span>
                 </span>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                  Acid Burger & Fire
+                  Smash & Smokehouse
                 </span>
               </div>
             </a>
             <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-zinc-800 text-xs font-mono text-zinc-400">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
               </span>
-              <span className="text-zinc-300 font-semibold">FORNALHA ATIVA</span>
+              <span className="text-zinc-300 font-semibold">FORNALHA EM BRASA</span>
               <span className="text-zinc-600">•</span>
-              <Clock className="w-3.5 h-3.5 text-lime-400" />
+              <Clock className="w-3.5 h-3.5 text-orange-500" />
               <span>25–35 MIN</span>
             </div>
           </div>
@@ -409,7 +452,7 @@ export default function DeliveryMenuPage() {
             <button
               onClick={() => setOrderMode("delivery")}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${orderMode === "delivery"
-                  ? "bg-lime-400 text-zinc-950 shadow"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow"
                   : "text-zinc-400 hover:text-white"
                 }`}
             >
@@ -419,7 +462,7 @@ export default function DeliveryMenuPage() {
             <button
               onClick={() => setOrderMode("pickup")}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${orderMode === "pickup"
-                  ? "bg-lime-400 text-zinc-950 shadow"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow"
                   : "text-zinc-400 hover:text-white"
                 }`}
             >
@@ -428,58 +471,67 @@ export default function DeliveryMenuPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-white transition-all group"
-          >
-            <div className="relative">
-              <ShoppingBag className="w-5 h-5 text-lime-400 group-hover:scale-110 transition-transform" />
-              {totalItemsCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-lime-400 text-zinc-950 font-mono text-[10px] font-black flex items-center justify-center">
-                  {totalItemsCount}
+          <div className="flex items-center gap-2.5">
+            <a
+              href="#app-vendas"
+              className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 hover:bg-orange-500 hover:text-zinc-950 font-black text-xs uppercase tracking-wider transition-all"
+            >
+              <Flame className="w-4 h-4" /> Abrir App KDS
+            </a>
+
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-white transition-all group"
+            >
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                {totalItemsCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-orange-500 text-zinc-950 font-mono text-[10px] font-black flex items-center justify-center">
+                    {totalItemsCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-left hidden md:block">
+                <span className="text-[10px] font-mono uppercase text-zinc-400 block leading-none">
+                  Sua Sacola
                 </span>
-              )}
-            </div>
-            <div className="text-left hidden md:block">
-              <span className="text-[10px] font-mono uppercase text-zinc-400 block leading-none">
-                Sua Sacola
-              </span>
-              <span className="text-xs font-black text-white">R$ {cartSubtotal.toFixed(2)}</span>
-            </div>
-          </button>
+                <span className="text-xs font-black text-white">R$ {cartSubtotal.toFixed(2)}</span>
+              </div>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* ==========================================
-          2. HERO SECTION
+          2. HERO SECTION (CRIMSON & ORANGE EMBER)
       ========================================== */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden border-b border-zinc-900">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-lime-400/10 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-600/15 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-red-600/15 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid min-w-0 grid-cols-1 items-center gap-12 lg:grid-cols-12">
             <div className="min-w-0 lg:col-span-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-lime-400/10 border border-lime-400/20 text-lime-400 text-xs font-mono uppercase tracking-widest mb-6">
-                <Sparkles className="w-3.5 h-3.5" /> Eleito Melhor Smash Urbano 2026
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-400 text-xs font-mono uppercase tracking-widest mb-6">
+                <Sparkles className="w-3.5 h-3.5" /> Eleito Melhor Smash na Brasa 2026
               </div>
 
               <h1 className="mb-6 text-3xl font-black uppercase leading-[0.93] tracking-tighter text-white sm:text-6xl xl:text-7xl">
-                Crosta <span className="text-lime-400 italic">Caramelizada.</span> <br />
-                Suculência Absurda.
+                Crosta <span className="text-orange-500 italic">Caramelizada.</span> <br />
+                Fogo & <span className="text-red-500">Suculência.</span>
               </h1>
 
-              <p className="text-zinc-400 text-base sm:text-lg max-w-xl leading-relaxed mb-8 border-l-2 border-lime-400/50 pl-4">
+              <p className="text-zinc-400 text-base sm:text-lg max-w-xl leading-relaxed mb-8 border-l-2 border-orange-500/60 pl-4">
                 Moemos nossos cortes de Wagyu e Angus diariamente. Pão brioche fermentado por 24h,
-                selado na manteiga clarificada e molhos autorais feitos do zero.
+                selado na manteiga clarificada e conectado direto ao nosso App KDS de vendas e reservas.
               </p>
 
               <div className="flex flex-wrap items-center gap-4">
                 <a
-                  href="#cardapio"
-                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-500 hover:to-emerald-500 text-zinc-950 font-black uppercase tracking-wider text-xs sm:text-sm shadow-[0_0_40px_rgba(163,230,53,0.3)] transition-all flex items-center gap-3"
+                  href="#app-vendas"
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 via-red-600 to-amber-500 hover:from-orange-500 hover:to-red-500 text-white font-black uppercase tracking-wider text-xs sm:text-sm shadow-[0_0_40px_rgba(234,88,12,0.35)] transition-all flex items-center gap-3"
                 >
-                  <span>Explorar Cardápio</span>
+                  <span>Abrir App de Vendas & KDS</span>
                   <ChevronRight className="w-4 h-4" />
                 </a>
 
@@ -487,22 +539,22 @@ export default function DeliveryMenuPage() {
                   href="#combo-lab"
                   className="px-6 py-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-bold text-xs sm:text-sm transition-all flex items-center gap-2"
                 >
-                  <Zap className="w-4 h-4 text-emerald-400" />
+                  <Zap className="w-4 h-4 text-orange-400" />
                   Montar Combo (-18% OFF)
                 </a>
               </div>
 
               <div className="mt-12 pt-8 border-t border-zinc-900 grid grid-cols-3 gap-4 max-w-lg">
                 <div>
-                  <span className="text-xs font-mono text-lime-400 block">// EMBALAGEM</span>
+                  <span className="text-xs font-mono text-orange-400 block">// EMBALAGEM</span>
                   <span className="text-sm sm:text-base font-bold text-white">Térmica Anti-Vapor</span>
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-lime-400 block">// BLEND</span>
+                  <span className="text-xs font-mono text-orange-400 block">// BLEND</span>
                   <span className="text-sm sm:text-base font-bold text-white">100% Wagyu & Angus</span>
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-lime-400 block">// FRETE GRÁTIS</span>
+                  <span className="text-xs font-mono text-orange-400 block">// FRETE GRÁTIS</span>
                   <span className="text-sm sm:text-base font-bold text-white">
                     Acima de R$ {FREE_DELIVERY_THRESHOLD}
                   </span>
@@ -519,12 +571,12 @@ export default function DeliveryMenuPage() {
                   unoptimized
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-[#070708]/30 to-transparent" />
-                <div className="absolute top-5 left-5 px-3 py-1.5 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-zinc-800 text-[11px] font-mono text-lime-400 flex items-center gap-1.5">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080606] via-[#080606]/30 to-transparent" />
+                <div className="absolute top-5 left-5 px-3 py-1.5 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-orange-500/30 text-[11px] font-mono text-orange-400 flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5" /> PRATO ASSINATURA
                 </div>
-                <div className="absolute bottom-5 left-5 right-5 p-5 rounded-2xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800/90">
-                  <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="absolute bottom-5 left-5 right-5 p-5 rounded-2xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800/90 space-y-2.5">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
                       <h2 className="text-xl font-black text-white uppercase tracking-tight">
                         {MENU_ITEMS[0].name}
@@ -533,23 +585,24 @@ export default function DeliveryMenuPage() {
                         {MENU_ITEMS[0].description}
                       </p>
                     </div>
-                    <span className="text-lg font-black text-lime-400 shrink-0">
+                    <span className="text-lg font-black text-orange-400 shrink-0">
                       R$ {MENU_ITEMS[0].price.toFixed(2)}
                     </span>
                   </div>
-                  <button
-                    onClick={() => openProductModal(MENU_ITEMS[0])}
-                    className="w-full py-3 rounded-xl bg-white hover:bg-lime-400 text-zinc-950 font-black uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" /> Personalizar & Pedir Agora
-                  </button>
-                  <a
-                    href="#reserva-mesa"
-                    className="px-6 py-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-lime-400/30 text-lime-400 font-bold text-xs sm:text-sm transition-all flex items-center gap-2"
-                  >
-                    <Clock className="w-4 h-4" />
-                    Reservar Mesa VIP
-                  </a>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => openProductModal(MENU_ITEMS[0])}
+                      className="py-3 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black uppercase tracking-wider text-[11px] transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Plus className="w-4 h-4" /> Pedir Agora
+                    </button>
+                    <a
+                      href="#app-vendas"
+                      className="py-3 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-orange-500/30 text-orange-400 font-bold text-[11px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Clock className="w-3.5 h-3.5" /> App & Mesas
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -558,18 +611,18 @@ export default function DeliveryMenuPage() {
       </section>
 
       {/* ==========================================
-          3. COMBO BUILDER
+          3. COMBO BUILDER (ORANGE & RED ACCENTS)
       ========================================== */}
       <section id="combo-lab" className="py-16 bg-zinc-950/70 border-b border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 border border-lime-400/20 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_60px_rgba(163,230,53,0.05)]">
+          <div className="rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 border border-orange-500/25 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_60px_rgba(234,88,12,0.07)]">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 pb-6 border-b border-zinc-800">
               <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-lime-400 mb-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-orange-400 mb-2">
                   <Zap className="w-3.5 h-3.5" /> Lab de Combos • Economia Inteligente
                 </span>
                 <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
-                  Monte sua <span className="text-lime-400 italic">Kobra Box</span> com 18% OFF
+                  Monte sua <span className="text-orange-500 italic">Kobra Box</span> com 18% OFF
                 </h2>
               </div>
               <div className="flex items-center gap-4 bg-zinc-950/90 border border-zinc-800 p-4 rounded-2xl">
@@ -583,7 +636,7 @@ export default function DeliveryMenuPage() {
                 </div>
                 <button
                   onClick={handleAddComboToCart}
-                  className="px-5 py-3 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-black uppercase tracking-wider text-xs transition-all shadow-[0_0_20px_rgba(163,230,53,0.3)] flex items-center gap-2"
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black uppercase tracking-wider text-xs transition-all shadow-[0_0_20px_rgba(234,88,12,0.35)] flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> Adicionar Box
                 </button>
@@ -591,12 +644,29 @@ export default function DeliveryMenuPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { step: "01. Burger Principal", setter: setComboBurger, val: comboBurger, items: MENU_ITEMS.filter((i) => i.category === "artesanais" || i.category === "smash") },
-                { step: "02. Acompanhamento", setter: setComboSide, val: comboSide, items: MENU_ITEMS.filter((i) => i.category === "sides") },
-                { step: "03. Bebida Artesanal", setter: setComboDrink, val: comboDrink, items: MENU_ITEMS.filter((i) => i.category === "drinks") }
+                {
+                  step: "01. Burger Principal",
+                  setter: setComboBurger,
+                  val: comboBurger,
+                  items: MENU_ITEMS.filter(
+                    (i) => i.category === "artesanais" || i.category === "smash"
+                  ),
+                },
+                {
+                  step: "02. Acompanhamento",
+                  setter: setComboSide,
+                  val: comboSide,
+                  items: MENU_ITEMS.filter((i) => i.category === "sides"),
+                },
+                {
+                  step: "03. Bebida Artesanal",
+                  setter: setComboDrink,
+                  val: comboDrink,
+                  items: MENU_ITEMS.filter((i) => i.category === "drinks"),
+                },
               ].map((column, idx) => (
                 <div key={idx} className="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-4">
-                  <span className="text-[11px] font-mono uppercase text-lime-400 font-bold block mb-3">
+                  <span className="text-[11px] font-mono uppercase text-orange-400 font-bold block mb-3">
                     {column.step}
                   </span>
                   <div className="space-y-2">
@@ -605,12 +675,14 @@ export default function DeliveryMenuPage() {
                         key={item.id}
                         onClick={() => column.setter(item)}
                         className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${column.val.id === item.id
-                            ? "bg-lime-400/15 border-lime-400 text-white"
+                            ? "bg-orange-500/15 border-orange-500 text-white"
                             : "bg-zinc-900/50 border-zinc-800/60 text-zinc-400 hover:text-white"
                           }`}
                       >
                         <span className="text-xs font-bold truncate pr-2">{item.name}</span>
-                        <span className="text-[11px] font-mono shrink-0">R$ {item.price.toFixed(0)}</span>
+                        <span className="text-[11px] font-mono shrink-0 text-amber-400">
+                          R$ {item.price.toFixed(0)}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -622,23 +694,25 @@ export default function DeliveryMenuPage() {
       </section>
 
       {/* ==========================================
-          4. MENU GRID & FILTER
+          4. VITRINE GASTRONÔMICA DO SITE
       ========================================== */}
       <section id="cardapio" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="sticky top-20 z-30 bg-[#060608]/90 backdrop-blur-xl py-4 border-b border-zinc-800/80 mb-10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="sticky top-20 z-30 bg-[#080606]/90 backdrop-blur-xl py-4 border-b border-zinc-800/80 mb-10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id
-                    ? "bg-lime-400 text-zinc-950 shadow-[0_0_15px_rgba(163,230,53,0.4)]"
+                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]"
                     : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                   }`}
               >
                 <span>{cat.label}</span>
                 <span
-                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${activeCategory === cat.id ? "bg-black/20 text-zinc-950" : "bg-zinc-800 text-zinc-500"
+                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${activeCategory === cat.id
+                      ? "bg-black/25 text-white"
+                      : "bg-zinc-800 text-zinc-500"
                     }`}
                 >
                   {cat.count}
@@ -652,8 +726,8 @@ export default function DeliveryMenuPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar no cardápio..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400"
+              placeholder="Buscar na vitrine..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
             />
           </div>
         </div>
@@ -664,43 +738,53 @@ export default function DeliveryMenuPage() {
               layout
               key={item.id}
               onClick={() => openProductModal(item)}
-              className="group cursor-pointer rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/50 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
+              className="group cursor-pointer rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-orange-500/50 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_10px_40px_rgba(234,88,12,0.15)]"
             >
               <div>
                 <div className="relative h-56 w-full overflow-hidden bg-zinc-950">
-                  <Image src={item.image} alt={item.name} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    unoptimized
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/30" />
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
                     {item.badge ? (
-                      <span className="px-3 py-1 rounded-lg bg-lime-400 text-zinc-950 font-mono text-[10px] font-bold uppercase tracking-wider shadow">
+                      <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow">
                         {item.badge}
                       </span>
                     ) : (
                       <span />
                     )}
-                    <span className="px-2.5 py-1 rounded-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-mono text-zinc-300">
+                    <span className="px-2.5 py-1 rounded-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-mono text-amber-400">
                       {item.prepTime} • {item.calories}
                     </span>
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-lime-400">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-orange-400">
                       {item.tagline}
                     </span>
                   </div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2 group-hover:text-lime-400 transition-colors">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2 group-hover:text-orange-400 transition-colors">
                     {item.name}
                   </h3>
-                  <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">{item.description}</p>
+                  <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">
+                    {item.description}
+                  </p>
                 </div>
               </div>
               <div className="px-6 pb-6 pt-4 border-t border-zinc-800/50 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-mono uppercase text-zinc-500 block">Valor Individual</span>
+                  <span className="text-[10px] font-mono uppercase text-zinc-500 block">
+                    Valor Individual
+                  </span>
                   <span className="text-xl font-black text-white">R$ {item.price.toFixed(2)}</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-zinc-800 group-hover:bg-lime-400 group-hover:text-zinc-950 text-white flex items-center justify-center transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-zinc-800 group-hover:bg-orange-500 group-hover:text-zinc-950 text-white flex items-center justify-center transition-colors">
                   <Plus className="w-5 h-5" />
                 </div>
               </div>
@@ -709,55 +793,70 @@ export default function DeliveryMenuPage() {
         </div>
       </section>
 
-      <section
-        id="reserva-mesa"
-        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
-      >
-        <KobraTableBooking
-          embedded
-          whatsappNumber={WHATSAPP_NUMBER}
-        />
+      {/* ==========================================
+          5. KOBRA SALES APP (PDV + KDS + RESERVAS)
+      ========================================== */}
+      <section id="app-vendas" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <KobraTableBooking embedded whatsappNumber={WHATSAPP_NUMBER} />
       </section>
 
       {/* ==========================================
-          5. CONTACT & VIP NEWSLETTER
+          6. CONTACT & VIP NEWSLETTER
       ========================================== */}
       <section className="py-24 relative overflow-hidden bg-zinc-950 border-t border-zinc-900">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-lime-400 text-xs font-mono uppercase tracking-widest mb-6">
-              <Mail className="w-3.5 h-3.5" /> VIP Undergound
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-orange-400 text-xs font-mono uppercase tracking-widest mb-6">
+              <Mail className="w-3.5 h-3.5" /> Clube da Brasa VIP
             </span>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase text-white mb-4">
-              Entre para o <span className="text-lime-400 italic">Laboratório.</span>
+              Entre para a <span className="text-orange-500 italic">Fornalha Secreta.</span>
             </h2>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-8 max-w-md">
-              Membros VIP recebem acesso a testes de novos burgers, menus sazonais não listados no cardápio e cupons secretos de frete grátis enviados de madrugada.
+              Membros VIP recebem acesso a lotes limitados de Wagyu, molhos defumados não listados no
+              cardápio e cupons de entrega grátis nas sextas à noite.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-zinc-400 border-t border-zinc-800/80 pt-6">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-400" /> Av. Paulista, 1000 - SP
+                <MapPin className="w-4 h-4 text-orange-500" /> Av. Paulista, 1000 - SP
               </div>
               <div className="hidden sm:block text-zinc-800">•</div>
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-400" /> lab@kobraburger.com
+                <Mail className="w-4 h-4 text-orange-500" /> fire@kobraburger.com
               </div>
             </div>
           </div>
 
           <div className="bg-zinc-900/60 p-8 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-xl">
             <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-              <h3 className="text-lg font-bold text-white uppercase tracking-tight mb-6">Acesso Privado</h3>
+              <h3 className="text-lg font-bold text-white uppercase tracking-tight mb-6">
+                Credencial Secret Club
+              </h3>
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Como gosta de ser chamado?</label>
-                <input type="text" placeholder="Seu nome" className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-lime-400 transition-colors" />
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">
+                  Como gosta de ser chamado?
+                </label>
+                <input
+                  type="text"
+                  placeholder="Seu nome"
+                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors"
+                />
               </div>
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Seu melhor E-mail</label>
-                <input type="email" placeholder="email@exemplo.com" className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-lime-400 transition-colors" />
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">
+                  Seu melhor E-mail
+                </label>
+                <input
+                  type="email"
+                  placeholder="email@exemplo.com"
+                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors"
+                />
               </div>
-              <button type="submit" className="w-full mt-2 py-3.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all">
+              <button
+                type="submit"
+                className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(234,88,12,0.3)]"
+              >
                 <span>Desbloquear Acesso VIP</span> <Send className="w-4 h-4" />
               </button>
             </form>
@@ -766,93 +865,177 @@ export default function DeliveryMenuPage() {
       </section>
 
       {/* ==========================================
-          6. FOOTER
+          7. FOOTER
       ========================================== */}
-      <footer className="bg-[#040506] border-t border-zinc-900 py-12">
+      <footer className="bg-[#050404] border-t border-zinc-900 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 pb-8 border-b border-zinc-900">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center">
-                <Leaf className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center">
+                <Flame className="w-4 h-4" />
               </div>
               <span className="text-sm font-black tracking-wider text-white">
-                KOBRA<span className="text-lime-400">.LAB</span>
+                KOBRA<span className="text-orange-500">.FIRE</span>
               </span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-6 text-xs font-mono uppercase tracking-wider text-zinc-500">
-              <a href="#cardapio" className="hover:text-lime-400 transition-colors">Cardápio</a>
-              <a href="#combo-lab" className="hover:text-lime-400 transition-colors">Combos</a>
-              <a href="#" className="hover:text-lime-400 transition-colors">Sobre Nós</a>
-              <a href="#" className="hover:text-lime-400 transition-colors">Políticas</a>
+              <a href="#cardapio" className="hover:text-orange-400 transition-colors">
+                Vitrine
+              </a>
+              <a href="#combo-lab" className="hover:text-orange-400 transition-colors">
+                Combos
+              </a>
+              <a href="#app-vendas" className="hover:text-orange-400 transition-colors">
+                App de Vendas & KDS
+              </a>
             </nav>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-mono uppercase text-zinc-600">
             <p>© {CURRENT_YEAR} KOBRA CRAFT BURGER. TODOS OS DIREITOS RESERVADOS.</p>
             <p className="flex items-center gap-1.5">
-              Powered by <span className="text-emerald-500 font-bold">TechAgency</span>
+              Powered by <span className="text-orange-500 font-bold">FocusPulse</span>
             </p>
           </div>
         </div>
       </footer>
 
       {/* ==========================================
-          MODALS & DRAWER (Mesma Lógica de Carrinho)
+          MODALS & DRAWER
       ========================================== */}
       <AnimatePresence>
         {selectedProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl no-scrollbar">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl no-scrollbar"
+            >
               <div className="relative h-56 w-full">
-                <Image src={selectedProduct.image} alt={selectedProduct.name} fill unoptimized className="object-cover" />
+                <Image
+                  src={selectedProduct.image}
+                  alt={selectedProduct.name}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-                <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-800 text-white flex items-center justify-center hover:bg-lime-400 hover:text-zinc-950 transition-colors"><X className="w-5 h-5" /></button>
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-800 text-white flex items-center justify-center hover:bg-orange-500 hover:text-zinc-950 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
               <div className="p-6 sm:p-8 space-y-6">
                 <div>
-                  <span className="text-xs font-mono uppercase text-lime-400">{selectedProduct.tagline}</span>
-                  <h3 className="text-2xl font-black text-white uppercase">{selectedProduct.name}</h3>
-                  <p className="text-xs sm:text-sm text-zinc-400 mt-2 leading-relaxed">{selectedProduct.description}</p>
+                  <span className="text-xs font-mono uppercase text-orange-400">
+                    {selectedProduct.tagline}
+                  </span>
+                  <h3 className="text-2xl font-black text-white uppercase">
+                    {selectedProduct.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-400 mt-2 leading-relaxed">
+                    {selectedProduct.description}
+                  </p>
                 </div>
                 {selectedProduct.allowDoneness && (
                   <div className="space-y-3">
-                    <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 font-bold">1. Ponto da Carne</label>
+                    <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 font-bold">
+                      1. Ponto da Carne
+                    </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {["Mal Passado", "Ao Ponto do Chef (Rosado)", "Bem Passado"].map((point) => (
-                        <button key={point} onClick={() => setModalDoneness(point)} className={`p-3 rounded-xl border text-xs font-bold transition-all ${modalDoneness === point ? "bg-lime-400/20 border-lime-400 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400"}`}>{point}</button>
+                        <button
+                          key={point}
+                          onClick={() => setModalDoneness(point)}
+                          className={`p-3 rounded-xl border text-xs font-bold transition-all ${modalDoneness === point
+                              ? "bg-orange-500/20 border-orange-500 text-white"
+                              : "bg-zinc-900 border-zinc-800 text-zinc-400"
+                            }`}
+                        >
+                          {point}
+                        </button>
                       ))}
                     </div>
                   </div>
                 )}
                 <div className="space-y-3">
-                  <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 font-bold block">Turbine sua Experiência (Opcional)</label>
+                  <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 font-bold block">
+                    Turbine sua Experiência (Opcional)
+                  </label>
                   <div className="space-y-2">
                     {ADDONS_LIST.map((addon) => {
                       const isSelected = modalAddons.some((a) => a.id === addon.id);
                       return (
-                        <button key={addon.id} onClick={() => toggleAddon(addon)} className={`w-full p-3.5 rounded-xl border flex items-center justify-between text-left transition-all ${isSelected ? "bg-lime-400/15 border-lime-400 text-white" : "bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:border-zinc-700"}`}>
+                        <button
+                          key={addon.id}
+                          onClick={() => toggleAddon(addon)}
+                          className={`w-full p-3.5 rounded-xl border flex items-center justify-between text-left transition-all ${isSelected
+                              ? "bg-orange-500/15 border-orange-500 text-white"
+                              : "bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:border-zinc-700"
+                            }`}
+                        >
                           <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${isSelected ? "bg-lime-400 border-lime-400 text-zinc-950" : "border-zinc-700"}`}>{isSelected && <Check className="w-3.5 h-3.5" />}</div>
+                            <div
+                              className={`w-5 h-5 rounded-md flex items-center justify-center border ${isSelected
+                                  ? "bg-orange-500 border-orange-500 text-zinc-950"
+                                  : "border-zinc-700"
+                                }`}
+                            >
+                              {isSelected && <Check className="w-3.5 h-3.5" />}
+                            </div>
                             <span className="text-xs font-semibold">{addon.name}</span>
                           </div>
-                          <span className="text-xs font-mono text-lime-400">+ R$ {addon.price.toFixed(2)}</span>
+                          <span className="text-xs font-mono text-orange-400">
+                            + R$ {addon.price.toFixed(2)}
+                          </span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-mono uppercase tracking-wider text-zinc-400 block mb-2">Observações para a Cozinha</label>
-                  <input type="text" value={modalNotes} onChange={(e) => setModalNotes(e.target.value)} placeholder="Ex: Sem cebola..." className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-lime-400" />
+                  <label className="text-xs font-mono uppercase tracking-wider text-zinc-400 block mb-2">
+                    Observações para a Cozinha
+                  </label>
+                  <input
+                    type="text"
+                    value={modalNotes}
+                    onChange={(e) => setModalNotes(e.target.value)}
+                    placeholder="Ex: Sem cebola..."
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500"
+                  />
                 </div>
                 <div className="pt-4 border-t border-zinc-800 flex items-center gap-4">
                   <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5">
-                    <button onClick={() => setModalQty(Math.max(1, modalQty - 1))} className="text-zinc-400 hover:text-white"><Minus className="w-4 h-4" /></button>
+                    <button
+                      onClick={() => setModalQty(Math.max(1, modalQty - 1))}
+                      className="text-zinc-400 hover:text-white"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
                     <span className="font-mono font-bold text-sm w-5 text-center">{modalQty}</span>
-                    <button onClick={() => setModalQty(modalQty + 1)} className="text-zinc-400 hover:text-white"><Plus className="w-4 h-4" /></button>
+                    <button
+                      onClick={() => setModalQty(modalQty + 1)}
+                      className="text-zinc-400 hover:text-white"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button onClick={handleAddToCart} className="flex-1 py-3.5 px-6 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-500 hover:to-emerald-500 text-zinc-950 font-black uppercase tracking-wider text-xs flex items-center justify-between shadow-[0_0_20px_rgba(163,230,53,0.3)]">
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 py-3.5 px-6 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black uppercase tracking-wider text-xs flex items-center justify-between shadow-[0_0_20px_rgba(234,88,12,0.35)]"
+                  >
                     <span>Adicionar à Sacola</span>
-                    <span>R$ {((selectedProduct.price + modalAddons.reduce((s, a) => s + a.price, 0)) * modalQty).toFixed(2)}</span>
+                    <span>
+                      R${" "}
+                      {(
+                        (selectedProduct.price +
+                          modalAddons.reduce((s, a) => s + a.price, 0)) *
+                        modalQty
+                      ).toFixed(2)}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -864,26 +1047,52 @@ export default function DeliveryMenuPage() {
       <AnimatePresence>
         {isCartOpen && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm">
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 250 }} className="w-full max-w-md bg-[#0B0C0E] border-l border-zinc-800 h-full flex flex-col justify-between shadow-2xl">
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 250 }}
+              className="w-full max-w-md bg-[#0C0908] border-l border-zinc-800 h-full flex flex-col justify-between shadow-2xl"
+            >
               <div className="p-6 border-b border-zinc-800">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
-                    <ShoppingBag className="w-5 h-5 text-lime-400" />
-                    <h2 className="text-lg font-black uppercase tracking-tight text-white">Sua Comanda</h2>
+                    <ShoppingBag className="w-5 h-5 text-orange-500" />
+                    <h2 className="text-lg font-black uppercase tracking-tight text-white">
+                      Sua Comanda
+                    </h2>
                   </div>
-                  <button onClick={() => setIsCartOpen(false)} className="p-2 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white"><X className="w-5 h-5" /></button>
+                  <button
+                    onClick={() => setIsCartOpen(false)}
+                    className="p-2 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
                 {orderMode === "delivery" && (
                   <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800">
                     <div className="flex justify-between text-xs mb-2">
                       {missingForFreeDelivery > 0 ? (
-                        <span className="text-zinc-300">Faltam <strong className="text-lime-400">R$ {missingForFreeDelivery.toFixed(2)}</strong> para <strong>Frete Grátis!</strong></span>
+                        <span className="text-zinc-300">
+                          Faltam{" "}
+                          <strong className="text-orange-400">
+                            R$ {missingForFreeDelivery.toFixed(2)}
+                          </strong>{" "}
+                          para <strong>Frete Grátis!</strong>
+                        </span>
                       ) : (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1.5"><Sparkles className="w-4 h-4" /> ENTREGA GRÁTIS DESBLOQUEADA!</span>
+                        <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4" /> ENTREGA GRÁTIS DESBLOQUEADA!
+                        </span>
                       )}
                     </div>
                     <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-lime-400 to-emerald-400 transition-all duration-500" style={{ width: `${Math.min(100, (cartSubtotal / FREE_DELIVERY_THRESHOLD) * 100)}%` }} />
+                      <div
+                        className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, (cartSubtotal / FREE_DELIVERY_THRESHOLD) * 100)}%`,
+                        }}
+                      />
                     </div>
                   </div>
                 )}
@@ -898,29 +1107,82 @@ export default function DeliveryMenuPage() {
                   <>
                     <div className="space-y-3">
                       {cart.map((item) => (
-                        <div key={item.cartItemId} className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/90 flex items-start justify-between gap-3">
+                        <div
+                          key={item.cartItemId}
+                          className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/90 flex items-start justify-between gap-3"
+                        >
                           <div className="space-y-1">
                             <h4 className="text-sm font-bold text-white">{item.product.name}</h4>
-                            {item.doneness && <span className="text-[11px] font-mono text-lime-400 block">• {item.doneness}</span>}
-                            {item.addons.map((a) => <span key={a.id} className="text-[11px] text-zinc-400 block">+ {a.name}</span>)}
-                            {item.notes && <span className="text-[11px] italic text-zinc-500 block">&ldquo;{item.notes}&rdquo;</span>}
-                            <span className="text-xs font-black text-white block pt-1">R$ {(item.unitFinalPrice * item.quantity).toFixed(2)}</span>
+                            {item.doneness && (
+                              <span className="text-[11px] font-mono text-orange-400 block">
+                                • {item.doneness}
+                              </span>
+                            )}
+                            {item.addons.map((a) => (
+                              <span key={a.id} className="text-[11px] text-zinc-400 block">
+                                + {a.name}
+                              </span>
+                            ))}
+                            {item.notes && (
+                              <span className="text-[11px] italic text-zinc-500 block">
+                                &ldquo;{item.notes}&rdquo;
+                              </span>
+                            )}
+                            <span className="text-xs font-black text-amber-400 block pt-1">
+                              R$ {(item.unitFinalPrice * item.quantity).toFixed(2)}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1">
-                            <button onClick={() => updateCartQty(item.cartItemId, -1)} className="text-zinc-400 hover:text-white"><Minus className="w-3.5 h-3.5" /></button>
-                            <span className="text-xs font-mono font-bold w-4 text-center">{item.quantity}</span>
-                            <button onClick={() => updateCartQty(item.cartItemId, 1)} className="text-zinc-400 hover:text-white"><Plus className="w-3.5 h-3.5" /></button>
+                            <button
+                              onClick={() => updateCartQty(item.cartItemId, -1)}
+                              className="text-zinc-400 hover:text-white"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="text-xs font-mono font-bold w-4 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateCartQty(item.cartItemId, 1)}
+                              className="text-zinc-400 hover:text-white"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <form id="checkout-form" onSubmit={handleCheckoutWhatsApp} className="pt-6 border-t border-zinc-800 space-y-4">
-                      <h4 className="text-xs font-mono uppercase tracking-wider text-lime-400 font-bold">Dados de Finalização Rápida</h4>
-                      <input type="text" required value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Seu nome completo" className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400" />
+                    <form
+                      id="checkout-form"
+                      onSubmit={handleCheckoutWhatsApp}
+                      className="pt-6 border-t border-zinc-800 space-y-4"
+                    >
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-orange-400 font-bold">
+                        Dados de Finalização Rápida
+                      </h4>
+                      <input
+                        type="text"
+                        required
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Seu nome completo"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+                      />
                       {orderMode === "delivery" && (
-                        <input type="text" required value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Rua, Número, Bairro e Complemento" className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400" />
+                        <input
+                          type="text"
+                          required
+                          value={customerAddress}
+                          onChange={(e) => setCustomerAddress(e.target.value)}
+                          placeholder="Rua, Número, Bairro e Complemento"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+                        />
                       )}
-                      <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-lime-400">
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-orange-500"
+                      >
                         <option>PIX (Chave enviada no WhatsApp)</option>
                         <option>Cartão de Crédito na Entrega</option>
                         <option>Cartão de Débito / Vale Refeição</option>
@@ -932,11 +1194,26 @@ export default function DeliveryMenuPage() {
               {cart.length > 0 && (
                 <div className="p-6 border-t border-zinc-800 bg-zinc-950 space-y-4">
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-zinc-400"><span>Subtotal dos Itens</span><span>R$ {cartSubtotal.toFixed(2)}</span></div>
-                    <div className="flex justify-between text-zinc-400"><span>Taxa de Entrega</span><span className={isFreeDelivery ? "text-emerald-400 font-bold" : ""}>{isFreeDelivery ? "GRÁTIS" : `R$ ${finalDeliveryFee.toFixed(2)}`}</span></div>
-                    <div className="flex justify-between text-base font-black text-white pt-2 border-t border-zinc-800"><span>Total do Pedido</span><span className="text-lime-400">R$ {cartTotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Subtotal dos Itens</span>
+                      <span>R$ {cartSubtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Taxa de Entrega</span>
+                      <span className={isFreeDelivery ? "text-amber-400 font-bold" : ""}>
+                        {isFreeDelivery ? "GRÁTIS" : `R$ ${finalDeliveryFee.toFixed(2)}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-base font-black text-white pt-2 border-t border-zinc-800">
+                      <span>Total do Pedido</span>
+                      <span className="text-orange-500">R$ {cartTotal.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <button type="submit" form="checkout-form" className="w-full py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-500 hover:to-emerald-500 text-zinc-950 font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+                  <button
+                    type="submit"
+                    form="checkout-form"
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                  >
                     <MessageCircle className="w-4 h-4" /> Enviar Pedido para a Cozinha
                   </button>
                 </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Sora, Plus_Jakarta_Sans } from "next/font/google";
 import { AnalyticsConsent } from "@/components/AnalyticsConsent";
+import MetaPixel from "@/components/MetaPixel";
 import "./globals.css"; // Ajuste o caminho se necessário
 
 // Fonte para Títulos
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${sora.variable} ${jakarta.variable} antialiased bg-background text-foreground selection:bg-violet-500/30 font-sans`}
       >
+        <MetaPixel />
         {/* O children aqui vai renderizar ou o SiteLayout ou a página do Template */}
         {children}
         <AnalyticsConsent />

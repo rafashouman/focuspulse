@@ -21,12 +21,15 @@ import ChronosBooking from "@/components/ChronosBooking";
 import MemoryMatrix from "@/components/games/MemoryMatrix";
 import PulseSpinRoulette from "@/components/games/SpinToWin";
 import ArcadeCabinetHub from "@/components/ArcadeCabinetHub";
+import PulseMetricsDashboard from "@/components/PulseMetricsDashboard";
+import { BarChart3 } from "lucide-react"; // junto aos demais ícones da lucide-react
 
 type InteractiveProjectId =
   | "chronos"
   | "pulsespin"
   | "memory"
-  | "voxelvaders";
+  | "voxelvaders"
+  | "pulsemetrics";
 
 const interactiveProjects: Array<{
   id: InteractiveProjectId;
@@ -37,47 +40,57 @@ const interactiveProjects: Array<{
   accent: string;
   icon: typeof CalendarClock;
 }> = [
-  {
-    id: "chronos",
-    title: "ChronosBook",
-    category: "Agendamentos",
-    description:
-      "Demonstração de seleção de horários com autenticação e reserva protegida por transação no Firestore.",
-    tech: ["Firebase Auth", "Firestore Transactions", "Next.js"],
-    accent: "from-blue-500/20 via-indigo-500/5 to-transparent",
-    icon: CalendarClock,
-  },
-  {
-    id: "pulsespin",
-    title: "PulseSpin",
-    category: "Mini app interativo",
-    description:
-      "Roleta promocional demonstrativa com animação e resultado exibido no navegador.",
-    tech: ["Framer Motion", "CSS conic-gradient"],
-    accent: "from-cyan-400/20 via-blue-500/5 to-transparent",
-    icon: Gamepad2,
-  },
-  {
-    id: "memory",
-    title: "Memory Matrix",
-    category: "Jogo de memória",
-    description:
-      "Desafio de pares com animações 3D e opção de registrar a pontuação após entrar com Google.",
-    tech: ["React", "Firebase Auth", "Firebase Admin"],
-    accent: "from-lime-400/20 via-emerald-500/5 to-transparent",
-    icon: Layers3,
-  },
-  {
-    id: "voxelvaders",
-    title: "Voxel Vaders 3D",
-    category: "WebGL Arcade & Gamificação",
-    description:
-      "Space Invaders tridimensional com Three.js, partículas e controles híbridos para desktop e dispositivos móveis.",
-    tech: ["Three.js WebGL", "3D Particles", "Touch HUD", "Firebase Leaderboard"],
-    accent: "from-pink-500/20 via-purple-600/5 to-transparent",
-    icon: Gamepad2,
-  },
-];
+    {
+      id: "pulsemetrics",
+      title: "PulseMetrics BI & Pixel",
+      category: "Analytics & Telemetria",
+      description:
+        "Dashboard executivo de indicativos de performance, funil de atribuição e console de auditoria ao vivo do Meta Pixel.",
+      tech: ["Meta Pixel SDK", "Web Audio Synth", "SVG Telemetry", "Firebase Auth"],
+      accent: "from-cyan-400/20 via-teal-500/5 to-transparent",
+      icon: BarChart3,
+    },
+    {
+      id: "chronos",
+      title: "ChronosBook",
+      category: "Agendamentos",
+      description:
+        "Demonstração de seleção de horários com autenticação e reserva protegida por transação no Firestore.",
+      tech: ["Firebase Auth", "Firestore Transactions", "Next.js"],
+      accent: "from-blue-500/20 via-indigo-500/5 to-transparent",
+      icon: CalendarClock,
+    },
+    {
+      id: "pulsespin",
+      title: "PulseSpin",
+      category: "Mini app interativo",
+      description:
+        "Roleta promocional demonstrativa com animação e resultado exibido no navegador.",
+      tech: ["Framer Motion", "CSS conic-gradient"],
+      accent: "from-cyan-400/20 via-blue-500/5 to-transparent",
+      icon: Gamepad2,
+    },
+    {
+      id: "memory",
+      title: "Memory Matrix",
+      category: "Jogo de memória",
+      description:
+        "Desafio de pares com animações 3D e opção de registrar a pontuação após entrar com Google.",
+      tech: ["React", "Firebase Auth", "Firebase Admin"],
+      accent: "from-lime-400/20 via-emerald-500/5 to-transparent",
+      icon: Layers3,
+    },
+    {
+      id: "voxelvaders",
+      title: "Voxel Vaders 3D",
+      category: "WebGL Arcade & Gamificação",
+      description:
+        "Space Invaders tridimensional com Three.js, partículas e controles híbridos para desktop e dispositivos móveis.",
+      tech: ["Three.js WebGL", "3D Particles", "Touch HUD", "Firebase Leaderboard"],
+      accent: "from-pink-500/20 via-purple-600/5 to-transparent",
+      icon: Gamepad2,
+    },
+  ];
 
 const projects = [
   {
@@ -221,9 +234,8 @@ export function AppsPageContent() {
               <motion.article
                 key={project.id}
                 whileHover={{ y: -4 }}
-                className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 p-7 shadow-2xl backdrop-blur-2xl transition-colors hover:border-violet-300/35 sm:p-8 ${
-                  isFeatured ? "md:col-span-2" : ""
-                }`}
+                className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 p-7 shadow-2xl backdrop-blur-2xl transition-colors hover:border-violet-300/35 sm:p-8 ${isFeatured ? "md:col-span-2" : ""
+                  }`}
               >
                 <div
                   aria-hidden
@@ -328,6 +340,7 @@ export function AppsPageContent() {
                 {activeProject === "pulsespin" && <PulseSpinRoulette />}
                 {activeProject === "memory" && <MemoryMatrix />}
                 {activeProject === "voxelvaders" && <ArcadeCabinetHub />}
+                {activeProject === "pulsemetrics" && <PulseMetricsDashboard />}
               </div>
             </motion.div>
           </motion.div>
@@ -524,11 +537,10 @@ export function DesignPageContent() {
           <button
             type="button"
             onClick={() => setActiveTab("all")}
-            className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
-              activeTab === "all"
-                ? "bg-violet-gradient text-white shadow-violet-glow"
-                : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
-            }`}
+            className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === "all"
+              ? "bg-violet-gradient text-white shadow-violet-glow"
+              : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
+              }`}
           >
             Todos ({DESIGN_GALLERIES[0].works.length + DESIGN_GALLERIES[1].works.length})
           </button>
@@ -537,11 +549,10 @@ export function DesignPageContent() {
               key={gallery.id}
               type="button"
               onClick={() => setActiveTab(gallery.id)}
-              className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
-                activeTab === gallery.id
-                  ? "bg-violet-gradient text-white shadow-violet-glow"
-                  : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
-              }`}
+              className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === gallery.id
+                ? "bg-violet-gradient text-white shadow-violet-glow"
+                : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
+                }`}
             >
               {gallery.title} ({gallery.works.length})
             </button>

@@ -13,11 +13,8 @@ import {
   MessageCircle,
   ArrowRight,
   ArrowUpRight,
-  Trophy,
-  Users,
   Flame,
   Phone,
-  Mail,
   MapPin,
   Menu,
   X,
@@ -27,6 +24,8 @@ import {
   Compass,
   Sliders,
 } from "lucide-react";
+
+import { trackMetaEvent } from "@/components/MetaPixel";
 
 // ==========================================
 // UTILS & CONFIGURATIONS
@@ -42,11 +41,11 @@ const WHATSAPP_MESSAGE = encodeURIComponent(
 const SectionTag = ({ children, index }: { children: React.ReactNode; index?: string }) => (
   <div className="inline-flex items-center gap-3 mb-4">
     {index && (
-      <span className="font-mono text-xs text-orange-500 font-bold tracking-widest px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20">
+      <span className="font-mono text-xs text-lime-400 font-bold tracking-widest px-2 py-0.5 rounded bg-lime-400/10 border border-lime-400/20">
         {index}
       </span>
     )}
-    <div className="h-[1px] w-6 bg-orange-500/50" />
+    <div className="h-[1px] w-6 bg-lime-400/50" />
     <span className="text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 font-semibold">
       {children}
     </span>
@@ -69,23 +68,22 @@ const Navbar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 pt-4 sm:pt-6 pointer-events-none">
       <div
-        className={`max-w-6xl mx-auto transition-all duration-500 pointer-events-auto rounded-2xl border ${
-          scrolled
-            ? "bg-[#070809]/85 backdrop-blur-xl border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.6)] py-3 px-5"
-            : "bg-zinc-950/40 backdrop-blur-md border-zinc-800/40 py-4 px-6"
-        }`}
+        className={`max-w-6xl mx-auto transition-all duration-500 pointer-events-auto rounded-2xl border ${scrolled
+          ? "bg-[#060807]/85 backdrop-blur-xl border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.6)] py-3 px-5"
+          : "bg-zinc-950/40 backdrop-blur-md border-zinc-800/40 py-4 px-6"
+          }`}
       >
         <div className="flex items-center justify-between">
           {/* Brand */}
           <a href="#" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-[1px] overflow-hidden">
-              <div className="w-full h-full bg-[#08090A] rounded-[11px] flex items-center justify-center group-hover:bg-transparent transition-colors duration-300">
-                <Dumbbell className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 to-emerald-500 p-[1px] overflow-hidden">
+              <div className="w-full h-full bg-[#060807] rounded-[11px] flex items-center justify-center group-hover:bg-transparent transition-colors duration-300">
+                <Dumbbell className="w-5 h-5 text-lime-400 group-hover:text-zinc-950 transition-colors" />
               </div>
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black tracking-tighter text-white leading-none">
-                PULSE<span className="text-orange-500">FIT</span>
+                PULSE<span className="text-lime-400">FIT</span>
               </span>
               <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-500">
                 Performance Lab
@@ -115,17 +113,25 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-2 text-xs font-mono text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-3 py-1.5 rounded-lg">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-400"></span>
               </span>
-              <span>LOTação: 38% (IDEAL)</span>
+              <span>LOTAÇÃO: 38% (IDEAL)</span>
             </div>
 
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase tracking-wider transition-all overflow-hidden"
+              className="group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black text-xs uppercase tracking-wider transition-all overflow-hidden shadow-[0_0_25px_rgba(163,230,53,0.3)]"
+              onClick={() =>
+                trackMetaEvent("Lead", {
+                  content_name: "Day Pass Experimental Grátis",
+                  content_category: "PulseFit Hero/Navbar",
+                  value: 0,
+                  currency: "BRL",
+                })
+              }
             >
               <span className="relative z-10 flex items-center gap-1.5">
                 Day Pass Free
@@ -174,7 +180,15 @@ const Navbar = () => {
                   href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 w-full py-3 rounded-xl bg-orange-600 text-white font-bold text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2"
+                  className="mt-2 w-full py-3 rounded-xl bg-lime-400 text-zinc-950 font-black text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2"
+                  onClick={() =>
+                    trackMetaEvent("Lead", {
+                      content_name: "Day Pass Experimental Grátis",
+                      content_category: "PulseFit Hero/Navbar",
+                      value: 0,
+                      currency: "BRL",
+                    })
+                  }
                 >
                   <MessageCircle className="w-4 h-4" />
                   Resgatar Day Pass Grátis
@@ -204,8 +218,8 @@ const Hero = () => {
       />
 
       {/* Ambient Glows */}
-      <div className="absolute top-20 left-1/4 w-[600px] h-[600px] bg-orange-600/15 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-20 left-1/4 w-[600px] h-[600px] bg-lime-400/12 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
       {/* Giant Watermark Background Typography */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full overflow-hidden pointer-events-none select-none z-0 flex justify-center">
@@ -227,7 +241,7 @@ const Hero = () => {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 mb-6"
             >
-              <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-mono text-[10px] font-bold uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-lime-400/20 text-lime-400 font-mono text-[10px] font-bold uppercase">
                 V.2026
               </span>
               <span className="text-xs text-zinc-300 font-medium">
@@ -251,14 +265,14 @@ const Hero = () => {
               >
                 Reprograme
               </span>
-              sua <span className="text-orange-500 italic">biologia.</span>
+              sua <span className="text-lime-400 italic">biologia.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-base sm:text-lg text-zinc-400 mb-10 leading-relaxed max-w-xl border-l-2 border-orange-500/50 pl-5"
+              className="text-base sm:text-lg text-zinc-400 mb-10 leading-relaxed max-w-xl border-l-2 border-lime-400/50 pl-5"
             >
               Esqueça as academias convencionais. Combinamos maquinário importado de precisão,
               design sensorial de iluminação e periodização guiada por dados para forjar resultados
@@ -276,10 +290,18 @@ const Hero = () => {
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative inline-flex items-center justify-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black uppercase tracking-wider text-sm transition-all shadow-[0_0_40px_rgba(234,88,12,0.35)] hover:shadow-[0_0_60px_rgba(234,88,12,0.55)] hover:scale-[1.02]"
+                className="group relative inline-flex items-center justify-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-400 text-zinc-950 font-black uppercase tracking-wider text-sm transition-all shadow-[0_0_40px_rgba(163,230,53,0.35)] hover:shadow-[0_0_60px_rgba(163,230,53,0.55)] hover:scale-[1.02]"
+                onClick={() =>
+                  trackMetaEvent("Lead", {
+                    content_name: "Day Pass Experimental Grátis",
+                    content_category: "PulseFit Hero/Navbar",
+                    value: 0,
+                    currency: "BRL",
+                  })
+                }
               >
                 <span>Agendar Sessão Experimental</span>
-                <div className="w-8 h-8 rounded-xl bg-black/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-black/15 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </a>
@@ -288,7 +310,7 @@ const Hero = () => {
                 href="#galeria"
                 className="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold text-sm transition-all"
               >
-                <Compass className="w-4 h-4 text-orange-400" />
+                <Compass className="w-4 h-4 text-lime-400" />
                 Explorar Instalações
               </a>
             </motion.div>
@@ -306,7 +328,7 @@ const Hero = () => {
                 { val: "Hammer", label: "& Life Fitness Pro", code: "GEAR_MAX" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col">
-                  <span className="text-[10px] font-mono text-orange-500/80 mb-1">
+                  <span className="text-[10px] font-mono text-lime-400/80 mb-1">
                     //{stat.code}
                   </span>
                   <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -327,8 +349,8 @@ const Hero = () => {
               className="relative w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-zinc-800 bg-zinc-900 shadow-2xl group"
             >
               {/* Duotone & Vignette Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#08090A] via-transparent to-zinc-950/40 z-10" />
-              <div className="absolute inset-0 bg-orange-600/10 mix-blend-overlay z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#060807] via-transparent to-zinc-950/40 z-10" />
+              <div className="absolute inset-0 bg-lime-500/10 mix-blend-overlay z-10" />
 
               <Image
                 src="/images/templates/academia/hero-gym.png"
@@ -341,7 +363,7 @@ const Hero = () => {
 
               {/* Top Right HUD Badge */}
               <div className="absolute top-5 right-5 z-20 px-3.5 py-2 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-orange-500 animate-pulse" />
+                <Activity className="w-4 h-4 text-lime-400 animate-pulse" />
                 <span className="font-mono text-[11px] text-zinc-200 font-semibold">
                   BIO-TRACKING ATIVO
                 </span>
@@ -351,7 +373,7 @@ const Hero = () => {
               <div className="absolute bottom-5 left-5 right-5 z-20 p-5 rounded-2xl bg-zinc-950/85 backdrop-blur-xl border border-zinc-800/90 shadow-2xl">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <div className="w-10 h-10 rounded-xl bg-lime-400/20 border border-lime-400/30 flex items-center justify-center text-lime-400">
                       <Flame className="w-5 h-5" />
                     </div>
                     <div>
@@ -359,7 +381,7 @@ const Hero = () => {
                       <p className="text-sm font-bold text-white">HIIT Metabolic Burn • 45 min</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-md border border-orange-500/20">
+                  <span className="text-xs font-mono font-bold text-lime-400 bg-lime-400/10 px-2.5 py-1 rounded-md border border-lime-400/20">
                     ~850 KCAL
                   </span>
                 </div>
@@ -369,7 +391,7 @@ const Hero = () => {
                     initial={{ width: "0%" }}
                     animate={{ width: "82%" }}
                     transition={{ duration: 1.5, delay: 0.8 }}
-                    className="bg-gradient-to-r from-orange-500 to-amber-400 h-full"
+                    className="bg-gradient-to-r from-lime-400 to-emerald-400 h-full"
                   />
                 </div>
                 <div className="flex justify-between mt-1.5 text-[10px] font-mono text-zinc-500">
@@ -381,7 +403,7 @@ const Hero = () => {
 
             {/* Decorative Corner Element */}
             <div className="hidden sm:flex absolute -left-8 top-1/3 z-20 p-4 rounded-2xl bg-zinc-900/95 backdrop-blur-md border border-zinc-800 shadow-xl items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-black text-sm">
+              <div className="w-10 h-10 rounded-xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center text-lime-400 font-black text-sm">
                 4.9★
               </div>
               <div className="pr-2">
@@ -414,8 +436,8 @@ const Marquee = () => {
   ];
 
   return (
-    <div className="relative py-6 bg-[#08090A] overflow-hidden select-none border-y border-zinc-900">
-      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 py-3.5 -rotate-1 scale-105 shadow-[0_0_50px_rgba(234,88,12,0.25)]">
+    <div className="relative py-6 bg-[#060807] overflow-hidden select-none border-y border-zinc-900">
+      <div className="bg-gradient-to-r from-lime-400 via-emerald-400 to-lime-400 py-3.5 -rotate-1 scale-105 shadow-[0_0_50px_rgba(163,230,53,0.25)]">
         <motion.div
           className="flex whitespace-nowrap gap-8 font-black italic tracking-tighter text-zinc-950 uppercase text-lg sm:text-xl"
           animate={{ x: [0, -1000] }}
@@ -424,7 +446,7 @@ const Marquee = () => {
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-8 shrink-0 items-center">
               {words.map((word, idx) => (
-                <span key={idx} className={word === "•" ? "text-white not-italic" : ""}>
+                <span key={idx} className={word === "•" ? "text-zinc-900 not-italic" : ""}>
                   {word}
                 </span>
               ))}
@@ -448,7 +470,7 @@ const Features = () => {
             <SectionTag index="01">Engenharia da Performance</SectionTag>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none">
               Projetada para quem <br />
-              <span className="text-orange-500 italic">rejeita o mediano.</span>
+              <span className="text-lime-400 italic">rejeita o mediano.</span>
             </h2>
           </div>
           <p className="text-zinc-400 text-sm sm:text-base max-w-md leading-relaxed">
@@ -464,12 +486,12 @@ const Features = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="md:col-span-7 relative p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950 border border-zinc-800/80 hover:border-orange-500/40 transition-all group overflow-hidden flex flex-col justify-between min-h-[320px]"
+            className="md:col-span-7 relative p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950 border border-zinc-800/80 hover:border-lime-400/40 transition-all group overflow-hidden flex flex-col justify-between min-h-[320px]"
           >
-            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl group-hover:bg-orange-500/20 transition-all" />
+            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-lime-400/10 rounded-full blur-3xl group-hover:bg-lime-400/20 transition-all" />
 
             <div className="flex items-start justify-between relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center">
                 <Dumbbell className="w-7 h-7" />
               </div>
               <span className="font-mono text-xs text-zinc-500 border border-zinc-800 px-3 py-1 rounded-full">
@@ -494,13 +516,13 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="md:col-span-5 relative p-8 sm:p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-orange-500/40 transition-all group flex flex-col justify-between min-h-[320px]"
+            className="md:col-span-5 relative p-8 sm:p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/40 transition-all group flex flex-col justify-between min-h-[320px]"
           >
             <div className="flex items-start justify-between">
-              <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-zinc-700 text-orange-400 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-zinc-700 text-lime-400 flex items-center justify-center group-hover:bg-lime-400 group-hover:text-zinc-950 transition-colors">
                 <Sliders className="w-7 h-7" />
               </div>
-              <span className="font-mono text-xs text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full">
+              <span className="font-mono text-xs text-lime-400 bg-lime-400/10 px-3 py-1 rounded-full">
                 APP EXCLUSIVO
               </span>
             </div>
@@ -524,7 +546,7 @@ const Features = () => {
             transition={{ delay: 0.2 }}
             className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
           >
-            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-orange-400 flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6">
               <Zap className="w-6 h-6" />
             </div>
             <div>
@@ -544,7 +566,7 @@ const Features = () => {
             transition={{ delay: 0.3 }}
             className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
           >
-            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-orange-400 flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -562,11 +584,11 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="md:col-span-4 p-8 rounded-3xl bg-gradient-to-br from-orange-600 to-amber-600 text-white flex flex-col justify-between shadow-orange-glow"
+            className="md:col-span-4 p-8 rounded-3xl bg-gradient-to-br from-lime-400 to-emerald-500 text-zinc-950 flex flex-col justify-between shadow-[0_0_40px_rgba(163,230,53,0.25)]"
           >
             <div className="flex justify-between items-start">
               <Clock className="w-8 h-8 text-zinc-950" />
-              <span className="text-[10px] font-mono uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full font-bold">
+              <span className="text-[10px] font-mono uppercase tracking-widest bg-black/15 text-zinc-950 px-2.5 py-1 rounded-full font-bold">
                 365 DIAS
               </span>
             </div>
@@ -574,13 +596,13 @@ const Features = () => {
               <h3 className="text-2xl font-black uppercase tracking-tight mb-2">
                 Horário Estendido
               </h3>
-              <p className="text-white/90 text-sm leading-relaxed mb-4">
+              <p className="text-zinc-900 text-sm font-medium leading-relaxed mb-4">
                 Das 05h às 23h nos dias úteis. Domingos e feriados abertos para você nunca quebrar a
                 sua consistência.
               </p>
               <a
                 href="#planos"
-                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-zinc-950 text-white px-4 py-2.5 rounded-xl hover:bg-zinc-900 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-zinc-950 text-lime-400 px-4 py-2.5 rounded-xl hover:bg-zinc-900 transition-colors"
               >
                 Conferir Acesso <ArrowUpRight className="w-4 h-4" />
               </a>
@@ -593,7 +615,7 @@ const Features = () => {
 };
 
 // ==========================================
-// 5. EXPANDING ACCORDION GALLERY (OUT OF THE BOX)
+// 5. EXPANDING ACCORDION GALLERY
 // ==========================================
 const Gallery = () => {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -643,7 +665,7 @@ const Gallery = () => {
           <div>
             <SectionTag index="02">Tour Interativo</SectionTag>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase">
-              5 Zonas de <span className="text-orange-500 italic">Imersão</span>
+              5 Zonas de <span className="text-lime-400 italic">Imersão</span>
             </h2>
           </div>
           <p className="text-xs font-mono uppercase tracking-widest text-zinc-500">
@@ -660,46 +682,42 @@ const Gallery = () => {
                 key={zone.id}
                 onMouseEnter={() => setActiveIdx(idx)}
                 onClick={() => setActiveIdx(idx)}
-                className={`relative rounded-3xl overflow-hidden cursor-pointer border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                  isActive
-                    ? "flex-[4] border-orange-500/60 shadow-[0_0_40px_rgba(234,88,12,0.15)]"
-                    : "flex-[1] border-zinc-800/80 hover:border-zinc-700 opacity-70 hover:opacity-100"
-                }`}
+                className={`relative rounded-3xl overflow-hidden cursor-pointer border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive
+                  ? "flex-[4] border-lime-400/60 shadow-[0_0_40px_rgba(163,230,53,0.15)]"
+                  : "flex-[1] border-zinc-800/80 hover:border-zinc-700 opacity-70 hover:opacity-100"
+                  }`}
               >
                 <Image
                   src={zone.src}
                   alt={zone.title}
                   fill
                   sizes="(max-width: 1024px) 100vw, 60vw"
-                  className={`object-cover transition-transform duration-1000 ${
-                    isActive ? "scale-105" : "scale-100 grayscale-[50%]"
-                  }`}
+                  className={`object-cover transition-transform duration-1000 ${isActive ? "scale-105" : "scale-100 grayscale-[50%]"
+                    }`}
                 />
 
                 {/* Dark Gradient Overlay */}
                 <div
-                  className={`absolute inset-0 transition-opacity duration-500 ${
-                    isActive
-                      ? "bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"
-                      : "bg-zinc-950/75"
-                  }`}
+                  className={`absolute inset-0 transition-opacity duration-500 ${isActive
+                    ? "bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"
+                    : "bg-zinc-950/75"
+                    }`}
                 />
 
                 {/* Content Container */}
                 <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
                   <div className="flex items-center justify-between">
                     <span
-                      className={`font-mono text-sm font-bold px-3 py-1 rounded-lg border transition-colors ${
-                        isActive
-                          ? "bg-orange-500 text-white border-orange-400"
-                          : "bg-zinc-900/80 text-zinc-400 border-zinc-800"
-                      }`}
+                      className={`font-mono text-sm font-bold px-3 py-1 rounded-lg border transition-colors ${isActive
+                        ? "bg-lime-400 text-zinc-950 border-lime-300"
+                        : "bg-zinc-900/80 text-zinc-400 border-zinc-800"
+                        }`}
                     >
                       /{zone.id}
                     </span>
 
                     {isActive && (
-                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-orange-400 bg-zinc-950/80 backdrop-blur-md px-3 py-1 rounded-full border border-orange-500/30">
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-lime-400 bg-zinc-950/80 backdrop-blur-md px-3 py-1 rounded-full border border-lime-400/30">
                         <Sparkles className="w-3 h-3" /> Ambiente Climatizado
                       </span>
                     )}
@@ -707,13 +725,12 @@ const Gallery = () => {
 
                   {/* Bottom Title & Specs */}
                   <div className="overflow-hidden">
-                    <p className="text-xs font-mono uppercase tracking-widest text-orange-400 mb-1 truncate">
+                    <p className="text-xs font-mono uppercase tracking-widest text-lime-400 mb-1 truncate">
                       {zone.subtitle}
                     </p>
                     <h3
-                      className={`font-black uppercase tracking-tight text-white transition-all ${
-                        isActive ? "text-2xl sm:text-4xl mb-3" : "text-lg lg:rotate-0 truncate"
-                      }`}
+                      className={`font-black uppercase tracking-tight text-white transition-all ${isActive ? "text-2xl sm:text-4xl mb-3" : "text-lg lg:rotate-0 truncate"
+                        }`}
                     >
                       {zone.title}
                     </h3>
@@ -736,7 +753,15 @@ const Gallery = () => {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-orange-500 hover:text-white transition-colors self-start sm:self-auto"
+                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors self-start sm:self-auto"
+                            onClick={() =>
+                              trackMetaEvent("Lead", {
+                                content_name: "Day Pass Experimental Grátis",
+                                content_category: "PulseFit Hero/Navbar",
+                                value: 0,
+                                currency: "BRL",
+                              })
+                            }
                           >
                             Visitar Zona <ArrowUpRight className="w-3.5 h-3.5" />
                           </a>
@@ -824,7 +849,7 @@ const Pricing = () => {
           <div>
             <SectionTag index="03">Passaportes de Acesso</SectionTag>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase">
-              Invista na sua <span className="text-orange-500 italic">alta performance</span>
+              Invista na sua <span className="text-lime-400 italic">alta performance</span>
             </h2>
           </div>
 
@@ -832,24 +857,22 @@ const Pricing = () => {
           <div className="inline-flex items-center p-1.5 rounded-2xl bg-zinc-900 border border-zinc-800 self-start lg:self-auto">
             <button
               onClick={() => setBilling("mensal")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                billing === "mensal"
-                  ? "bg-zinc-800 text-white shadow"
-                  : "text-zinc-400 hover:text-white"
-              }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${billing === "mensal"
+                ? "bg-zinc-800 text-white shadow"
+                : "text-zinc-400 hover:text-white"
+                }`}
             >
               Plano Flex (Mensal)
             </button>
             <button
               onClick={() => setBilling("anual")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                billing === "anual"
-                  ? "bg-orange-600 text-white shadow-orange-glow"
-                  : "text-zinc-400 hover:text-white"
-              }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${billing === "anual"
+                ? "bg-lime-400 text-zinc-950 shadow-[0_0_25px_rgba(163,230,53,0.3)]"
+                : "text-zinc-400 hover:text-white"
+                }`}
             >
               <span>Passaporte Anual</span>
-              <span className="px-2 py-0.5 rounded-md bg-black/30 text-[10px] font-mono">
+              <span className="px-2 py-0.5 rounded-md bg-black/20 text-[10px] font-mono">
                 -20% OFF
               </span>
             </button>
@@ -859,7 +882,7 @@ const Pricing = () => {
         {/* Interactive Goal Filter */}
         <div className="mb-12 p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-mono uppercase text-zinc-400">
-            <Gauge className="w-4 h-4 text-orange-500" />
+            <Gauge className="w-4 h-4 text-lime-400" />
             <span>Qual é a sua meta principal hoje?</span>
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
@@ -867,11 +890,10 @@ const Pricing = () => {
               <button
                 key={g.id}
                 onClick={() => setSelectedGoal(g.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  selectedGoal === g.id
-                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/40"
-                    : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
-                }`}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${selectedGoal === g.id
+                  ? "bg-lime-400/20 text-lime-400 border border-lime-400/40"
+                  : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                  }`}
               >
                 {g.label}
               </button>
@@ -889,14 +911,13 @@ const Pricing = () => {
               <motion.div
                 key={idx}
                 layout
-                className={`relative flex flex-col justify-between p-8 sm:p-10 rounded-[2.5rem] transition-all duration-500 ${
-                  isRecommended
-                    ? "bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 border-2 border-orange-500 shadow-[0_0_50px_rgba(234,88,12,0.2)] lg:-translate-y-3 z-10"
-                    : "bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-700"
-                }`}
+                className={`relative flex flex-col justify-between p-8 sm:p-10 rounded-[2.5rem] transition-all duration-500 ${isRecommended
+                  ? "bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 border-2 border-lime-400 shadow-[0_0_50px_rgba(163,230,53,0.18)] lg:-translate-y-3 z-10"
+                  : "bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-700"
+                  }`}
               >
                 {isRecommended && (
-                  <div className="absolute -top-4 left-8 px-4 py-1 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5">
+                  <div className="absolute -top-4 left-8 px-4 py-1 rounded-full bg-gradient-to-r from-lime-400 to-emerald-400 text-zinc-950 text-[11px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
                     {selectedGoal === "all" ? "Mais Popular" : "Recomendado para Você"}
                   </div>
@@ -917,7 +938,7 @@ const Pricing = () => {
                       Investimento {billing === "anual" ? "no plano anual" : "no plano mensal"}
                     </span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-sm font-bold text-orange-500">R$</span>
+                      <span className="text-sm font-bold text-lime-400">R$</span>
                       <AnimatePresence mode="wait">
                         <motion.span
                           key={currentPrice}
@@ -938,7 +959,7 @@ const Pricing = () => {
                   <div className="space-y-4 mb-10">
                     {plan.features.map((feat, fIdx) => (
                       <div key={fIdx} className="flex items-start gap-3 text-sm text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0 mt-0.5" />
                         <span className="leading-snug">{feat}</span>
                       </div>
                     ))}
@@ -951,11 +972,23 @@ const Pricing = () => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-full py-4 px-6 rounded-2xl font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all ${
-                    isRecommended
-                      ? "bg-orange-600 hover:bg-orange-500 text-white shadow-orange-glow"
-                      : "bg-zinc-800 hover:bg-zinc-700 text-white"
-                  }`}
+                  onClick={() => {
+                    trackMetaEvent("InitiateCheckout", {
+                      content_name: `Passaporte ${plan.name} (${billing.toUpperCase()})`,
+                      content_category: "Assinatura Academia",
+                      value: currentPrice,
+                      currency: "BRL",
+                    });
+                    trackMetaEvent("Lead", {
+                      content_name: `Interesse Plano ${plan.name}`,
+                      value: currentPrice,
+                      currency: "BRL",
+                    });
+                  }}
+                  className={`w-full py-4 px-6 rounded-2xl font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all ${isRecommended
+                    ? "bg-lime-400 hover:bg-lime-300 text-zinc-950 shadow-[0_0_25px_rgba(163,230,53,0.3)]"
+                    : "bg-zinc-800 hover:bg-zinc-700 text-white"
+                    }`}
                 >
                   <span>{plan.cta}</span>
                   <ArrowUpRight className="w-4 h-4" />
@@ -1003,7 +1036,7 @@ const FAQ = () => {
             <SectionTag index="04">Transparência Total</SectionTag>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none mb-6">
               Dúvidas <br />
-              <span className="text-orange-500 italic">Frequentes</span>
+              <span className="text-lime-400 italic">Frequentes</span>
             </h2>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-8">
               Ainda tem alguma pergunta específica sobre nossa metodologia ou estrutura? Fale
@@ -1013,9 +1046,17 @@ const FAQ = () => {
               href={`https://wa.me/${WHATSAPP_NUMBER}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-6 py-3.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 text-white text-xs font-bold uppercase tracking-wider transition-all"
+              className="inline-flex items-center gap-3 px-6 py-3.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-lime-400/50 text-white text-xs font-bold uppercase tracking-wider transition-all"
+              onClick={() =>
+                trackMetaEvent("Lead", {
+                  content_name: "Day Pass Experimental Grátis",
+                  content_category: "PulseFit Hero/Navbar",
+                  value: 0,
+                  currency: "BRL",
+                })
+              }
             >
-              <MessageCircle className="w-4 h-4 text-orange-500" />
+              <MessageCircle className="w-4 h-4 text-lime-400" />
               Chamar Concierge no WhatsApp
             </a>
           </div>
@@ -1027,24 +1068,22 @@ const FAQ = () => {
               return (
                 <div
                   key={idx}
-                  className={`rounded-2xl border transition-all ${
-                    isOpen
-                      ? "bg-zinc-900/70 border-orange-500/40"
-                      : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700"
-                  }`}
+                  className={`rounded-2xl border transition-all ${isOpen
+                    ? "bg-zinc-900/70 border-lime-400/40"
+                    : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700"
+                    }`}
                 >
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : idx)}
                     className="w-full text-left p-6 flex justify-between items-center gap-4 text-white font-bold text-base sm:text-lg"
                   >
                     <span className="flex items-center gap-4">
-                      <span className="font-mono text-xs text-orange-500">0{idx + 1}</span>
+                      <span className="font-mono text-xs text-lime-400">0{idx + 1}</span>
                       {faq.q}
                     </span>
                     <ChevronDown
-                      className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-orange-400" : "text-zinc-500"
-                      }`}
+                      className={`w-5 h-5 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-lime-400" : "text-zinc-500"
+                        }`}
                     />
                   </button>
 
@@ -1082,6 +1121,20 @@ const Contact = () => {
 
   const handleVipPassSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Dispara Lead + Schedule qualificado com o objetivo do aluno
+    trackMetaEvent("Lead", {
+      content_name: "Credencial VIP Pass 1 Dia Free",
+      content_category: goal,
+      customer_name: name || "Visitante",
+      value: 49.9, // Valor estimado do Day Pass para otimização de ROAS
+      currency: "BRL",
+    });
+
+    trackMetaEvent("Schedule", {
+      content_name: `Treino Experimental - ${goal}`,
+    });
+
     const customMsg = encodeURIComponent(
       `Olá! Meu nome é ${name || "Visitante"}. Gerei meu VIP Pass pelo site com foco em [${goal}] e gostaria de agendar meu treino experimental.`
     );
@@ -1091,15 +1144,15 @@ const Contact = () => {
   return (
     <section id="contato" className="py-28 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="rounded-[3rem] bg-gradient-to-br from-zinc-900 via-zinc-950 to-[#08090A] border border-zinc-800 p-8 sm:p-14 lg:p-16 relative overflow-hidden">
+        <div className="rounded-[3rem] bg-gradient-to-br from-zinc-900 via-zinc-950 to-[#060807] border border-zinc-800 p-8 sm:p-14 lg:p-16 relative overflow-hidden">
           {/* Glow */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-600/15 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-lime-400/12 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-6">
               <SectionTag index="05">Acesso Imediato</SectionTag>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none mb-6">
-                Emita seu <span className="text-orange-500 italic">VIP Pass</span> Experimental.
+                Emita seu <span className="text-lime-400 italic">VIP Pass</span> Experimental.
               </h2>
               <p className="text-zinc-400 mb-10 leading-relaxed text-sm sm:text-base">
                 Configure seu passe ao lado e envie diretamente para nossa recepção no WhatsApp. Sem
@@ -1108,7 +1161,7 @@ const Contact = () => {
 
               <div className="space-y-5 border-t border-zinc-800/80 pt-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-orange-400">
+                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-lime-400">
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
@@ -1120,7 +1173,7 @@ const Contact = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-orange-400">
+                  <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-lime-400">
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
@@ -1141,14 +1194,14 @@ const Contact = () => {
               >
                 <div className="flex items-center justify-between border-b border-dashed border-zinc-800 pb-4">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-orange-500 block">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-lime-400 block">
                       CREDENCIAL TEMPORÁRIA
                     </span>
                     <h3 className="text-lg font-black uppercase text-white">
                       1 DIA DE ACESSO TOTAL FREE
                     </h3>
                   </div>
-                  <Dumbbell className="w-6 h-6 text-zinc-600" />
+                  <Dumbbell className="w-6 h-6 text-lime-400" />
                 </div>
 
                 <div>
@@ -1161,7 +1214,7 @@ const Contact = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Digite seu nome..."
-                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 transition-colors text-sm"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-lime-400 transition-colors text-sm"
                   />
                 </div>
 
@@ -1172,7 +1225,7 @@ const Contact = () => {
                   <select
                     value={goal}
                     onChange={(e) => setGoal(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-orange-500 transition-colors text-sm"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-lime-400 transition-colors text-sm"
                   >
                     <option value="Hipertrofia & Estética">Hipertrofia & Estética</option>
                     <option value="Emagrecimento & Condicionamento">
@@ -1185,7 +1238,7 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black uppercase tracking-wider text-xs transition-all shadow-orange-glow flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-zinc-950 font-black uppercase tracking-wider text-xs transition-all shadow-[0_0_30px_rgba(163,230,53,0.3)] flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Emitir Credencial via WhatsApp
@@ -1204,14 +1257,14 @@ const Contact = () => {
 // ==========================================
 const Footer = () => {
   return (
-    <footer className="bg-[#050607] border-t border-zinc-900 py-12">
+    <footer className="bg-[#040605] border-t border-zinc-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-500">
+          <div className="p-2 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400">
             <Dumbbell className="w-4 h-4" />
           </div>
           <span className="text-sm font-black tracking-wider text-white">
-            PULSE<span className="text-orange-500">FIT</span>
+            PULSE<span className="text-lime-400">FIT</span>
           </span>
         </div>
         <p className="text-xs font-mono text-zinc-600">
@@ -1227,7 +1280,7 @@ const Footer = () => {
 // ==========================================
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#08090A] text-zinc-100 selection:bg-orange-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-[#060807] text-zinc-100 selection:bg-lime-400 selection:text-zinc-950 font-sans antialiased overflow-x-hidden">
       <Navbar />
       <main>
         <Hero />
