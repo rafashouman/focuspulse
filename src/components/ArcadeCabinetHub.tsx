@@ -31,7 +31,7 @@ const CARTRIDGES: CartridgeSpec[] = [
     id: "voxelvaders",
     code: "ROM-01 // 3D",
     title: "VOXELVADERS 3D",
-    subtitle: "Defesa Orbital em WebGL com Partículas",
+    subtitle: "Defesa Orbital com Auto-Fire & Touch Drag",
     engine: "THREE.JS WEBGL",
     accentHex: "#00F5D4",
     badgeClass: "border-[#00F5D4]/40 text-[#00F5D4] bg-[#00F5D4]/10",
@@ -40,7 +40,7 @@ const CARTRIDGES: CartridgeSpec[] = [
     id: "arkanoid",
     code: "ROM-02 // 2D",
     title: "PULSE ARKANOID",
-    subtitle: "Física Vetorial de Rebate & Destruição de Blocos",
+    subtitle: "Física Vetorial com Barra Tátil Anti-Oclusão",
     engine: "HTML5 CANVAS 60FPS",
     accentHex: "#FFB800",
     badgeClass: "border-[#FFB800]/40 text-[#FFB800] bg-[#FFB800]/10",
@@ -48,15 +48,17 @@ const CARTRIDGES: CartridgeSpec[] = [
 ];
 
 // =========================================================
-// CARTUCHO 2: PULSE ARKANOID (Motor 60FPS Embutido)
-// (Caso já tenha seu próprio componente Arkanoid, basta importá-lo)
+// CARTUCHO 2: PULSE ARKANOID (Otimizado p/ Mobile)
 // =========================================================
 function PulseArkanoidBuiltIn() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [status, setStatus] = useState<"READY" | "PLAYING" | "WON" | "LOST">("READY");
+  const [thumbSliderPct, setThumbSliderPct] = useState(50);
   const restartRef = useRef<() => void>(() => {});
+  const paddleXRef = useRef(380);
+  const touchButtonsRef = useRef({ left: false, right: false });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -66,13 +68,13 @@ function PulseArkanoidBuiltIn() {
 
     let animId: number;
     const width = 760;
-    const height = 520;
+    const height = 480; // Altura ligeiramente compactada para melhor encaixe mobile
     canvas.width = width;
     canvas.height = height;
 
-    // Estado Físico Interno
-    const paddle = { w: 115, h: 14, x: width / 2 - 57, y: height - 38, speed: 9, dx: 0 };
-    const ball = { x: width / 2, y: height - 55, r: 7, speed: 6, dx: 4.5, dy: -4.5 };
+    const paddle = { w: 120, h: 14, y: height - 36, speed: 9 };
+    paddleXRef.current = width / 2 - paddle.w / 2;
+    const ball = { x: width / 2, y: height - 55, r: 7.5, speed: 6, dx: 4.5, dy: -4.5 };
 
     const rows = 5;
     const cols = 9;
@@ -96,10 +98,10 @@ function PulseArkanoidBuiltIn() {
     const buildBricks = () => {
       bricks = [];
       const pad = 10;
-      const offsetTop = 55;
+      const offsetTop = 45;
       const offsetLeft = 35;
       const bw = (width - offsetLeft * 2 - pad * (cols - 1)) / cols;
-      const bh = 22;
+      const bh = 20;
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -117,7 +119,7 @@ function PulseArkanoidBuiltIn() {
     };
 
     const resetBallAndPaddle = () => {
-      paddle.x = width / 2 - paddle.w / 2;
+      paddleXRef.current = width / 2 - paddle.w / 2;
       ball.x = width / 2;
       ball.y = height - 55;
       ball.dx = (Math.random() > 0.5 ? 1 : -1) * 4.5;
@@ -139,27 +141,25 @@ function PulseArkanoidBuiltIn() {
     restartRef.current = startGame;
     buildBricks();
 
-    // Controles Teclado & Mouse/Touch
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") paddle.dx = -paddle.speed;
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") paddle.dx = paddle.speed;
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") touchButtonsRef.current.left = true;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") touchButtonsRef.current.right = true;
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (
-        e.key === "ArrowLeft" ||
-        e.key === "ArrowRight" ||
-        e.key === "a" ||
-        e.key === "d" ||
-        e.key === "A" ||
-        e.key === "D"
-      ) {
-        paddle.dx = 0;
-      }
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") touchButtonsRef.current.left = false;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") touchButtonsRef.current.right = false;
     };
+
+    const setPaddleFromClientX = (clientX: number, element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const rawX = ((clientX - rect.left) / Math.max(1, rect.width)) * width;
+      const clamped = Math.max(12, Math.min(width - paddle.w - 12, rawX - paddle.w / 2));
+      paddleXRef.current = clamped;
+      setThumbSliderPct(Math.round((clamped / (width - paddle.w)) * 100));
+    };
+
     const onPointerMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const relX = ((e.clientX - rect.left) / rect.width) * width;
-      paddle.x = Math.max(12, Math.min(width - paddle.w - 12, relX - paddle.w / 2));
+      setPaddleFromClientX(e.clientX, canvas);
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -169,11 +169,9 @@ function PulseArkanoidBuiltIn() {
     const render = () => {
       animId = requestAnimationFrame(render);
 
-      // Fundo Obsidian
       ctx.fillStyle = "#07060B";
       ctx.fillRect(0, 0, width, height);
 
-      // Grade sutil
       ctx.strokeStyle = "rgba(255, 184, 0, 0.05)";
       ctx.lineWidth = 1;
       for (let gx = 0; gx < width; gx += 38) {
@@ -190,14 +188,15 @@ function PulseArkanoidBuiltIn() {
       }
 
       if (running) {
-        // Movimento do Paddle
-        paddle.x = Math.max(12, Math.min(width - paddle.w - 12, paddle.x + paddle.dx));
+        if (touchButtonsRef.current.left) paddleXRef.current -= 9.5;
+        if (touchButtonsRef.current.right) paddleXRef.current += 9.5;
+        paddleXRef.current = Math.max(12, Math.min(width - paddle.w - 12, paddleXRef.current));
 
-        // Movimento da Bola
+        const paddleX = paddleXRef.current;
+
         ball.x += ball.dx;
         ball.y += ball.dy;
 
-        // Colisão Paredes
         if (ball.x + ball.r > width - 8 || ball.x - ball.r < 8) {
           ball.dx *= -1;
           arcadeSynth.playBounce("wall");
@@ -207,22 +206,20 @@ function PulseArkanoidBuiltIn() {
           arcadeSynth.playBounce("wall");
         }
 
-        // Colisão com o Paddle (Ângulo Dinâmico)
         if (
           ball.y + ball.r >= paddle.y &&
           ball.y - ball.r <= paddle.y + paddle.h &&
-          ball.x >= paddle.x &&
-          ball.x <= paddle.x + paddle.w
+          ball.x >= paddleX &&
+          ball.x <= paddleX + paddle.w
         ) {
           arcadeSynth.playBounce("paddle");
-          const hitOffset = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
-          const angle = hitOffset * (Math.PI / 3); // Max 60 graus
+          const hitOffset = (ball.x - (paddleX + paddle.w / 2)) / (paddle.w / 2);
+          const angle = hitOffset * (Math.PI / 3);
           const spd = Math.min(9.5, Math.hypot(ball.dx, ball.dy) * 1.02);
           ball.dx = spd * Math.sin(angle);
           ball.dy = -Math.abs(spd * Math.cos(angle));
         }
 
-        // Colisão com Tijolos
         for (const b of bricks) {
           if (!b.alive) continue;
           if (
@@ -240,13 +237,11 @@ function PulseArkanoidBuiltIn() {
           }
         }
 
-        // Vitória
         if (bricks.every((b) => !b.alive)) {
           running = false;
           setStatus("WON");
         }
 
-        // Queda da Bola
         if (ball.y - ball.r > height) {
           arcadeSynth.playExplosion();
           currentLives -= 1;
@@ -260,7 +255,6 @@ function PulseArkanoidBuiltIn() {
         }
       }
 
-      // Desenha Tijolos
       for (const b of bricks) {
         if (!b.alive) continue;
         ctx.fillStyle = b.color;
@@ -270,16 +264,16 @@ function PulseArkanoidBuiltIn() {
         ctx.roundRect(b.x, b.y, b.w, b.h, 5);
         ctx.fill();
       }
+      ctx.shadowBlur = 0;
 
-      // Desenha Paddle
+      const currentPaddleX = paddleXRef.current;
       ctx.fillStyle = "#FFB800";
       ctx.shadowColor = "#FFB800";
       ctx.shadowBlur = 16;
       ctx.beginPath();
-      ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 7);
+      ctx.roundRect(currentPaddleX, paddle.y, paddle.w, paddle.h, 7);
       ctx.fill();
 
-      // Desenha Bola
       ctx.fillStyle = "#FFFFFF";
       ctx.shadowColor = "#00F5D4";
       ctx.shadowBlur = 14;
@@ -299,21 +293,28 @@ function PulseArkanoidBuiltIn() {
     };
   }, []);
 
+  const handleThumbTrackMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / Math.max(1, rect.width)));
+    paddleXRef.current = 12 + ratio * (760 - 120 - 24);
+    setThumbSliderPct(Math.round(ratio * 100));
+  };
+
   return (
-    <div className="relative w-full h-[640px] bg-[#07060B] flex flex-col justify-between font-mono text-white select-none overflow-hidden">
+    <div className="relative w-full h-[580px] sm:h-[640px] bg-[#07060B] flex flex-col justify-between font-mono text-white select-none overflow-hidden touch-none p-3 sm:p-4">
       {/* HUD Superior */}
-      <div className="relative z-20 flex items-center justify-between px-6 py-4 bg-black/60 border-b border-[#FFB800]/30">
+      <div className="relative z-20 flex items-center justify-between px-4 sm:px-6 py-3 bg-black/60 border-b border-[#FFB800]/30 rounded-xl">
         <div>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-[#FFB800] block">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-[#FFB800] block">
             {"// ARKANOID SCORE"}
           </span>
-          <span className="text-2xl font-black text-white">
+          <span className="text-xl sm:text-2xl font-black text-white">
             {String(score).padStart(6, "0")}
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-zinc-400 hidden sm:inline">
-            MOVA COM MOUSE / TOUCH OU [A / D]
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-zinc-400 hidden md:inline">
+            USE A BARRA TÁTICA ABAIXO P/ NÃO COBRIR A TELA
           </span>
           <div className="px-3 py-1.5 rounded-lg bg-[#FFB800]/10 border border-[#FFB800]/30 text-[#FFB800] text-xs font-bold">
             VIDAS: {lives}
@@ -321,40 +322,86 @@ function PulseArkanoidBuiltIn() {
         </div>
       </div>
 
-      {/* Área do Canvas */}
-      <div className="relative flex-1 flex items-center justify-center p-4">
-        <canvas
-          ref={canvasRef}
-          className="w-full max-w-[760px] h-full max-h-[500px] rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(255,184,0,0.08)] cursor-ew-resize"
-        />
+      {/* Área do Canvas + Trackpad Tátil */}
+      <div className="relative flex-1 flex flex-col items-center justify-center gap-3 my-auto">
+        <div className="relative w-full max-w-[760px] h-[340px] sm:h-[390px] flex items-center justify-center">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full rounded-2xl border border-white/10 shadow-[0_0_40px_rgba(255,184,0,0.08)] bg-[#07060B] cursor-ew-resize"
+          />
 
-        {status !== "PLAYING" && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-6">
-            <div className="max-w-md w-full rounded-3xl bg-[#110F18] border border-[#FFB800]/40 p-8 text-center shadow-[0_0_60px_rgba(255,184,0,0.18)]">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFB800]/15 text-[#FFB800] text-[10px] uppercase tracking-widest mb-3">
-                <Zap className="w-3.5 h-3.5" /> Física Vetorial 2D
-              </span>
-              <h3 className="text-3xl font-black uppercase tracking-tight text-white mb-2">
-                PULSE <span className="text-[#FFB800]">ARKANOID</span>
-              </h3>
-              <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
-                {status === "READY"
-                  ? "Destrua a muralha de blocos neon controlando o ângulo de deflexão da barra magnética."
-                  : status === "WON"
-                  ? `Muralha demolida! Pontuação final: ${score} PTS.`
-                  : `Sinal encerrado. Pontuação atingida: ${score} PTS.`}
-              </p>
-              <button
-                type="button"
-                onClick={() => restartRef.current()}
-                className="w-full py-4 rounded-xl bg-[#FFB800] hover:bg-[#ffc633] text-zinc-950 font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,184,0,0.4)]"
-              >
-                <RotateCcw className="w-4 h-4" />
-                {status === "READY" ? "Lançar Esfera" : "Jogar Novamente"}
-              </button>
+          {status !== "PLAYING" && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="max-w-md w-full rounded-3xl bg-[#110F18] border border-[#FFB800]/40 p-6 sm:p-8 text-center shadow-[0_0_60px_rgba(255,184,0,0.18)]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFB800]/15 text-[#FFB800] text-[10px] uppercase tracking-widest mb-3">
+                  <Zap className="w-3.5 h-3.5" /> Física Vetorial 2D
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-2">
+                  PULSE <span className="text-[#FFB800]">ARKANOID</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
+                  {status === "READY"
+                    ? "Destrua os blocos neon usando a barra tátil abaixo para controlar a palete sem tapar a bola."
+                    : status === "WON"
+                    ? `Muralha demolida! Pontuação: ${score} PTS.`
+                    : `Game Over. Pontuação: ${score} PTS.`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => restartRef.current()}
+                  className="w-full py-3.5 sm:py-4 rounded-xl bg-[#FFB800] hover:bg-[#ffc633] text-zinc-950 font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,184,0,0.4)]"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {status === "READY" ? "Lançar Esfera" : "Jogar Novamente"}
+                </button>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Barra Tátil Anti-Oclusão para Mobile */}
+        <div className="w-full max-w-[760px] h-14 rounded-2xl border border-amber-400/30 bg-[#0e0d16] px-3 flex items-center gap-3 shadow-lg">
+          <button
+            type="button"
+            onPointerDown={() => (touchButtonsRef.current.left = true)}
+            onPointerUp={() => (touchButtonsRef.current.left = false)}
+            onPointerLeave={() => (touchButtonsRef.current.left = false)}
+            className="h-10 w-12 rounded-xl bg-white/5 active:bg-[#FFB800] active:text-black border border-white/10 flex items-center justify-center font-bold"
+          >
+            ◀
+          </button>
+          <div
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              handleThumbTrackMove(e);
+            }}
+            onPointerMove={(e) => {
+              if (e.buttons > 0 || e.pointerType === "touch") {
+                handleThumbTrackMove(e);
+              }
+            }}
+            className="relative h-11 flex-1 rounded-xl bg-black/60 border border-white/10 overflow-hidden cursor-ew-resize flex items-center justify-center"
+          >
+            <div
+              className="absolute top-1 bottom-1 w-24 -translate-x-1/2 rounded-lg bg-amber-400/80 border border-white/40 shadow-[0_0_12px_rgba(255,184,0,0.6)] flex items-center justify-center"
+              style={{ left: `${thumbSliderPct}%` }}
+            >
+              <div className="w-6 h-1 rounded-full bg-zinc-950" />
+            </div>
+            <span className="pointer-events-none font-mono text-[9px] uppercase tracking-widest text-white/40">
+              Deslize o polegar aqui
+            </span>
           </div>
-        )}
+          <button
+            type="button"
+            onPointerDown={() => (touchButtonsRef.current.right = true)}
+            onPointerUp={() => (touchButtonsRef.current.right = false)}
+            onPointerLeave={() => (touchButtonsRef.current.right = false)}
+            className="h-10 w-12 rounded-xl bg-white/5 active:bg-[#FFB800] active:text-black border border-white/10 flex items-center justify-center font-bold"
+          >
+            ▶
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -409,12 +456,11 @@ export default function ArcadeCabinetHub() {
   };
 
   return (
-    <div className="w-full bg-[#0B0A10] text-zinc-100 p-4 sm:p-6 font-sans select-none">
-      {/* Moldura Externa do Gabinete */}
+    <div className="w-full bg-[#0B0A10] text-zinc-100 p-2 sm:p-6 font-sans select-none">
       <div className="max-w-5xl mx-auto rounded-[2rem] bg-gradient-to-b from-[#171522] via-[#0E0D15] to-[#09080D] border-2 border-zinc-800/90 shadow-[0_25px_90px_rgba(0,0,0,0.85)] overflow-hidden">
         
-        {/* 1. MARQUEE ILUMINADO DO FLIPERAMA (DECK DE CARTUCHOS) */}
-        <div className="relative p-5 sm:p-6 bg-[#07060B] border-b-2 border-zinc-800/90 overflow-hidden">
+        {/* 1. MARQUEE / DECK DE CARTUCHOS */}
+        <div className="relative p-4 sm:p-6 bg-[#07060B] border-b-2 border-zinc-800/90 overflow-hidden">
           <div
             className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-36 rounded-full blur-[90px] opacity-25 pointer-events-none transition-colors duration-500"
             style={{ backgroundColor: activeSpec.accentHex }}
@@ -434,13 +480,13 @@ export default function ArcadeCabinetHub() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#FFB800]">
-                    PULSEDECK V2.6
+                    PULSEDECK V2.7
                   </span>
                   <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold">
-                    ROM LOCK
+                    MOBILE OPTIMIZED
                   </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white">
+                <h2 className="text-lg sm:text-2xl font-black uppercase tracking-tight text-white">
                   Deck de Cartuchos
                 </h2>
               </div>
@@ -583,11 +629,10 @@ export default function ArcadeCabinetHub() {
           </div>
         </div>
 
-        {/* 2. BEZEL DO MONITOR CRT & TELA DO JOGO */}
-        <div className="bg-[#0B0A10] p-3 sm:p-5">
-          <div className="relative flex min-h-[640px] items-center justify-center overflow-hidden rounded-2xl border-4 border-[#1C1926] bg-black shadow-inner">
+        {/* 2. TELA DO JOGO (BEZEL CRT) */}
+        <div className="bg-[#0B0A10] p-2 sm:p-4">
+          <div className="relative flex min-h-[580px] sm:min-h-[640px] items-center justify-center overflow-hidden rounded-2xl border-4 border-[#1C1926] bg-black shadow-inner">
             
-            {/* Efeito opcional de Scanlines CRT por cima do Canvas */}
             {crtScanlines && (
               <div
                 className="pointer-events-none absolute inset-0 z-40 opacity-20"
@@ -664,18 +709,18 @@ export default function ArcadeCabinetHub() {
           </div>
         </div>
 
-        {/* 3. PAINEL DE CONTROLE INFERIOR DO GABINETE */}
-        <div className="px-6 py-4 bg-[#07060B] border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-          <div className="flex items-center gap-3">
+        {/* 3. PAINEL DE CONTROLE INFERIOR */}
+        <div className="px-4 sm:px-6 py-3.5 bg-[#07060B] border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center gap-2.5">
             <span className={`px-2.5 py-1 rounded border text-[10px] font-bold ${activeSpec.badgeClass}`}>
-              CARTUCHO ATIVO: {activeSpec.title}
+              CARTUCHO: {activeSpec.title}
             </span>
-            <span className="text-zinc-500 hidden md:inline">
+            <span className="text-zinc-500 hidden lg:inline">
               {activeSpec.subtitle}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={() => setCrtScanlines((prev) => !prev)}
@@ -686,7 +731,7 @@ export default function ArcadeCabinetHub() {
               }`}
             >
               <Tv className="w-3.5 h-3.5" />
-              Filtro CRT: {crtScanlines ? "ON" : "OFF"}
+              CRT: {crtScanlines ? "ON" : "OFF"}
             </button>
             <button
               type="button"
@@ -703,7 +748,7 @@ export default function ArcadeCabinetHub() {
               ) : (
                 <VolumeX aria-hidden className="h-3.5 w-3.5" />
               )}
-              Áudio 8-Bit: {!isMuted ? "ON" : "MUTE"}
+              Áudio: {!isMuted ? "ON" : "MUTE"}
             </button>
           </div>
         </div>

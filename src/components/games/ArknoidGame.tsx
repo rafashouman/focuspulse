@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
   useEffect,
   useRef,
   useState,
@@ -17,6 +17,9 @@ import {
   Gauge,
   Volume2,
   VolumeX,
+  ChevronLeft,
+  ChevronRight,
+  GripHorizontal,
 } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/firebase";
 import { arcadeSynth } from "@/lib/audio/arcadeSynth";
@@ -24,6 +27,16 @@ import { arcadeSynth } from "@/lib/audio/arcadeSynth";
 const WIDTH = 900;
 const HEIGHT = 520;
 const HIGH_SCORE_KEY = "focuspulse_arknoid_highscore";
+
+const triggerHaptic = (ms = 12) => {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try {
+      navigator.vibrate(ms);
+    } catch {
+      // Ignora em navegadores sem suporte
+    }
+  }
+};
 
 function subscribeToHighScore(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -57,6 +70,7 @@ export function ArknoidGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const currentScoreRef = useRef(0);
   const gameStartedAtRef = useRef<number | null>(null);
+
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [gameKey, setGameKey] = useState(0);
@@ -64,6 +78,21 @@ export function ArknoidGame() {
   const [bricksRemaining, setBricksRemaining] = useState(40);
   const [ballSpeedHud, setBallSpeedHud] = useState("6.1");
   const [isMuted, setIsMuted] = useState(false);
+  const [thumbSliderPct, setThumbSliderPct] = useState(50);
+
+  // Refs sincronizadas para não reiniciar o Canvas quando o usuário aperta Pause!
+  const playingRef = useRef(false);
+  const pausedRef = useRef(false);
+  const paddleXRef = useRef(WIDTH / 2);
+  const touchButtonsRef = useRef({ left: false, right: false });
+
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   const highScore = useSyncExternalStore(
     subscribeToHighScore,
@@ -73,7 +102,7 @@ export function ArknoidGame() {
   const [lives, setLives] = useState(3);
   const [combo, setCombo] = useState(1);
   const [message, setMessage] = useState(
-    "Mova o cursor ou use A / D e as setas para controlar o rebatedor."
+    "Deslize na barra tátil abaixo do jogo ou use Mouse / A / D para rebater."
   );
 
   useEffect(() => {
@@ -108,7 +137,7 @@ export function ArknoidGame() {
       visible: true,
     }));
 
-    let paddleX = WIDTH / 2;
+    paddleXRef.current = WIDTH / 2;
     let ballX = WIDTH / 2;
     let ballY = 380;
     let velocityX = 4.3;
@@ -138,9 +167,20 @@ export function ArknoidGame() {
       }
     };
 
+    const setPaddleFromClientX = (clientX: number, element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const rawX = ((clientX - rect.left) / Math.max(1, rect.width)) * WIDTH;
+      const clamped = Math.max(66, Math.min(WIDTH - 66, rawX));
+      paddleXRef.current = clamped;
+      setThumbSliderPct(Math.round(((clamped - 66) / (WIDTH - 132)) * 100));
+    };
+
     const onPointerMove = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      paddleX = ((event.clientX - rect.left) / rect.width) * WIDTH;
+      setPaddleFromClientX(event.clientX, canvas);
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      setPaddleFromClientX(event.clientX, canvas);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -148,7 +188,7 @@ export function ArknoidGame() {
         leftPressed = true;
       if (event.key === "ArrowRight" || event.key.toLowerCase() === "d")
         rightPressed = true;
-      if (event.key.toLowerCase() === "p" && playing) {
+      if (event.key.toLowerCase() === "p" && playingRef.current) {
         setPaused((prev) => !prev);
       }
     };
@@ -204,10 +244,19 @@ export function ArknoidGame() {
       context.fillStyle = glow;
       context.fillRect(0, 0, WIDTH, HEIGHT);
 
-      if (playing && !paused) {
-        if (leftPressed) paddleX -= 8.5;
-        if (rightPressed) paddleX += 8.5;
-        paddleX = Math.max(62, Math.min(WIDTH - 62, paddleX));
+      if (playingRef.current && !pausedRef.current) {
+        if (leftPressed || touchButtonsRef.current.left) {
+          paddleXRef.current -= 9.2;
+        }
+        if (rightPressed || touchButtonsRef.current.right) {
+          paddleXRef.current += 9.2;
+        }
+        paddleXRef.current = Math.max(
+          66,
+          Math.min(WIDTH - 66, paddleXRef.current)
+        );
+
+        const paddleX = paddleXRef.current;
 
         ballX += velocityX;
         ballY += velocityY;
@@ -224,12 +273,14 @@ export function ArknoidGame() {
           arcadeSynth.playBounce("wall");
         }
 
+        // Rebatedor ligeiramente mais largo (68px de raio) p/ melhor resposta no mobile
         if (
-          ballY > HEIGHT - 54 &&
-          ballY < HEIGHT - 36 &&
-          Math.abs(ballX - paddleX) < 66
+          ballY > HEIGHT - 56 &&
+          ballY < HEIGHT - 34 &&
+          Math.abs(ballX - paddleX) < 68
         ) {
           arcadeSynth.playBounce("paddle");
+          triggerHaptic(10);
           velocityY = -Math.abs(velocityY);
           velocityX += (ballX - paddleX) * 0.045;
           setBallSpeedHud(Math.hypot(velocityX, velocityY).toFixed(1));
@@ -240,13 +291,16 @@ export function ArknoidGame() {
 
         if (ballY > HEIGHT + 14) {
           arcadeSynth.playExplosion();
+          triggerHaptic(40);
           currentLives -= 1;
           setLives(currentLives);
           currentCombo = 1;
           setCombo(1);
 
           if (currentLives <= 0) {
-            setMessage("Fim de jogo! Clique em Recomeçar para tentar um novo recorde.");
+            setMessage(
+              "Fim de jogo! Toque em Jogar Novamente para buscar um novo recorde."
+            );
             trackAnalyticsEvent({
               eventName: "game_end",
               appId: "arknoid",
@@ -257,7 +311,7 @@ export function ArknoidGame() {
             });
             setPlaying(false);
           } else {
-            ballX = paddleX;
+            ballX = paddleXRef.current;
             ballY = 360;
             velocityX = 4 * (Math.random() > 0.5 ? 1 : -1);
             velocityY = -4.3;
@@ -276,6 +330,7 @@ export function ArknoidGame() {
             brick.visible = false;
             velocityY *= -1;
             arcadeSynth.playBounce("brick");
+            triggerHaptic(8);
 
             const gained = 10 * currentCombo;
             const nextScore = currentScoreRef.current + gained;
@@ -294,7 +349,9 @@ export function ArknoidGame() {
 
         if (bricks.every((brick) => !brick.visible)) {
           arcadeSynth.playCoinUp();
-          setMessage("Parabéns! Você destruiu todos os 40 módulos com perfeição!");
+          setMessage(
+            "Parabéns! Você destruiu todos os 40 módulos com perfeição!"
+          );
           trackAnalyticsEvent({
             eventName: "game_end",
             appId: "arknoid",
@@ -339,15 +396,16 @@ export function ArknoidGame() {
       trail.forEach((pos, idx) => {
         const ratio = (idx + 1) / trail.length;
         context.beginPath();
-        context.arc(pos.x, pos.y, 8 * ratio, 0, Math.PI * 2);
+        context.arc(pos.x, pos.y, 8.5 * ratio, 0, Math.PI * 2);
         context.fillStyle = `rgba(192, 132, 252, ${ratio * 0.28})`;
         context.fill();
       });
 
+      const currentPaddleX = paddleXRef.current;
       const paddleGrad = context.createLinearGradient(
-        paddleX - 58,
+        currentPaddleX - 64,
         0,
-        paddleX + 58,
+        currentPaddleX + 64,
         0
       );
       paddleGrad.addColorStop(0, "#8b5cf6");
@@ -356,10 +414,10 @@ export function ArknoidGame() {
       context.fillStyle = paddleGrad;
       context.shadowColor = "#a855f7";
       context.shadowBlur = 18;
-      drawRoundedRect(paddleX - 58, HEIGHT - 44, 116, 12, 6);
+      drawRoundedRect(currentPaddleX - 64, HEIGHT - 44, 128, 13, 6);
 
       context.beginPath();
-      context.arc(ballX, ballY, 8.5, 0, Math.PI * 2);
+      context.arc(ballX, ballY, 9, 0, Math.PI * 2);
       context.fillStyle = "#ffffff";
       context.shadowColor = "#e879f9";
       context.shadowBlur = 20;
@@ -369,6 +427,7 @@ export function ArknoidGame() {
       frame = window.requestAnimationFrame(draw);
     };
 
+    canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -376,15 +435,17 @@ export function ArknoidGame() {
 
     return () => {
       window.cancelAnimationFrame(frame);
+      canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [playing, paused, gameKey]);
+  }, [gameKey]);
 
   const startGame = () => {
     arcadeSynth.unlock();
     arcadeSynth.playCoinUp();
+    triggerHaptic(20);
     currentScoreRef.current = 0;
     gameStartedAtRef.current = Date.now();
     setScore(0);
@@ -392,32 +453,48 @@ export function ArknoidGame() {
     setCombo(1);
     setBricksRemaining(40);
     setPaused(false);
-    setMessage("Modo Arcade ativo! Mantenha a bola em jogo para multiplicar o combo.");
+    setMessage(
+      "Modo Arcade ativo! Deslize na barra tátil abaixo ou diretamente no jogo."
+    );
     setGameKey((currentKey) => currentKey + 1);
     setPlaying(true);
     trackAnalyticsEvent({ eventName: "game_start", appId: "arknoid" });
   };
 
+  // Handler para o Trackpad Tátil Mobile (para o dedo não tapar a bolinha!)
+  const handleThumbTrackMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = Math.max(
+      0,
+      Math.min(1, (e.clientX - rect.left) / Math.max(1, rect.width))
+    );
+    paddleXRef.current = 66 + ratio * (WIDTH - 132);
+    setThumbSliderPct(Math.round(ratio * 100));
+  };
+
   const demolitionPct = Math.round(((40 - bricksRemaining) / 40) * 100);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl select-none">
       <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0e14]/90 shadow-[0_30px_100px_-30px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
         {/* Barra Superior de Telemetria / HUD */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] bg-white/[0.02] px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] bg-white/[0.02] px-4 sm:px-6 py-3.5">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff6b61]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#ffc14f]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#49c781]" />
             </div>
-            <span className="ml-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-200">
-              focuspulse.arcade // v2.4
+            <span className="rounded-full border border-violet-300/20 bg-violet-400/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-violet-200">
+              arkanoid // v2.5
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-1.5" aria-label={`Vidas restantes: ${lives}`}>
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4">
+            <div
+              className="flex items-center gap-1"
+              aria-label={`Vidas restantes: ${lives}`}
+            >
               {Array.from({ length: 3 }).map((_, i) => (
                 <Heart
                   key={i}
@@ -430,10 +507,10 @@ export function ArknoidGame() {
               ))}
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1">
+            <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/40 px-2.5 py-1">
               <Zap className="h-3.5 w-3.5 text-amber-300" />
               <span className="font-mono text-xs font-bold text-white">
-                {combo}x <span className="font-normal text-white/50">COMBO</span>
+                {combo}x
               </span>
             </div>
 
@@ -442,26 +519,30 @@ export function ArknoidGame() {
               <span>{ballSpeedHud} m/s</span>
             </div>
 
-            <div className="flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-500/10 px-3.5 py-1">
+            <div className="flex items-center gap-1.5 rounded-full border border-violet-300/25 bg-violet-500/10 px-3 py-1">
               <Sparkles className="h-3.5 w-3.5 text-violet-300" />
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-violet-100">
-                Pontos: {score}
+                {score} PTS
               </span>
             </div>
 
-            <div className="hidden items-center gap-1.5 text-xs font-semibold text-white/60 sm:flex">
+            <div className="flex items-center gap-1 text-xs font-semibold text-white/60">
               <Trophy className="h-3.5 w-3.5 text-amber-400" />
-              <span className="font-mono">Recorde: {highScore}</span>
+              <span className="font-mono">{highScore}</span>
             </div>
           </div>
         </div>
 
         {/* Barra de Progresso de Demolição dos Módulos */}
-        <div className="px-6 py-2 bg-black/40 border-b border-white/[0.05] flex items-center justify-between gap-4 font-mono text-[11px]">
+        <div className="px-4 sm:px-6 py-2 bg-black/40 border-b border-white/[0.05] flex items-center justify-between gap-4 font-mono text-[10px] sm:text-[11px]">
           <span className="text-white/60">
-            DEMOLIÇÃO DE MÓDULOS: <strong className="text-violet-300">{40 - bricksRemaining}/40</strong> ({demolitionPct}%)
+            MÓDULOS:{" "}
+            <strong className="text-violet-300">
+              {40 - bricksRemaining}/40
+            </strong>{" "}
+            ({demolitionPct}%)
           </span>
-          <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="w-32 sm:w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 transition-all duration-300"
               style={{ width: `${demolitionPct}%` }}
@@ -470,32 +551,34 @@ export function ArknoidGame() {
         </div>
 
         {/* Área do Canvas */}
-        <div className="relative bg-[#080a12] p-3 sm:p-5">
+        <div className="relative bg-[#080a12] p-2 sm:p-5">
           <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-inner">
             <canvas
               ref={canvasRef}
               width={WIDTH}
               height={HEIGHT}
-              aria-label="Jogo Arknoid. Mova a plataforma com o mouse ou as setas."
+              aria-label="Jogo Arknoid. Mova a plataforma com o mouse, barra tátil ou as setas."
               className="block w-full touch-none cursor-ew-resize"
             />
 
             {(!playing || paused) && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#080a12]/80 p-6 text-center backdrop-blur-md">
-                <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-500/15 px-3.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-200">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#080a12]/85 p-5 text-center backdrop-blur-md">
+                <span className="mb-2.5 inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-500/15 px-3.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-200">
                   {paused ? "Jogo Pausado" : "Interactive Canvas Lab"}
                 </span>
-                <h3 className="font-display text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
+                <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-white sm:text-4xl">
                   {paused ? "Pausa Estratégica" : "Pulse Arkanoid"}
                 </h3>
-                <p className="mt-2 max-w-md text-sm text-white/70">{message}</p>
+                <p className="mt-2 max-w-md text-xs sm:text-sm text-white/70">
+                  {message}
+                </p>
 
-                <div className="mt-6 flex items-center gap-3">
+                <div className="mt-5 flex items-center gap-3">
                   {paused ? (
                     <button
                       type="button"
                       onClick={() => setPaused(false)}
-                      className="inline-flex items-center gap-2 rounded-full bg-violet-gradient px-6 py-3 text-sm font-bold text-white shadow-violet-glow transition-transform hover:scale-105"
+                      className="inline-flex items-center gap-2 rounded-full bg-violet-gradient px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-violet-glow transition-transform hover:scale-105"
                     >
                       <Play className="h-4 w-4 fill-current" />
                       Continuar Partida
@@ -504,7 +587,7 @@ export function ArknoidGame() {
                     <button
                       type="button"
                       onClick={startGame}
-                      className="inline-flex items-center gap-2 rounded-full bg-violet-gradient px-7 py-3.5 text-sm font-bold text-white shadow-violet-glow transition-transform hover:scale-105"
+                      className="inline-flex items-center gap-2 rounded-full bg-violet-gradient px-7 py-3.5 text-xs sm:text-sm font-bold text-white shadow-violet-glow transition-transform hover:scale-105"
                     >
                       <Play className="h-4 w-4 fill-current" />
                       {score > 0 ? "Jogar Novamente" : "Iniciar Experimento"}
@@ -514,54 +597,116 @@ export function ArknoidGame() {
               </div>
             )}
           </div>
+
+          {/* =========================================================
+              TRACKPAD TÁTIL MOBILE ("ZONA DO POLEGAR" ANTI-OCLUSÃO)
+          ========================================================= */}
+          <div className="mt-3 flex items-center gap-2.5">
+            <button
+              type="button"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                touchButtonsRef.current.left = true;
+              }}
+              onPointerUp={() => (touchButtonsRef.current.left = false)}
+              onPointerLeave={() => (touchButtonsRef.current.left = false)}
+              onPointerCancel={() => (touchButtonsRef.current.left = false)}
+              aria-label="Mover rebatedor para a esquerda"
+              className="h-12 w-14 shrink-0 rounded-xl border border-white/15 bg-white/5 active:bg-violet-500 text-white flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+
+            {/* Barra Deslizante para o Polegar */}
+            <div
+              onPointerDown={(e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                handleThumbTrackMove(e);
+              }}
+              onPointerMove={(e) => {
+                if (e.buttons > 0 || e.pointerType === "touch") {
+                  handleThumbTrackMove(e);
+                }
+              }}
+              className="relative h-12 flex-1 rounded-xl border border-violet-400/25 bg-[#0d101b] overflow-hidden cursor-ew-resize touch-none flex items-center justify-center"
+            >
+              <div
+                className="pointer-events-none absolute top-1.5 bottom-1.5 w-20 -translate-x-1/2 rounded-lg bg-gradient-to-r from-violet-500/80 via-fuchsia-500/80 to-indigo-500/80 border border-white/30 shadow-[0_0_15px_rgba(168,85,247,0.5)] flex items-center justify-center transition-transform duration-75"
+                style={{ left: `${thumbSliderPct}%` }}
+              >
+                <GripHorizontal className="h-4 w-4 text-white" />
+              </div>
+              <span className="pointer-events-none font-mono text-[10px] uppercase tracking-widest text-white/35">
+                Arraste aqui para controlar sem tapar a tela
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                touchButtonsRef.current.right = true;
+              }}
+              onPointerUp={() => (touchButtonsRef.current.right = false)}
+              onPointerLeave={() => (touchButtonsRef.current.right = false)}
+              onPointerCancel={() => (touchButtonsRef.current.right = false)}
+              aria-label="Mover rebatedor para a direita"
+              className="h-12 w-14 shrink-0 rounded-xl border border-white/15 bg-white/5 active:bg-violet-500 text-white flex items-center justify-center transition-colors"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         {/* Rodapé de Controles */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] bg-[#0b0e14] px-6 py-4">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] bg-[#0b0e14] px-4 sm:px-6 py-3.5">
+          <div className="hidden sm:flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>Controles:</span>
             <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
-              Mouse / Touch
+              Barra Tátil / Touch
             </kbd>
             <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
-              ← →
-            </kbd>
-            <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
-              A / D
+              ← → / A D
             </kbd>
             <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
               P (Pausa)
             </kbd>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2.5">
             <button
               type="button"
               onClick={toggleSound}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-violet-300/30 hover:text-white"
             >
-              {!isMuted ? <Volume2 className="h-3.5 w-3.5 text-emerald-400" /> : <VolumeX className="h-3.5 w-3.5 text-white/40" />}
+              {!isMuted ? (
+                <Volume2 className="h-3.5 w-3.5 text-emerald-400" />
+              ) : (
+                <VolumeX className="h-3.5 w-3.5 text-white/40" />
+              )}
               <span>{!isMuted ? "SFX ON" : "MUTE"}</span>
             </button>
 
-            {playing && (
+            <div className="flex items-center gap-2">
+              {playing && (
+                <button
+                  type="button"
+                  onClick={() => setPaused((p) => !p)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-violet-300/30 hover:text-white"
+                >
+                  <Pause className="h-3.5 w-3.5" />
+                  {paused ? "Retomar" : "Pausar"}
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => setPaused((p) => !p)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-violet-300/30 hover:text-white"
+                onClick={startGame}
+                className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/30 bg-violet-500/15 px-4 py-2 text-xs font-bold text-violet-100 transition-colors hover:bg-violet-500/30"
               >
-                <Pause className="h-3.5 w-3.5" />
-                {paused ? "Retomar" : "Pausar"}
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reiniciar
               </button>
-            )}
-            <button
-              type="button"
-              onClick={startGame}
-              className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/30 bg-violet-500/15 px-4 py-2 text-xs font-bold text-violet-100 transition-colors hover:bg-violet-500/30"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Reiniciar
-            </button>
+            </div>
           </div>
         </div>
       </div>

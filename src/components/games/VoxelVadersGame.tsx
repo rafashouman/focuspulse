@@ -19,12 +19,23 @@ import {
   Sparkles,
   Flame,
   Target,
+  Hand,
 } from "lucide-react";
 
 interface VoxelVadersProps {
   embedded?: boolean;
   onScoreSubmit?: (score: number, wave: number) => void;
 }
+
+const triggerHaptic = (pattern: number | number[] = 18) => {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try {
+      navigator.vibrate(pattern);
+    } catch {
+      // Ignora em dispositivos que bloqueiam vibrate
+    }
+  }
+};
 
 export default function VoxelVadersGame({
   embedded = false,
@@ -39,6 +50,7 @@ export default function VoxelVadersGame({
   const [killStreak, setKillStreak] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
   const [weaponReady, setWeaponReady] = useState(true);
+  const [autoFire, setAutoFire] = useState(false);
   const [lastFloatingGain, setLastFloatingGain] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState<"START" | "PLAYING" | "GAMEOVER">(
@@ -54,9 +66,16 @@ export default function VoxelVadersGame({
     left: false,
     right: false,
     shoot: false,
+    autoFire: false,
+    touchTargetX: null as number | null,
+    isTouchingCanvas: false,
   });
 
   const restartTriggerRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    controlsRef.current.autoFire = autoFire;
+  }, [autoFire]);
 
   useEffect(() => {
     return onAuthStateChanged(auth, setUser, (error) => {
@@ -87,25 +106,49 @@ export default function VoxelVadersGame({
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("#04020C");
-    scene.fog = new THREE.FogExp2("#04020C", 0.022);
+    scene.fog = new THREE.FogExp2("#04020C", 0.018);
 
     const camera = new THREE.PerspectiveCamera(
       55,
       container.clientWidth / container.clientHeight,
       0.1,
-      120
+      140
     );
-    camera.position.set(0, -17, 21);
-    camera.lookAt(0, 1, 0);
+
+    // Função que adapta a distância da câmera para celulares em modo Retrato (Portrait)
+    // garantindo que todas as 8 colunas (-12.2 a +12.2) apareçam sem corte!
+    const syncCameraToAspect = () => {
+      if (!container) return;
+      const width = Math.max(1, container.clientWidth);
+      const height = Math.max(1, container.clientHeight);
+      const aspect = width / height;
+
+      camera.aspect = aspect;
+      if (aspect < 0.72) {
+        // Celular estreito em pé
+        camera.position.set(0, -21.5, 33.5);
+        camera.lookAt(0, 0.5, 0);
+      } else if (aspect < 1.05) {
+        // Tablet vertical ou celular largo
+        camera.position.set(0, -19.5, 27.5);
+        camera.lookAt(0, 0.8, 0);
+      } else {
+        // Desktop / Paisagem
+        camera.position.set(0, -17, 21);
+        camera.lookAt(0, 1, 0);
+      }
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: "high-performance",
     });
-    renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
+    syncCameraToAspect();
 
     const ambientLight = new THREE.AmbientLight("#ffffff", 0.65);
     scene.add(ambientLight);
@@ -155,7 +198,7 @@ export default function VoxelVadersGame({
       }),
     ];
 
-    const bulletGeo = new THREE.BoxGeometry(0.24, 0.9, 0.24);
+    const bulletGeo = new THREE.BoxGeometry(0.26, 0.95, 0.26);
     const playerBulletMat = new THREE.MeshBasicMaterial({ color: "#00F5D4" });
     const enemyBulletMat = new THREE.MeshBasicMaterial({ color: "#FF0055" });
     const particleGeo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
@@ -252,6 +295,8 @@ export default function VoxelVadersGame({
       shotsFired = 0;
       shotsHit = 0;
       playerMesh.position.set(0, -11, 0);
+      controlsRef.current.touchTargetX = null;
+      controlsRef.current.isTouchingCanvas = false;
 
       setScore(0);
       setLives(3);
@@ -259,7 +304,9 @@ export default function VoxelVadersGame({
       setKillStreak(0);
       setAccuracy(100);
       setGameState("PLAYING");
+      arcadeSynth.unlock();
       arcadeSynth.playCoinUp();
+      triggerHaptic(25);
       setScoreSaved(false);
       setLeaderboardError("");
       setFinalResult({ score: 0, wave: 1 });
@@ -270,11 +317,16 @@ export default function VoxelVadersGame({
 
     restartTriggerRef.current = resetAndStartGame;
 
+    // Controles de Teclado
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A")
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
         controlsRef.current.left = true;
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D")
+        controlsRef.current.touchTargetX = null;
+      }
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
         controlsRef.current.right = true;
+        controlsRef.current.touchTargetX = null;
+      }
       if (e.key === " ") {
         e.preventDefault();
         controlsRef.current.shoot = true;
@@ -289,16 +341,46 @@ export default function VoxelVadersGame({
       if (e.key === " ") controlsRef.current.shoot = false;
     };
 
-    const onResize = () => {
-      if (!container) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
+    // Controles Touch / Drag Direto no Canvas (Ideal para Mobile!)
+    const updateTouchPosition = (clientX: number) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const normX = ((clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+      controlsRef.current.touchTargetX = THREE.MathUtils.clamp(
+        normX * 12.2,
+        -12,
+        12
+      );
     };
 
+    const onCanvasPointerDown = (e: PointerEvent) => {
+      if (!isRunning) return;
+      if (e.pointerType === "touch") {
+        controlsRef.current.isTouchingCanvas = true;
+        updateTouchPosition(e.clientX);
+      }
+    };
+
+    const onCanvasPointerMove = (e: PointerEvent) => {
+      if (!isRunning) return;
+      if (controlsRef.current.isTouchingCanvas && e.pointerType === "touch") {
+        updateTouchPosition(e.clientX);
+      }
+    };
+
+    const onCanvasPointerUp = (e: PointerEvent) => {
+      if (e.pointerType === "touch") {
+        controlsRef.current.isTouchingCanvas = false;
+        controlsRef.current.touchTargetX = null;
+      }
+    };
+
+    const domElem = renderer.domElement;
+    domElem.addEventListener("pointerdown", onCanvasPointerDown);
+    domElem.addEventListener("pointermove", onCanvasPointerMove);
+    window.addEventListener("pointerup", onCanvasPointerUp);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", syncCameraToAspect);
 
     let animationFrameId: number;
     let prevTime = performance.now();
@@ -312,6 +394,8 @@ export default function VoxelVadersGame({
 
       if (isRunning) {
         const moveSpeed = 16;
+
+        // 1. Movimentação por Botão ou Arraste Direto (Touch Drag)
         if (controlsRef.current.left) {
           playerMesh.position.x = Math.max(
             -12,
@@ -332,6 +416,19 @@ export default function VoxelVadersGame({
             -0.35,
             0.15
           );
+        } else if (controlsRef.current.touchTargetX !== null) {
+          const prevX = playerMesh.position.x;
+          playerMesh.position.x = THREE.MathUtils.lerp(
+            prevX,
+            controlsRef.current.touchTargetX,
+            Math.min(1, dt * 16)
+          );
+          const deltaX = playerMesh.position.x - prevX;
+          playerMesh.rotation.z = THREE.MathUtils.lerp(
+            playerMesh.rotation.z,
+            THREE.MathUtils.clamp(-deltaX * 2.2, -0.4, 0.4),
+            0.2
+          );
         } else {
           playerMesh.rotation.z = THREE.MathUtils.lerp(
             playerMesh.rotation.z,
@@ -340,10 +437,15 @@ export default function VoxelVadersGame({
           );
         }
 
-        const cooldownElapsed = now - lastShotTime > 240;
+        const cooldownElapsed = now - lastShotTime > 235;
         setWeaponReady(cooldownElapsed);
 
-        if (controlsRef.current.shoot && cooldownElapsed) {
+        const wantsToShoot =
+          controlsRef.current.shoot ||
+          controlsRef.current.autoFire ||
+          controlsRef.current.isTouchingCanvas;
+
+        if (wantsToShoot && cooldownElapsed) {
           const bMesh = new THREE.Mesh(bulletGeo, playerBulletMat);
           bMesh.position.set(
             playerMesh.position.x,
@@ -377,6 +479,7 @@ export default function VoxelVadersGame({
             inv.mesh.position.y -= 0.85;
             if (inv.mesh.position.y <= playerMesh.position.y + 1.2) {
               isRunning = false;
+              triggerHaptic([40, 60, 80]);
               setGameState("GAMEOVER");
               updateHighScore(currentScore);
               setFinalResult({ score: currentScore, wave: currentWave });
@@ -414,7 +517,7 @@ export default function VoxelVadersGame({
 
           if (b.fromPlayer) {
             for (const inv of aliveInvaders) {
-              if (b.mesh.position.distanceTo(inv.mesh.position) < 1.05) {
+              if (b.mesh.position.distanceTo(inv.mesh.position) < 1.12) {
                 inv.alive = false;
                 scene.remove(inv.mesh);
                 scene.remove(b.mesh);
@@ -424,7 +527,10 @@ export default function VoxelVadersGame({
                 currentStreak += 1;
                 setKillStreak(currentStreak);
                 setAccuracy(
-                  Math.min(100, Math.round((shotsHit / Math.max(1, shotsFired)) * 100))
+                  Math.min(
+                    100,
+                    Math.round((shotsHit / Math.max(1, shotsFired)) * 100)
+                  )
                 );
 
                 const bonus = inv.points + Math.min(currentStreak * 25, 250);
@@ -434,6 +540,7 @@ export default function VoxelVadersGame({
 
                 spawnExplosion(inv.mesh.position, "#FF0055");
                 arcadeSynth.playExplosion();
+                triggerHaptic(12);
                 break;
               }
             }
@@ -443,6 +550,7 @@ export default function VoxelVadersGame({
               bullets.splice(i, 1);
               spawnExplosion(playerMesh.position, "#00F5D4");
               arcadeSynth.playExplosion();
+              triggerHaptic([35, 50, 35]);
 
               currentLives -= 1;
               currentStreak = 0;
@@ -464,6 +572,7 @@ export default function VoxelVadersGame({
           currentWave += 1;
           setWave(currentWave);
           arcadeSynth.playCoinUp();
+          triggerHaptic([20, 40, 20]);
           spawnWave(currentWave);
         }
       }
@@ -489,9 +598,12 @@ export default function VoxelVadersGame({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      domElem.removeEventListener("pointerdown", onCanvasPointerDown);
+      domElem.removeEventListener("pointermove", onCanvasPointerMove);
+      window.removeEventListener("pointerup", onCanvasPointerUp);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", syncCameraToAspect);
       playerGeo.dispose();
       playerMat.dispose();
       invaderGeo.dispose();
@@ -546,38 +658,38 @@ export default function VoxelVadersGame({
   return (
     <div
       className={`relative w-full ${
-        embedded ? "h-[640px]" : "min-h-screen"
-      } bg-[#04020C] text-white font-mono overflow-hidden flex flex-col justify-between select-none`}
+        embedded ? "h-[580px] sm:h-[650px]" : "min-h-screen"
+      } bg-[#04020C] text-white font-mono overflow-hidden flex flex-col justify-between select-none touch-none`}
     >
       {/* Alerta de Escudo Crítico quando resta 1 vida */}
       {lives === 1 && gameState === "PLAYING" && (
         <div className="pointer-events-none absolute inset-0 z-20 border-4 border-red-500/50 animate-pulse" />
       )}
 
-      {/* 1. HUD TELEMETRY SUPERIOR */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 bg-[#04020C]/85 backdrop-blur-md border-b border-[#FF0055]/30">
-        <div className="flex items-center gap-5">
+      {/* 1. HUD TELEMETRY SUPERIOR (COMPACTO NO MOBILE) */}
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-2 sm:gap-4 px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-[#04020C]/90 backdrop-blur-md border-b border-[#FF0055]/30">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div>
-            <span className="text-[9px] uppercase tracking-[0.25em] text-[#FF0055] block">
-              {"// SCORE ATUAL"}
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.22em] text-[#FF0055] block">
+              {"// SCORE"}
             </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-[#00F5D4] drop-shadow-[0_0_10px_rgba(0,245,212,0.5)]">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#00F5D4] drop-shadow-[0_0_10px_rgba(0,245,212,0.5)]">
                 {String(score).padStart(6, "0")}
               </span>
               {lastFloatingGain && (
-                <span className="text-[10px] font-bold text-amber-400">
+                <span className="hidden xs:inline text-[9px] font-bold text-amber-400">
                   {lastFloatingGain}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="hidden sm:block border-l border-white/10 pl-5">
-            <span className="text-[9px] uppercase tracking-[0.25em] text-purple-400 flex items-center gap-1">
-              <Trophy className="w-3 h-3" /> RECORDE
+          <div className="border-l border-white/10 pl-3 sm:pl-5">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-purple-400 flex items-center gap-1">
+              <Trophy className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> BEST
             </span>
-            <span className="text-base font-bold text-white">
+            <span className="text-xs sm:text-base font-bold text-white">
               {String(highScore).padStart(6, "0")}
             </span>
           </div>
@@ -593,33 +705,38 @@ export default function VoxelVadersGame({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Indicador de Plasma / Arma */}
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-[9px] uppercase tracking-widest text-zinc-400 flex items-center gap-1">
-              <Target className="w-3 h-3 text-[#00F5D4]" /> CANHÃO PLASMA
-            </span>
-            <span
-              className={`text-[10px] font-bold ${
-                weaponReady ? "text-[#00F5D4]" : "text-amber-400"
-              }`}
-            >
-              {weaponReady ? "● PRONTO" : "RECARREGANDO"}
-            </span>
-          </div>
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          {/* Switch de Auto-Fire p/ facilitar 1-Thumb Play no Mobile */}
+          <button
+            type="button"
+            onClick={() => {
+              setAutoFire((prev) => !prev);
+              triggerHaptic(15);
+            }}
+            className={`px-2.5 py-1.5 rounded-lg border text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              autoFire
+                ? "bg-[#00F5D4] text-slate-950 border-[#00F5D4] shadow-[0_0_15px_rgba(0,245,212,0.4)]"
+                : "bg-white/5 text-white/60 border-white/15 hover:text-white"
+            }`}
+          >
+            <Target className="w-3 h-3" />
+            <span>AUTO-FIRE {autoFire ? "ON" : "OFF"}</span>
+          </button>
 
           <div className="text-right">
-            <span className="text-[9px] uppercase tracking-[0.25em] text-purple-400 block">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-purple-400 block">
               WAVE
             </span>
-            <span className="text-lg font-black text-white">0{wave}</span>
+            <span className="text-sm sm:text-lg font-black text-white">
+              0{wave}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-2 rounded-xl">
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2.5 py-1.5 rounded-xl">
             {[1, 2, 3].map((heartIndex) => (
               <Heart
                 key={heartIndex}
-                className={`w-4 h-4 transition-all ${
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all ${
                   heartIndex <= lives
                     ? "text-[#FF0055] fill-[#FF0055] drop-shadow-[0_0_8px_#FF0055]"
                     : "text-white/20"
@@ -630,8 +747,21 @@ export default function VoxelVadersGame({
         </div>
       </div>
 
-      {/* 2. CANVAS THREE.JS */}
-      <div ref={mountRef} className="absolute inset-0 z-10 w-full h-full" />
+      {/* 2. CANVAS THREE.JS (COM SUPORTE A ARRASTE DIRETO NO MOBILE) */}
+      <div
+        ref={mountRef}
+        className="absolute inset-0 z-10 w-full h-full touch-none"
+      />
+
+      {/* Dica Flutuante de Gesto Mobile */}
+      {gameState === "PLAYING" && (
+        <div className="pointer-events-none relative z-20 mt-2 flex justify-center sm:hidden">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 border border-white/10 px-3 py-1 text-[9px] text-white/70 backdrop-blur-md">
+            <Hand className="w-3 h-3 text-[#00F5D4]" /> Arraste na tela p/ mover +
+            atirar ou use os botões abaixo
+          </span>
+        </div>
+      )}
 
       {/* 3. OVERLAYS DE INÍCIO E GAME OVER */}
       <AnimatePresence>
@@ -640,10 +770,10 @@ export default function VoxelVadersGame({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative z-30 flex-1 flex items-center justify-center p-6 bg-[#04020C]/75 backdrop-blur-md"
+            className="relative z-30 flex-1 flex items-center justify-center p-4 sm:p-6 bg-[#04020C]/80 backdrop-blur-md"
           >
-            <div className="max-w-md w-full rounded-3xl bg-[#0D0620]/95 border border-[#FF0055]/40 p-8 text-center shadow-[0_0_70px_rgba(255,0,85,0.2)]">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF0055]/15 border border-[#FF0055]/40 text-[#FF0055] text-[11px] uppercase tracking-widest mb-4">
+            <div className="max-w-md w-full rounded-3xl bg-[#0D0620]/95 border border-[#FF0055]/40 p-6 sm:p-8 text-center shadow-[0_0_70px_rgba(255,0,85,0.2)]">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF0055]/15 border border-[#FF0055]/40 text-[#FF0055] text-[10px] sm:text-[11px] uppercase tracking-widest mb-3">
                 <Sparkles className="w-3.5 h-3.5" /> WebGL Three.js Arcade
               </div>
 
@@ -651,16 +781,19 @@ export default function VoxelVadersGame({
                 VOXEL<span className="text-[#00F5D4]">VADERS</span>
               </h2>
 
-              <p className="text-xs text-purple-200/70 leading-relaxed mb-6">
+              <p className="text-xs text-purple-200/75 leading-relaxed mb-6">
                 {gameState === "START"
-                  ? "Defenda a grade orbital contra o enxame de octaedros. Use [A/D] ou [Setas] para manobrar e [ESPAÇO] para disparar."
+                  ? "No celular, deslize o dedo sobre a nave para manobrar com tiro automático ou use o gamepad abaixo. No PC, use [A/D] e [ESPAÇO]."
                   : `Defesa rompida na Wave 0${wave}. Pontuação final: ${score} PTS (Precisão: ${accuracy}%).`}
               </p>
 
               {gameState === "GAMEOVER" && (
                 <div className="mb-5 space-y-3">
                   {scoreSaved ? (
-                    <p role="status" className="text-sm font-bold text-[#00F5D4]">
+                    <p
+                      role="status"
+                      className="text-sm font-bold text-[#00F5D4]"
+                    >
                       Pontuação registrada no leaderboard!
                     </p>
                   ) : (
@@ -715,42 +848,66 @@ export default function VoxelVadersGame({
         )}
       </AnimatePresence>
 
-      {/* 4. CONTROLES TÁTEIS MOBILE / MOUSE BAR */}
-      <div className="relative z-20 px-6 py-4 bg-[#04020C]/85 border-t border-white/10 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      {/* 4. CONTROLES TÁTEIS MOBILE ERGONÔMICOS / GAMEPAD BAR */}
+      <div className="relative z-20 px-3.5 sm:px-6 py-3 sm:py-4 bg-[#04020C]/95 border-t border-white/10 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 sm:flex-initial">
           <button
             type="button"
-            onPointerDown={() => (controlsRef.current.left = true)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              controlsRef.current.left = true;
+              controlsRef.current.touchTargetX = null;
+              triggerHaptic(10);
+            }}
             onPointerUp={() => (controlsRef.current.left = false)}
             onPointerLeave={() => (controlsRef.current.left = false)}
-            className="w-14 h-12 rounded-xl bg-white/5 active:bg-[#00F5D4] active:text-black border border-white/15 flex items-center justify-center transition-colors"
+            onPointerCancel={() => (controlsRef.current.left = false)}
+            aria-label="Mover para a esquerda"
+            className="flex-1 sm:flex-initial sm:w-16 h-14 rounded-2xl bg-white/10 active:bg-[#00F5D4] active:text-black border border-white/20 flex items-center justify-center transition-colors shadow-lg"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-7 h-7" />
           </button>
           <button
             type="button"
-            onPointerDown={() => (controlsRef.current.right = true)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              controlsRef.current.right = true;
+              controlsRef.current.touchTargetX = null;
+              triggerHaptic(10);
+            }}
             onPointerUp={() => (controlsRef.current.right = false)}
             onPointerLeave={() => (controlsRef.current.right = false)}
-            className="w-14 h-12 rounded-xl bg-white/5 active:bg-[#00F5D4] active:text-black border border-white/15 flex items-center justify-center transition-colors"
+            onPointerCancel={() => (controlsRef.current.right = false)}
+            aria-label="Mover para a direita"
+            className="flex-1 sm:flex-initial sm:w-16 h-14 rounded-2xl bg-white/10 active:bg-[#00F5D4] active:text-black border border-white/20 flex items-center justify-center transition-colors shadow-lg"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-7 h-7" />
           </button>
         </div>
 
-        <span className="hidden md:flex items-center gap-2 text-[11px] text-purple-300/60">
+        <span className="hidden lg:flex items-center gap-2 text-[11px] text-purple-300/60">
           <ShieldAlert className="w-4 h-4 text-[#00F5D4]" />
-          TECLADO: [A / D] MOVER • [ESPAÇO] LASER
+          ARRASTE NA TELA OU USE [A / D] + [ESPAÇO]
         </span>
 
         <button
           type="button"
-          onPointerDown={() => (controlsRef.current.shoot = true)}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            controlsRef.current.shoot = true;
+            triggerHaptic(15);
+          }}
           onPointerUp={() => (controlsRef.current.shoot = false)}
           onPointerLeave={() => (controlsRef.current.shoot = false)}
-          className="px-6 h-12 rounded-xl bg-[#FF0055]/20 active:bg-[#FF0055] border border-[#FF0055] text-[#FF0055] active:text-white font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-colors shadow-[0_0_20px_rgba(255,0,85,0.25)]"
+          onPointerCancel={() => (controlsRef.current.shoot = false)}
+          className={`px-6 sm:px-8 h-14 rounded-2xl border font-black text-xs sm:text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(255,0,85,0.3)] ${
+            weaponReady
+              ? "bg-[#FF0055]/25 active:bg-[#FF0055] border-[#FF0055] text-white"
+              : "bg-amber-500/15 border-amber-400/50 text-amber-300"
+          }`}
         >
-          <Crosshair className="w-4 h-4" /> FIRE
+          <Crosshair className="w-5 h-5" />
+          <span>FIRE</span>
         </button>
       </div>
     </div>
