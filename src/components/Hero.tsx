@@ -398,7 +398,7 @@ export function Hero() {
           </motion.div>
 
           {/* DOCK DE NAVEGAÇÃO DOS TEMPLATES */}
-          <div className="mt-7 flex items-center justify-between gap-3 rounded-full border border-white/10 bg-[#0d1017]/80 px-3.5 py-2 backdrop-blur-xl">
+          <div className="mt-7 flex items-center justify-between gap-3 rounded-full border border-white/10 bg-[#0d1017]/80 px-1.5 py-1 backdrop-blur-xl">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {projects.map((proj, idx) => {
                 const isActive = idx === activeIndex;
