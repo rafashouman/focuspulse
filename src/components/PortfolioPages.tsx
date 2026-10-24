@@ -709,903 +709,205 @@ const formatWorkTitle = (filename: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const DESIGN_GALLERIES = [
-  {
-    id: "design-grafico",
-    title: "Design Gráfico & Print",
-    code: "ARCHIVE // PRINT-01",
-    accent: "from-rose-500/20 via-amber-500/5 to-transparent",
-    badgeClass: "border-rose-400/30 bg-rose-500/10 text-rose-200",
-    description:
-      "Identidade física, papelaria corporativa, cardápios gastronômicos, vestuário e materiais promocionais de alto impacto.",
-    folder: "port-dg",
-    works: [
-      "aw-cartao.jpg",
-      "bargento-aheadworks.jpg",
-      "bargento-cardapio.jpg",
-      "camiseta.png",
-      "cartao-pink-frente-bg.jpg",
-      "cartao-pink-frente.jpg",
-      "cartao-pink-verso-bg.jpg",
-      "cartao-pink-verso.jpg",
-      "faxia-bela-juba.jpg",
-      "faxia-bela-juba.png",
-      "flavia-cartao-bg.jpg",
-      "flavia-cartao-vs-bg.jpg",
-      "flavia-cartao-vs.jpg",
-      "flavia-cartao.jpg",
-      "fox-banner-1-bg.jpg",
-      "fox-banner-1.jpg",
-      "fox-banner-2-bg.jpg",
-      "fox-banner-2.jpg",
-      "fox-banner-3.jpg",
-      "impressao-cardapio-1.jpg",
-      "impressao-cardapio-2.jpg",
-      "impressao-cardapio-bg-2.jpg",
-      "meu-old.jpg",
-      "panfleto-paty-1.jpg",
-      "panfleto-paty-2.jpg",
-      "panfleto-severo-2.jpg",
-      "panfleto-severo-3.jpg",
-      "panfleto-severo1.jpg",
-      "pink-cardapio-2.jpg",
-      "tutoia-panfleto.jpg",
-      "vale-diamix-pq.jpg",
-      "vale-diamix.jpg",
-    ],
-  },
-  {
-    id: "web-design",
-    title: "Web Design & Performance Ads",
-    code: "ARCHIVE // DIGITAL-02",
-    accent: "from-violet-500/20 via-cyan-500/5 to-transparent",
-    badgeClass: "border-violet-400/30 bg-violet-500/10 text-violet-200",
-    description:
-      "Hero banners para e-commerce, campanhas de tráfego pago, social media, e-mail marketing de retenção e interfaces web.",
-    folder: "port-wd",
-    works: [
-      "banner-promo-rheem-2.jpg",
-      "banner-promo-rheem.jpg",
-      "banners-ecommerce-(1).jpg",
-      "banners-ecommerce-(3).jpg",
-      "banners-ecommerce-(4).jpg",
-      "banners-ecommerce-(5).jpg",
-      "banners-ecommerce-aw.jpg",
-      "bargento-capa-face.jpg",
-      "bargento-divulga--1.jpg",
-      "bargento-divulga-2.jpg",
-      "bargento-divulga.jpg",
-      "belajuba-faixa.jpg",
-      "capa-face-(1).jpg",
-      "capa-face-(2).jpg",
-      "capa-face-(4).jpg",
-      "capa-face-(5).jpg",
-      "capa-face-(8).jpg",
-      "capa-face-3.jpg",
-      "capa-face-7.png",
-      "capa-face-8.jpg",
-      "divulga-google.jpg",
-      "email-mkt (1).jpg",
-      "email-mkt (1).png",
-      "email-mkt (2).jpg",
-      "email-mkt (4).jpg",
-      "email-mkt-3.jpg",
-      "email-mkt-5.jpg",
-      "especial-face-pq.jpg",
-      "especial-face.jpg",
-      "especial-site-carol.png",
-      "especial-site.jpg",
-      "pink-avatar.jpg",
-      "pink-face-(1).jpg",
-      "pink-face-(2).jpg",
-      "pink-face-(4).jpg",
-      "pink-face-(5).jpg",
-      "pink-face-(7).jpg",
-      "pink-face-3.jpg",
-      "pink-face-divulga-1-big.jpg",
-      "pink-face-divulga-2-big.jpg",
-      "pink-face-divulga-2-pq.jpg",
-      "pink-face-divulga-3-big.jpg",
-      "pink-face-divulga-3-pq.jpg",
-      "pink-face-divulga-4-big.jpg",
-      "pink-face-divulga-4-pq.jpg",
-      "pink-face-divulga-5-big.jpg",
-      "pink-face-divulga-5-pq.jpg",
-      "pink-face-divulga-6-big.jpg",
-      "pink-face-divulga-6-pq.jpg",
-      "post-face (1).jpg",
-      "post-face (1).png",
-      "post-face (11).jpg",
-      "post-face (2).jpg",
-      "post-face (2).png",
-      "post-face (3).jpg",
-      "post-face (4).jpg",
-      "post-face (5).jpg",
-      "post-face (6).jpg",
-      "post-face (6).png",
-      "post-face-(10).jpg",
-      "post-face-(11).jpg",
-      "post-face-(3).jpg",
-      "post-face-(5).jpg",
-      "post-face-(7).jpg",
-      "post-face-(8).jpg",
-      "post-face-3.jpg",
-      "ragina-Capa_Face.jpg",
-      "regina-avatar.jpg",
-      "site-carol-gd.jpg",
-      "site-flavia-gd.png",
-      "thumbnail_Capa_Face.jpg",
-    ],
-  },
-];
-
-type DesignSubTag =
-  | "ALL"
-  | "BANNERS"
-  | "SOCIAL"
-  | "IDENTIDADE"
-  | "IMPRESSOS"
-  | "WEB_EMAIL";
-
-const SUB_TAGS: Array<{ id: DesignSubTag; label: string }> = [
-  { id: "ALL", label: "Todas as Especialidades" },
-  { id: "BANNERS", label: "Banners & E-commerce" },
-  { id: "SOCIAL", label: "Social Media & Capas" },
-  { id: "IDENTIDADE", label: "Cartões & Identidade" },
-  { id: "IMPRESSOS", label: "Cardápios & Impressos" },
-  { id: "WEB_EMAIL", label: "Web & E-mail Mkt" },
-];
-
-const formatWorkTitle = (filename: string) =>
-  filename
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const classifyDesignPiece = (filename: string): {
-  tagId: DesignSubTag;
-  label: string;
-  deliverableType: string;
-} => {
-  const lower = filename.toLowerCase();
-  if (lower.includes("banner") || lower.includes("faixa") || lower.includes("faxia")) {
-    return {
-      tagId: "BANNERS",
-      label: "Hero Banner / Display",
-      deliverableType: "Alta Conversão & Destaque Visual",
-    };
-  }
-  if (lower.includes("cartao") || lower.includes("avatar") || lower.includes("camiseta") || lower.includes("vale")) {
-    return {
-      tagId: "IDENTIDADE",
-      label: "Branding & Identidade",
-      deliverableType: "Ponto de Contato da Marca",
-    };
-  }
-  if (lower.includes("cardapio") || lower.includes("panfleto") || lower.includes("impressao")) {
-    return {
-      tagId: "IMPRESSOS",
-      label: "Editorial & Print",
-      deliverableType: "Material Físico Diagramado",
-    };
-  }
-  if (lower.includes("email") || lower.includes("site") || lower.includes("google")) {
-    return {
-      tagId: "WEB_EMAIL",
-      label: "UI Web & CRM",
-      deliverableType: "Layout Digital & Retenção",
-    };
-  }
-  return {
-    tagId: "SOCIAL",
-    label: "Social & Campanha",
-    deliverableType: "Engajamento em Redes Sociais",
-  };
-};
-
-interface EnrichedWorkItem {
-  id: string;
-  filename: string;
-  title: string;
-  src: string;
-  galleryId: string;
-  galleryTitle: string;
-  tagId: DesignSubTag;
-  tagLabel: string;
-  deliverableType: string;
-  formatExt: string;
-}
-
-const ALL_ENRICHED_WORKS: EnrichedWorkItem[] = DESIGN_GALLERIES.flatMap(
-  (gallery) =>
-    gallery.works.map((filename, idx) => {
-      const meta = classifyDesignPiece(filename);
-      const ext = filename.split(".").pop()?.toUpperCase() || "JPG";
-      return {
-        id: `${gallery.id}-${idx}-${filename}`,
-        filename,
-        title: formatWorkTitle(filename),
-        src: `/images/${gallery.folder}/${encodeURIComponent(filename)}`,
-        galleryId: gallery.id,
-        galleryTitle: gallery.title,
-        tagId: meta.tagId,
-        tagLabel: meta.label,
-        deliverableType: meta.deliverableType,
-        formatExt: ext,
-      };
-    })
-);
-
 export function DesignPageContent() {
   const [activeTab, setActiveTab] = useState<string>("all");
-  const [activeSubTag, setActiveSubTag] = useState<DesignSubTag>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [gridDensity, setGridDensity] = useState<"editorial" | "compact">(
-    "editorial"
+  const [lightboxItem, setLightboxItem] = useState<{
+    src: string;
+    title: string;
+    category: string;
+  } | null>(null);
+
+  const visibleGalleries = DESIGN_GALLERIES.filter(
+    (g) => activeTab === "all" || g.id === activeTab
   );
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [isZoomed, setIsZoomed] = useState<boolean>(false);
-  const [canvasBg, setCanvasBg] = useState<"dark" | "checker">("dark");
-
-  // Lista filtrada globalmente para permitir navegação Anterior/Próximo no Lightbox
-  const filteredAllWorks = ALL_ENRICHED_WORKS.filter((item) => {
-    const matchGallery = activeTab === "all" || item.galleryId === activeTab;
-    const matchSubTag =
-      activeSubTag === "ALL" || item.tagId === activeSubTag;
-    const matchSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tagLabel.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchGallery && matchSubTag && matchSearch;
-  });
-
-  const activeLightboxItem =
-    lightboxIndex !== null ? filteredAllWorks[lightboxIndex] ?? null : null;
-
-  // Navegação por teclado dentro do Studio Lightbox
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setLightboxIndex(null);
-        setIsZoomed(false);
-      } else if (e.key === "ArrowRight") {
-        setIsZoomed(false);
-        setLightboxIndex((prev) =>
-          prev !== null ? (prev + 1) % filteredAllWorks.length : null
-        );
-      } else if (e.key === "ArrowLeft") {
-        setIsZoomed(false);
-        setLightboxIndex((prev) =>
-          prev !== null
-            ? (prev - 1 + filteredAllWorks.length) % filteredAllWorks.length
-            : null
-        );
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = "";
-    };
-  }, [lightboxIndex, filteredAllWorks.length]);
-
-  const totalCount = ALL_ENRICHED_WORKS.length;
 
   return (
-    <section className="container-luxe py-28 sm:py-36 relative">
-      {/* Ambient Studio Glows */}
-      <div className="pointer-events-none absolute top-10 left-1/4 h-[460px] w-[460px] rounded-full bg-rose-500/10 blur-[150px]" />
-      <div className="pointer-events-none absolute top-1/3 right-10 h-[420px] w-[420px] rounded-full bg-violet-600/10 blur-[150px]" />
-
-      {/* =========================================================
-          1. HERO EDITORIAL DE DIREÇÃO DE ARTE + TELEMETRIA DO ACERVO
-      ========================================================= */}
-      <div className="relative z-10 mb-14 border-b border-white/10 pb-12">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-7">
-            <div className="mb-5 flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-rose-300/25 bg-rose-400/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-rose-200">
-                <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-                FocusPulse Creative Vault · Direção de Arte
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 font-mono text-[11px] font-bold text-violet-200">
-                ● {totalCount} PEÇAS CATALOGADAS
-              </span>
-            </div>
-
-            <h1 className="mb-5 font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl lg:leading-[1.02]">
-              Design pensado para{" "}
-              <span className="bg-gradient-to-r from-rose-300 via-fuchsia-200 to-violet-300 bg-clip-text text-transparent italic">
-                atrair, posicionar e vender.
-              </span>
-            </h1>
-
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Explore nosso acervo real de campanhas para e-commerce, banners de
-              alta conversão, papelaria corporativa, cardápios e identidades
-              visuais. Clique em qualquer peça para abrir na{" "}
-              <strong className="text-white">Mesa de Inspeção Studio</strong>.
-            </p>
-          </div>
-
-          {/* Painel Lateral de Métricas do Estúdio (5 Cols) */}
-          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-white/10 bg-[#0c0e14]/90 p-4 backdrop-blur-xl">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-rose-300 block">
-                // PRINT & BRAND
-              </span>
-              <span className="mt-1 font-display text-3xl font-black text-white block">
-                {DESIGN_GALLERIES[0].works.length}
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                Peças Gráficas & Impressos
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-[#0c0e14]/90 p-4 backdrop-blur-xl">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-violet-300 block">
-                // DIGITAL & ADS
-              </span>
-              <span className="mt-1 font-display text-3xl font-black text-white block">
-                {DESIGN_GALLERIES[1].works.length}
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                Banners, Social & E-mail
-              </span>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1 rounded-2xl border border-rose-400/25 bg-gradient-to-br from-rose-500/15 via-[#140e1a] to-[#0b0d13] p-4 flex flex-col justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-amber-300 block">
-                // SOB MEDIDA
-              </span>
-              <Link
-                href="/#planosdg"
-                className="mt-2 inline-flex items-center justify-between text-xs font-black uppercase tracking-wider text-white hover:text-rose-200"
-              >
-                <span>Ver Packs de Design</span>
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
+    <section className="container-luxe py-32 sm:py-40">
+      <div className="mb-12 max-w-3xl">
+        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
+          <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
+          Acervo Visual · Design
+        </span>
+        <h1 className="mb-6 font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
+          Design que conecta{" "}
+          <span className="text-violet-gradient">ideias e pessoas.</span>
+        </h1>
+        <p className="text-lg leading-relaxed text-muted-foreground">
+          Uma seleção com mais de 100 projetos de design gráfico, identidade
+          visual, banners para e-commerce e campanhas digitais.
+        </p>
       </div>
 
-      {/* =========================================================
-          2. CONSOLE DE FILTRAGEM INTELIGENTE (STICKY DOCK)
-      ========================================================= */}
-      <div className="sticky top-20 z-30 mb-14 rounded-3xl border border-white/15 bg-[#0b0d14]/90 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.75)] backdrop-blur-2xl sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* Abas Principais (Todos / Gráfico / Web) */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-1 inline-flex items-center gap-1.5 px-2 font-mono text-[10px] uppercase tracking-widest text-white/45">
-              <SlidersHorizontal className="h-3.5 w-3.5 text-rose-300" />
-              Coleção:
-            </span>
+      {/* Barra de Filtro + Busca Rápida */}
+      <div className="mb-14 flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-[#0c0e14]/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 inline-flex items-center gap-1.5 px-2 font-mono text-[10px] uppercase tracking-widest text-white/40">
+            <SlidersHorizontal className="h-3 w-3" />
+            Filtrar:
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveTab("all")}
+            className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === "all"
+                ? "bg-violet-gradient text-white shadow-violet-glow"
+                : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
+              }`}
+          >
+            Todos (
+            {DESIGN_GALLERIES[0].works.length +
+              DESIGN_GALLERIES[1].works.length}
+            )
+          </button>
+          {DESIGN_GALLERIES.map((gallery) => (
             <button
+              key={gallery.id}
               type="button"
-              onClick={() => setActiveTab("all")}
-              className={`rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "all"
-                  ? "bg-gradient-to-r from-rose-500 to-violet-600 text-white shadow-lg"
+              onClick={() => setActiveTab(gallery.id)}
+              className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === gallery.id
+                  ? "bg-violet-gradient text-white shadow-violet-glow"
                   : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
                 }`}
             >
-              Acervo Completo ({totalCount})
+              {gallery.title} ({gallery.works.length})
             </button>
-            {DESIGN_GALLERIES.map((gallery) => (
-              <button
-                key={gallery.id}
-                type="button"
-                onClick={() => setActiveTab(gallery.id)}
-                className={`rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === gallery.id
-                    ? "bg-gradient-to-r from-rose-500 to-violet-600 text-white shadow-lg"
-                    : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-white"
-                  }`}
-              >
-                {gallery.title} ({gallery.works.length})
-              </button>
-            ))}
-          </div>
-
-          {/* Busca + Alternador de Densidade do Grid */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar cliente ou peça (ex: rheem, cartão, cardápio)..."
-                className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-10 pr-4 text-xs text-white placeholder:text-white/35 focus:border-rose-400/50 focus:outline-none"
-              />
-            </div>
-
-            <div className="inline-flex items-center rounded-xl border border-white/10 bg-black/40 p-1 self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setGridDensity("editorial")}
-                className={`rounded-lg px-3 py-1.5 font-mono text-[10px] font-bold uppercase transition-all ${gridDensity === "editorial"
-                    ? "bg-white/15 text-white"
-                    : "text-white/45 hover:text-white"
-                  }`}
-                title="Grid Editorial Assimétrico com destaques"
-              >
-                Bento Editorial
-              </button>
-              <button
-                type="button"
-                onClick={() => setGridDensity("compact")}
-                className={`rounded-lg px-3 py-1.5 font-mono text-[10px] font-bold uppercase transition-all ${gridDensity === "compact"
-                    ? "bg-white/15 text-white"
-                    : "text-white/45 hover:text-white"
-                  }`}
-                title="Grade compacta de 4 colunas"
-              >
-                Compacto (4x)
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Sub-filtros Inteligentes por Tipo de Entregável */}
-        <div className="mt-4 flex items-center gap-2 overflow-x-auto border-t border-white/[0.07] pt-3.5 no-scrollbar">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-white/40 shrink-0 mr-1">
-            Formato:
-          </span>
-          {SUB_TAGS.map((tag) => {
-            const active = activeSubTag === tag.id;
-            return (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => setActiveSubTag(tag.id)}
-                className={`shrink-0 rounded-lg px-3 py-1 font-mono text-[11px] font-semibold transition-all ${active
-                    ? "border border-rose-400/40 bg-rose-500/20 text-rose-200"
-                    : "border border-transparent bg-white/[0.03] text-white/55 hover:bg-white/[0.07] hover:text-white"
-                  }`}
-              >
-                {tag.label}
-              </button>
-            );
-          })}
-
-          {(activeSubTag !== "ALL" || searchQuery.trim() !== "") && (
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSubTag("ALL");
-                setSearchQuery("");
-              }}
-              className="ml-auto shrink-0 font-mono text-[10px] uppercase text-rose-300 hover:underline"
-            >
-              Limpar filtros ({filteredAllWorks.length} resultados)
-            </button>
-          )}
+        {/* Campo de Busca */}
+        <div className="relative w-full sm:w-64">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar peça (ex: banner, cartão)..."
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2 pl-9 pr-4 text-xs text-white placeholder:text-white/35 focus:border-violet-300/40 focus:outline-none"
+          />
         </div>
       </div>
 
-      {/* =========================================================
-          3. GALERIAS COM BENTO GRID DINÂMICO & OVERLAY DE ESTÚDIO
-      ========================================================= */}
-      {filteredAllWorks.length === 0 ? (
-        <div className="rounded-3xl border border-white/10 bg-[#0c0e14]/80 p-12 text-center">
-          <p className="font-display text-2xl font-bold text-white">
-            Nenhuma peça encontrada para &ldquo;{searchQuery}&rdquo;
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Tente limpar a busca ou alternar a categoria de formato acima.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("all");
-              setActiveSubTag("ALL");
-              setSearchQuery("");
-            }}
-            className="mt-6 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white"
-          >
-            Restaurar Todo o Acervo
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-24">
-          {DESIGN_GALLERIES.filter(
-            (g) => activeTab === "all" || g.id === activeTab
-          ).map((gallery) => {
-            const sectionItems = filteredAllWorks.filter(
-              (item) => item.galleryId === gallery.id
-            );
+      {/* Galerias */}
+      <div className="space-y-20">
+        {visibleGalleries.map((gallery) => {
+          const filteredWorks = gallery.works.filter((filename) =>
+            formatWorkTitle(filename)
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          );
 
-            if (sectionItems.length === 0) return null;
-
-            return (
-              <section
-                key={gallery.id}
-                id={gallery.id}
-                className="scroll-mt-36"
-              >
-                {/* Cabeçalho da Seção */}
-                <div className="mb-8 flex flex-wrap items-end justify-between gap-4 rounded-3xl border border-white/10 bg-gradient-to-r from-[#11131c] via-[#0c0e14] to-transparent p-6 sm:p-8">
-                  <div className="max-w-2xl">
-                    <span
-                      className={`inline-block rounded-full border px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest mb-3 ${gallery.badgeClass}`}
-                    >
-                      {gallery.code}
-                    </span>
-                    <h2 className="font-display text-2xl font-black uppercase tracking-tight text-white sm:text-4xl">
-                      {gallery.title}
-                    </h2>
-                    <p className="mt-1.5 text-sm text-muted-foreground">
-                      {gallery.description}
-                    </p>
-                  </div>
-
-                  <div className="text-right font-mono">
-                    <span className="block text-[10px] uppercase tracking-widest text-white/40">
-                      EXIBINDO AGORA
-                    </span>
-                    <span className="text-2xl font-black text-white">
-                      {sectionItems.length}{" "}
-                      <span className="text-xs font-normal text-violet-300">
-                        peças
-                      </span>
-                    </span>
-                  </div>
+          return (
+            <section key={gallery.id} id={gallery.id} className="scroll-mt-28">
+              <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                  <h2 className="mb-1.5 font-display text-2xl font-bold sm:text-3xl">
+                    {gallery.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {gallery.description}
+                  </p>
                 </div>
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 font-mono text-xs text-violet-200">
+                  {filteredWorks.length} projetos exibidos
+                </span>
+              </div>
 
-                {/* Grid de Peças */}
-                <motion.div
-                  layout
-                  className={
-                    gridDensity === "compact"
-                      ? "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                      : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                  }
-                >
-                  {sectionItems.map((item, idx) => {
-                    // No modo Editorial, destaca a 1ª peça e a cada 7 peças com 2 colunas em telas grandes
-                    const isFeaturedWide =
-                      gridDensity === "editorial" &&
-                      idx % 7 === 0 &&
-                      sectionItems.length > 4;
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredWorks.map((filename) => {
+                  const title = formatWorkTitle(filename);
+                  const imgSrc = `/images/${gallery.folder}/${encodeURIComponent(
+                    filename
+                  )}`;
 
-                    const globalIdx = filteredAllWorks.findIndex(
-                      (w) => w.id === item.id
-                    );
-
-                    return (
-                      <motion.figure
-                        layout
-                        key={item.id}
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-40px" }}
-                        transition={{ duration: 0.35 }}
-                        onClick={() => {
-                          setIsZoomed(false);
-                          setLightboxIndex(globalIdx);
-                        }}
-                        className={`group cursor-pointer relative flex flex-col justify-between overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#0b0d13]/90 transition-all duration-300 hover:-translate-y-1.5 hover:border-rose-300/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.7)] ${isFeaturedWide ? "lg:col-span-2" : ""
-                          }`}
-                      >
-                        {/* Palco da Imagem com Grid Sutil de Fundo */}
-                        <div
-                          className={`relative w-full overflow-hidden bg-[#07090e] ${isFeaturedWide
-                              ? "aspect-[16/9]"
-                              : gridDensity === "compact"
-                                ? "aspect-square"
-                                : "aspect-[4/3]"
-                            }`}
-                          style={{
-                            backgroundImage:
-                              "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
-                            backgroundSize: "18px 18px",
-                          }}
-                        >
-                          {/* Numeração Técnica no Canto */}
-                          <div className="absolute left-3.5 top-3.5 z-10 flex items-center gap-2">
-                            <span className="rounded-lg border border-white/10 bg-black/70 px-2.5 py-1 font-mono text-[10px] font-bold text-white/80 backdrop-blur-md">
-                              #{String(idx + 1).padStart(2, "0")}
-                            </span>
-                            {isFeaturedWide && (
-                              <span className="rounded-lg border border-amber-300/30 bg-amber-400/15 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-amber-200 backdrop-blur-md">
-                                ★ Destaque Editorial
-                              </span>
-                            )}
-                          </div>
-
-                          <span className="absolute right-3.5 top-3.5 z-10 rounded-lg border border-white/10 bg-black/70 px-2 py-0.5 font-mono text-[9px] uppercase text-white/60 backdrop-blur-md">
-                            {item.formatExt}
+                  return (
+                    <figure
+                      key={filename}
+                      onClick={() =>
+                        setLightboxItem({
+                          src: imgSrc,
+                          title,
+                          category: gallery.title,
+                        })
+                      }
+                      className="group cursor-pointer overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#0c0e14]/80 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/35 hover:shadow-xl"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-[#080a0f]">
+                        <NextImage
+                          src={imgSrc}
+                          alt={`${gallery.title}: ${title}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2 text-xs font-semibold text-white">
+                            <ZoomIn className="h-3.5 w-3.5 text-violet-300" />
+                            Ampliar Peça
                           </span>
-
-                          <NextImage
-                            src={item.src}
-                            alt={`${item.galleryTitle}: ${item.title}`}
-                            fill
-                            sizes={
-                              isFeaturedWide
-                                ? "(max-width: 1024px) 100vw, 66vw"
-                                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            }
-                            className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.05]"
-                          />
-
-                          {/* Hover Action Curtain */}
-                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/80 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-xl backdrop-blur-md">
-                              <ZoomIn className="h-4 w-4 text-rose-300" />
-                              Inspecionar em Alta Resolução
-                            </span>
-                          </div>
                         </div>
-
-                        {/* Rodapé Técnico da Peça */}
-                        <figcaption className="flex items-center justify-between gap-3 border-t border-white/[0.07] bg-[#0c0f17] px-5 py-4">
-                          <div className="min-w-0">
-                            <span className="block font-mono text-[10px] uppercase tracking-wider text-rose-300/90">
-                              {item.tagLabel}
-                            </span>
-                            <p className="truncate font-display text-base font-bold capitalize text-white group-hover:text-rose-100">
-                              {item.title}
-                            </p>
-                          </div>
-
-                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 transition-colors group-hover:border-rose-400/40 group-hover:bg-rose-500 group-hover:text-white">
-                            <ArrowUpRight className="h-4 w-4" />
-                          </span>
-                        </figcaption>
-                      </motion.figure>
-                    );
-                  })}
-                </motion.div>
-              </section>
-            );
-          })}
-        </div>
-      )}
-
-      {/* =========================================================
-          4. CTA DE CONVERSÃO DIRETA NO FINAL DO ACERVO
-      ========================================================= */}
-      <div className="mt-20 rounded-[2.2rem] border border-rose-400/25 bg-gradient-to-r from-rose-500/15 via-[#130f1d] to-[#0b0d14] p-8 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-2xl">
-        <div className="max-w-xl">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-amber-300 block mb-2">
-            // DIREÇÃO DE ARTE PARA SUA MARCA
-          </span>
-          <h3 className="font-display text-2xl sm:text-3xl font-black uppercase text-white">
-            Gostou do padrão visual? Criamos o enxoval criativo da sua empresa.
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Banners para lojas virtuais, identidade visual completa, cardápios e
-            criativos de alta conversão entregues prontos para uso.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <Link
-            href="/#planosdg"
-            className="rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-all"
-          >
-            Ver Tabela de Preços Design
-          </Link>
-          <a
-            href={`https://wa.me/5551993583936?text=${encodeURIComponent(
-              "Olá! Vi o portfólio de Design da FocusPulse e gostaria de orçar criativos/identidade para minha marca."
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 px-7 py-4 text-xs font-black uppercase tracking-wider text-slate-950 shadow-lg transition-transform hover:scale-[1.02]"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>Orçar Design no WhatsApp</span>
-          </a>
-        </div>
+                      </div>
+                      <figcaption className="flex items-center justify-between gap-2 border-t border-white/[0.06] px-5 py-3.5">
+                        <span className="truncate text-sm font-medium capitalize text-foreground/90 group-hover:text-violet-100">
+                          {title}
+                        </span>
+                        <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-white/35">
+                          {gallery.id === "design-grafico"
+                            ? "Print"
+                            : "Digital"}
+                        </span>
+                      </figcaption>
+                    </figure>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
       </div>
 
-      {/* =========================================================
-          5. STUDIO LIGHTBOX INSPECTOR (ZOOM, CANVA BG, PREV/NEXT & CTA)
-      ========================================================= */}
+      {/* Modal Lightbox para Visualização Ampliada */}
       <AnimatePresence>
-        {activeLightboxItem && lightboxIndex !== null && (
+        {lightboxItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => {
-              setLightboxIndex(null);
-              setIsZoomed(false);
-            }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 backdrop-blur-2xl sm:p-6"
+            onClick={() => setLightboxItem(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl sm:p-8"
           >
             <motion.div
-              initial={{ scale: 0.95, y: 14 }}
+              initial={{ scale: 0.94, y: 12 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 14 }}
+              exit={{ scale: 0.94, y: 12 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0b0d13] shadow-[0_30px_100px_rgba(0,0,0,0.9)]"
+              className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0b0e14] shadow-2xl"
             >
-              {/* Top Inspector Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#07090e] px-5 py-3.5">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="rounded-lg border border-rose-400/30 bg-rose-500/15 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-rose-200">
-                    {activeLightboxItem.tagLabel}
+              <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-violet-300">
+                    {lightboxItem.category}
                   </span>
-                  <div className="min-w-0">
-                    <h3 className="truncate font-display text-base font-bold capitalize text-white sm:text-lg">
-                      {activeLightboxItem.title}
-                    </h3>
-                  </div>
+                  <h3 className="font-display text-lg font-bold capitalize text-white">
+                    {lightboxItem.title}
+                  </h3>
                 </div>
-
-                {/* Controles da Mesa de Luz */}
-                <div className="flex items-center gap-2">
-                  <span className="hidden font-mono text-[11px] text-white/45 md:inline mr-2">
-                    Peça {lightboxIndex + 1} de {filteredAllWorks.length}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsZoomed(!isZoomed)}
-                    className={`rounded-xl border px-3 py-1.5 font-mono text-[10px] font-bold uppercase transition-colors ${isZoomed
-                        ? "border-rose-400 bg-rose-500/20 text-rose-200"
-                        : "border-white/10 bg-white/5 text-white/75 hover:text-white"
-                      }`}
-                  >
-                    {isZoomed ? "Zoom 175% (Ativo)" : "Zoom +"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCanvasBg(canvasBg === "dark" ? "checker" : "dark")
-                    }
-                    className="hidden sm:inline-flex rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] font-bold uppercase text-white/75 hover:text-white"
-                  >
-                    Fundo: {canvasBg === "dark" ? "Studio Dark" : "Grid Neutro"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLightboxIndex(null);
-                      setIsZoomed(false);
-                    }}
-                    className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/5 text-white/80 transition-colors hover:border-red-400/50 hover:bg-red-500/20 hover:text-white"
-                    aria-label="Fechar inspeção"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Corpo Principal: Canvas de Visualização + Barra Lateral de Especificações */}
-              <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 overflow-hidden">
-                {/* Palco da Imagem (9 Cols) */}
-                <div
-                  onClick={() => setIsZoomed(!isZoomed)}
-                  className={`relative lg:col-span-9 h-[55vh] lg:h-[72vh] w-full overflow-auto flex items-center justify-center p-6 select-none ${isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
-                    }`}
-                  style={
-                    canvasBg === "checker"
-                      ? {
-                        backgroundColor: "#141720",
-                        backgroundImage:
-                          "linear-gradient(45deg, #1c202c 25%, transparent 25%), linear-gradient(-45deg, #1c202c 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1c202c 75%), linear-gradient(-45deg, transparent 75%, #1c202c 75%)",
-                        backgroundSize: "24px 24px",
-                        backgroundPosition:
-                          "0 0, 0 12px, 12px -12px, -12px 0px",
-                      }
-                      : {
-                        backgroundColor: "#05070b",
-                        backgroundImage:
-                          "radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
-                      }
-                  }
+                <button
+                  type="button"
+                  onClick={() => setLightboxItem(null)}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+                  aria-label="Fechar visualização"
                 >
-                  <div
-                    className={`relative transition-transform duration-300 ${isZoomed
-                        ? "h-[140%] w-[140%] scale-125"
-                        : "h-full w-full"
-                      }`}
-                  >
-                    <NextImage
-                      src={activeLightboxItem.src}
-                      alt={activeLightboxItem.title}
-                      fill
-                      sizes="90vw"
-                      className="object-contain p-2"
-                    />
-                  </div>
-                </div>
-
-                {/* Painel Lateral de Contexto & Conversão (3 Cols) */}
-                <div className="lg:col-span-3 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0b0e15] p-6">
-                  <div className="space-y-5">
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-white/40 block">
-                        COLEÇÃO
-                      </span>
-                      <p className="text-sm font-bold text-white mt-0.5">
-                        {activeLightboxItem.galleryTitle}
-                      </p>
-                    </div>
-
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-white/40 block">
-                        ESPECIALIDADE
-                      </span>
-                      <p className="text-sm font-bold text-rose-200 mt-0.5">
-                        {activeLightboxItem.tagLabel}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {activeLightboxItem.deliverableType}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-black/30 p-4 space-y-2 font-mono text-xs">
-                      <div className="flex justify-between text-white/60">
-                        <span>FORMATO:</span>
-                        <span className="text-white font-bold">
-                          {activeLightboxItem.formatExt}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-white/60">
-                        <span>DIREÇÃO:</span>
-                        <span className="text-emerald-300 font-bold">
-                          FocusPulse Studio
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botões Anterior / Próximo */}
-                    <div className="grid grid-cols-2 gap-2 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsZoomed(false);
-                          setLightboxIndex(
-                            (lightboxIndex - 1 + filteredAllWorks.length) %
-                            filteredAllWorks.length
-                          );
-                        }}
-                        className="rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 py-2.5 text-xs font-bold text-white transition-colors"
-                      >
-                        ← Anterior
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsZoomed(false);
-                          setLightboxIndex(
-                            (lightboxIndex + 1) % filteredAllWorks.length
-                          );
-                        }}
-                        className="rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 py-2.5 text-xs font-bold text-white transition-colors"
-                      >
-                        Próxima →
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* CTA contextual para encomendar uma peça igual */}
-                  <div className="pt-6 border-t border-white/10 mt-6 space-y-3">
-                    <a
-                      href={`https://wa.me/5551993583936?text=${encodeURIComponent(
-                        `Olá! Vi a peça "${activeLightboxItem.title}" (${activeLightboxItem.tagLabel}) no portfólio da FocusPulse e gostaria de orçar algo nessa linha para o meu negócio.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 py-3.5 px-4 text-xs font-black uppercase tracking-wider text-slate-950 shadow-lg transition-transform hover:scale-[1.02]"
-                    >
-                      <span>Quero uma peça assim</span>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                  </div>
-                </div>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="relative h-[65vh] w-full bg-[#06080c] p-6">
+                <NextImage
+                  src={lightboxItem.src}
+                  alt={lightboxItem.title}
+                  fill
+                  sizes="90vw"
+                  className="object-contain p-4"
+                />
               </div>
             </motion.div>
           </motion.div>
@@ -1619,161 +921,567 @@ export function TemplatesPageContent() {
   const templates = [
     {
       number: "01",
+      code: "ARCH // FITNESS-LAB",
       category: "Fitness & Biomecânica",
       title: "Academias & Alta Performance",
       brandName: "PulseFit Lab",
       description:
-        "Página de alta conversão na identidade Acid Lime & Emerald, focada em matrículas, passaportes e tour interativo.",
+        "Arquitetura energética em Acid Lime & Emerald projetada para converter visitantes em alunos com calculadora metabólica, grade de treinos e passaporte VIP.",
       href: "/templates/academias",
       theme: "from-lime-400/20 via-[#101914] to-[#080b09]",
       badgeColor: "border-lime-400/35 bg-lime-400/10 text-lime-200",
+      accentText: "text-lime-300",
+      btnGradient: "from-lime-400 to-emerald-500 text-slate-950",
+      palette: [
+        { name: "Acid Lime", hex: "#A3E635" },
+        { name: "Emerald Deep", hex: "#10B981" },
+        { name: "Carbon Dark", hex: "#080B09" },
+      ],
+      conversionFocus: "+42% Retenção & Agendamento de Aula Experimental",
+      modules: [
+        "Calculadora de Gasto Calórico & IMC Interativa",
+        "Grade Dinâmica de Modalidades por Objetivo",
+        "Emissão de Free Pass / Passaporte Experimental",
+        "Checkout de Planos Integrado ao WhatsApp",
+      ],
+      stack: ["Next.js App Router", "Framer Motion", "Tailwind CSS", "Meta Pixel"],
     },
     {
       number: "02",
+      code: "ARCH // FOOD-PDV-KDS",
       category: "Gastronomia & PDV KDS",
       title: "Hamburguerias & Delivery",
       brandName: "Kobra Burger Fire",
       description:
-        "Vitrine gastronômica em tons de brasa e carmesim integrada ao App de Vendas, Comanda Digital, Mesas VIP e Monitor KDS.",
+        "Sistema gastronômico completo em tons de brasa e carmesim: cardápio digital de alta conversão, reserva de mesas VIP, comanda e monitor de cozinha (KDS).",
       href: "/templates/cardapio",
       theme: "from-orange-500/25 via-[#1c110e] to-[#0c0807]",
       badgeColor: "border-orange-400/35 bg-orange-500/10 text-orange-200",
+      accentText: "text-orange-300",
+      btnGradient: "from-orange-500 to-amber-400 text-slate-950",
+      palette: [
+        { name: "Ember Orange", hex: "#F97316" },
+        { name: "Flame Amber", hex: "#F59E0B" },
+        { name: "Charcoal", hex: "#0C0807" },
+      ],
+      conversionFocus: "Zero Taxa de Marketplace • Pedidos Diretos",
+      modules: [
+        "Cardápio Interativo com Adicionais e Ponto da Carne",
+        "Monitor KDS (Kitchen Display System) em Tempo Real",
+        "Reserva de Mesas VIP & Comanda Digital",
+        "Disparo Estruturado do Pedido p/ WhatsApp da Loja",
+      ],
+      stack: ["Next.js App Router", "KDS State Engine", "Cart Context", "WhatsApp API"],
     },
     {
       number: "03",
+      code: "ARCH // EDITORIAL-COMMERCE",
       category: "E-commerce & Moda",
       title: "Lojas Virtuais & Streetwear",
       brandName: "Vortex Atelier",
       description:
-        "Vitrine editorial de luxo para apresentar coleções exclusivas e criar uma jornada de compra envolvente.",
+        "Vitrine editorial de luxo para marcas autorais e e-commerces que exigem direção de arte marcante, lookbook interativo e jornada de compra fluida.",
       href: "/templates/streetwear",
-      theme: "from-violet-300/20 via-[#17111f] to-[#0c0d0f]",
-      badgeColor: "border-violet-300/30 bg-violet-400/10 text-violet-200",
+      theme: "from-violet-400/20 via-[#17111f] to-[#0c0d0f]",
+      badgeColor: "border-violet-300/35 bg-violet-400/10 text-violet-200",
+      accentText: "text-violet-300",
+      btnGradient: "from-violet-500 to-fuchsia-500 text-white",
+      palette: [
+        { name: "Cyber Violet", hex: "#8B5CF6" },
+        { name: "Fuchsia Glow", hex: "#D946EF" },
+        { name: "Obsidian", hex: "#0C0D0F" },
+      ],
+      conversionFocus: "Posicionamento Premium & Aumento de Ticket Médio",
+      modules: [
+        "Lookbook Editorial com Filtro por Drop/Coleção",
+        "Seletor Rápido de Tamanhos, Medidas e Tecidos",
+        "Sacola Deslizante (Drawer Cart) com Cálculo Rápido",
+        "Integração para Compra Direta ou Checkout Externo",
+      ],
+      stack: ["Next.js App Router", "Editorial UI", "Framer Motion", "Responsive Grid"],
     },
     {
       number: "04",
+      code: "ARCH // AUTO-DEALERSHIP",
       category: "Automotivo & Seminovos",
       title: "Concessionárias & Multimarcas",
       brandName: "Prime Motors",
       description:
-        "Portal automotivo em tema claro (Alabaster & Royal Blue) com comparativo FIPE, simulador CDC e agendamento de visita.",
+        "Portal automotivo em tema claro (Alabaster & Royal Blue) focado no mercado brasileiro real, com comparativo FIPE, simulador CDC e reserva no Firestore.",
       href: "/templates/carros",
       theme: "from-blue-500/25 via-[#101726] to-[#07080a]",
       badgeColor: "border-blue-400/35 bg-blue-500/10 text-blue-200",
+      accentText: "text-sky-300",
+      btnGradient: "from-blue-600 to-cyan-400 text-slate-950",
+      palette: [
+        { name: "Alabaster Light", hex: "#F8FAFC" },
+        { name: "Royal Cobalt", hex: "#1D4ED8" },
+        { name: "FIPE Emerald", hex: "#059669" },
+      ],
+      conversionFocus: "Geração de Fichas de Financiamento & Visitas na Loja",
+      modules: [
+        "Buscador Estilo Portal com Filtro 'Abaixo da FIPE'",
+        "Simulador de Financiamento CDC + Avaliação de Troca",
+        "Agendamento Atômico de Visita / Vídeo Ao Vivo (Firestore)",
+        "Modal de Laudo Cautelar Dekra & Opcionais de Série",
+      ],
+      stack: ["Next.js App Router", "Firebase Auth", "Firestore Lock", "Light UI System"],
     },
   ];
 
+  const [selectedIndex, setSelectedIndex] = useState<number>(3); // Inicia destacando o novo Prime Motors (ou altere para 0)
+  const [viewportMode, setViewportMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [interactiveIframe, setInteractiveIframe] = useState<boolean>(true);
+  const [fullscreenTemplate, setFullscreenTemplate] = useState<(typeof templates)[0] | null>(null);
+
+  const activeTemplate = templates[selectedIndex];
+
+  useEffect(() => {
+    if (!fullscreenTemplate) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreenTemplate(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [fullscreenTemplate]);
+
   return (
-    <section className="container-luxe py-32 sm:py-40">
-      <div className="mx-auto mb-16 max-w-3xl text-center">
-        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
-          <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
-          Arquiteturas Prontas · Templates
-        </span>
-        <h1 className="mb-6 font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-          Seu próximo site começa{" "}
-          <span className="text-violet-gradient">por aqui.</span>
-        </h1>
-        <p className="text-lg leading-relaxed text-muted-foreground">
-          Explore nossos modelos de alta conversão prontos para diferentes tipos
-          de negócios. Escolha a arquitetura ideal e nós personalizamos cada
-          detalhe para a sua marca.
-        </p>
+    <section className="container-luxe py-28 sm:py-36 relative">
+      {/* Ambient Glows */}
+      <div className="pointer-events-none absolute top-12 left-1/4 h-[460px] w-[460px] rounded-full bg-violet-600/10 blur-[150px]" />
+      <div className="pointer-events-none absolute top-1/3 right-10 h-[420px] w-[420px] rounded-full bg-blue-500/10 blur-[150px]" />
+
+      {/* =========================================================
+          1. HERO HEADER DO CONSOLE DE ARQUITETURAS
+      ========================================================= */}
+      <div className="relative z-10 mb-14 flex flex-col justify-between gap-8 border-b border-white/10 pb-12 lg:flex-row lg:items-end">
+        <div className="max-w-3xl">
+          <div className="mb-5 flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-400/[0.08] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
+              <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
+              FocusPulse Architecture Lab · Templates Interativos
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-bold text-emerald-300">
+              <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
+              SIMULADOR RESPONSIVO AO VIVO
+            </span>
+          </div>
+
+          <h1 className="mb-5 font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl lg:leading-[1.02]">
+            Seu próximo site começa{" "}
+            <span className="text-violet-gradient italic">
+              rodando ao vivo aqui.
+            </span>
+          </h1>
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Não mostramos apenas fotos estáticas. Use o{" "}
+            <strong className="text-white">Console de Inspeção abaixo</strong>{" "}
+            para navegar dentro de cada projeto em tempo real, testar a versão
+            Mobile/Desktop e escolher a base ideal para o seu negócio.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            href="/#planos"
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.05] px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:border-violet-300/50 hover:bg-violet-600"
+          >
+            <span>Ver Planos & Preços</span>
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {templates.map((template) => (
-          <article
-            key={template.href}
-            className="group flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300/30"
-          >
-            <Link
-              href={template.href}
-              className="flex flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-300"
-              aria-label={`Explorar o template ${template.title}`}
-            >
-              {/* Topo com Browser Mockup + Iframe em Escala Desktop */}
-              <div
-                className={`relative h-[290px] overflow-hidden bg-gradient-to-br ${template.theme} p-4 sm:h-[320px] sm:p-5`}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(255,255,255,.09),transparent_55%)]" />
-
-                <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-[#0b0d10] shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
-                  {/* Barra do Navegador */}
-                  <div className="flex h-8 items-center gap-1.5 border-b border-white/[0.08] bg-[#100d15] px-3">
-                    <span className="h-2 w-2 rounded-full bg-[#ff6b61]/80" />
-                    <span className="h-2 w-2 rounded-full bg-[#ffc14f]/80" />
-                    <span className="h-2 w-2 rounded-full bg-[#49c781]/80" />
-                    <span className="ml-auto min-w-0 max-w-[70%] truncate text-right font-mono text-[9px] text-white/40">
-                      focuspulse.site{template.href}
+      {/* =========================================================
+          2. CONSOLE INTERATIVO DE INSPECÇÃO AO VIVO (MASTER-DETAIL)
+      ========================================================= */}
+      <div
+        id="template-live-console"
+        className="relative z-10 mb-24 scroll-mt-24 rounded-[2.4rem] border border-white/15 bg-[#0a0c12]/95 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:p-7"
+      >
+        {/* Barra Superior de Seleção de Arquitetura + Controles de Viewport */}
+        <div className="mb-6 flex flex-col justify-between gap-4 border-b border-white/10 pb-5 xl:flex-row xl:items-center">
+          {/* Seletor de Projetos (Tabs do Console) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 xl:pb-0 no-scrollbar">
+            {templates.map((tpl, idx) => {
+              const isSelected = idx === selectedIndex;
+              return (
+                <button
+                  key={tpl.href}
+                  type="button"
+                  onClick={() => setSelectedIndex(idx)}
+                  className={`group flex items-center gap-2.5 rounded-2xl border px-4 py-3 text-left transition-all shrink-0 ${isSelected
+                      ? "border-violet-400/50 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/10 to-transparent text-white shadow-lg"
+                      : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/25 hover:text-white"
+                    }`}
+                >
+                  <span className="font-mono text-xs font-bold text-violet-300">
+                    /{tpl.number}
+                  </span>
+                  <div>
+                    <span className="block text-xs font-black uppercase tracking-wider">
+                      {tpl.brandName}
+                    </span>
+                    <span className="block font-mono text-[10px] text-white/45">
+                      {tpl.category}
                     </span>
                   </div>
+                </button>
+              );
+            })}
+          </div>
 
-                  {/* Iframe Escalado em 50% para mostrar visão Desktop completa */}
-                  <div className="relative h-[calc(100%-2rem)] w-full overflow-hidden">
-                    <iframe
-                      src={template.href}
-                      title={`Prévia do template ${template.title}`}
-                      loading="lazy"
-                      scrolling="no"
-                      tabIndex={-1}
-                      className="pointer-events-none h-[200%] w-[200%] origin-top-left scale-50 border-0 bg-[#0b0d10]"
-                    />
-                  </div>
-                </div>
+          {/* Controles de Viewport (Desktop / Tablet / Mobile) + Interatividade */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 sm:justify-end">
+            <div className="inline-flex items-center rounded-xl border border-white/10 bg-black/50 p-1">
+              {[
+                { id: "desktop", label: "Desktop (100%)" },
+                { id: "tablet", label: "Tablet (768px)" },
+                { id: "mobile", label: "Mobile (390px)" },
+              ].map((vp) => (
+                <button
+                  key={vp.id}
+                  type="button"
+                  onClick={() =>
+                    setViewportMode(vp.id as "desktop" | "tablet" | "mobile")
+                  }
+                  className={`rounded-lg px-3 py-1.5 font-mono text-[10px] font-bold uppercase transition-all ${viewportMode === vp.id
+                      ? "bg-violet-600 text-white shadow"
+                      : "text-white/45 hover:text-white"
+                    }`}
+                >
+                  {vp.label}
+                </button>
+              ))}
+            </div>
 
-                <span className="absolute bottom-7 right-7 grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-black/60 text-white backdrop-blur-md transition-all group-hover:scale-105 group-hover:border-white group-hover:bg-white group-hover:text-black">
-                  <MoveUpRight className="h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => setFullscreenTemplate(activeTemplate)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:border-violet-400 hover:text-violet-200"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              <span>Tela Cheia</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Corpo do Console: Viewport Interativo (8 Cols) + Blueprint Técnico (4 Cols) */}
+        <div className="grid grid-cols-1 gap-7 lg:grid-cols-12 lg:items-stretch">
+          {/* COLUNA ESQUERDA: Simulador de Navegador Interativo (8 Cols) */}
+          <div className="lg:col-span-8 flex flex-col justify-between rounded-3xl border border-white/15 bg-gradient-to-br from-[#121521] via-[#090b10] to-[#050609] p-3 sm:p-5 shadow-inner">
+            {/* Barra de Endereço do Browser Simulado */}
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0b0d14] px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff6b61]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ffc14f]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#49c781]" />
+              </div>
+
+              <div className="flex min-w-0 flex-1 max-w-md items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-black/40 px-3 py-1">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="truncate font-mono text-[11px] text-white/70">
+                  https://focuspulse.site{activeTemplate.href}
                 </span>
               </div>
 
-              {/* Informações do Template */}
-              <div className="flex flex-1 flex-col justify-between p-6 sm:p-7">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setInteractiveIframe(!interactiveIframe)}
+                  className={`rounded-lg border px-2.5 py-1 font-mono text-[10px] font-bold uppercase transition-colors ${interactiveIframe
+                      ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
+                      : "border-white/10 bg-white/5 text-white/50"
+                    }`}
+                  title="Ativar ou pausar rolagem interna do site"
+                >
+                  {interactiveIframe ? "● Navegação Ativa" : "Scroll Bloqueado"}
+                </button>
+
+                <Link
+                  href={activeTemplate.href}
+                  target="_blank"
+                  className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 font-mono text-[10px] font-black uppercase text-slate-950 hover:bg-violet-300 transition-colors"
+                >
+                  <span>Nova Guia</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Palco Responsivo do Iframe */}
+            <div className="relative flex h-[500px] sm:h-[600px] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#06070b]">
+              <motion.div
+                key={`${activeTemplate.href}-${viewportMode}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className={`relative h-full overflow-hidden rounded-xl border border-white/15 bg-white shadow-2xl transition-all duration-500 ${viewportMode === "mobile"
+                    ? "w-[375px] max-w-full my-auto h-[94%] rounded-[2rem] border-4 border-zinc-800"
+                    : viewportMode === "tablet"
+                      ? "w-[768px] max-w-full my-auto h-[96%] rounded-2xl border-2 border-zinc-700"
+                      : "w-full h-full"
+                  }`}
+              >
+                <iframe
+                  src={activeTemplate.href}
+                  title={`Console interativo ${activeTemplate.title}`}
+                  className={`h-full w-full border-0 ${interactiveIframe ? "" : "pointer-events-none"
+                    }`}
+                />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* COLUNA DIREITA: Ficha de Engenharia & Conversão do Template (4 Cols) */}
+          <div className="lg:col-span-4 flex flex-col justify-between rounded-3xl border border-white/10 bg-[#0e111a]/90 p-6 sm:p-7">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTemplate.href}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-6"
+              >
                 <div>
-                  <div className="mb-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <span
-                      className={`rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] ${template.badgeColor}`}
+                      className={`rounded-full border px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider ${activeTemplate.badgeColor}`}
                     >
-                      {template.category}
+                      {activeTemplate.code}
                     </span>
-                    <span className="font-mono text-xs text-white/35">
-                      /{template.number}
+                    <span className="font-mono text-xs text-white/40">
+                      /{activeTemplate.number}
                     </span>
                   </div>
 
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                        Conceito: {template.brandName}
-                      </p>
-                      <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight text-foreground group-hover:text-violet-100">
-                        {template.title}
-                      </h2>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {template.description}
-                      </p>
+                  <p className="font-mono text-xs uppercase tracking-widest text-white/50">
+                    Projeto Demonstrativo: {activeTemplate.brandName}
+                  </p>
+                  <h2 className="mt-1 font-display text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">
+                    {activeTemplate.title}
+                  </h2>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                    {activeTemplate.description}
+                  </p>
+                </div>
+
+                {/* Sistema de Cores do Projeto */}
+                <div className="rounded-2xl border border-white/[0.08] bg-black/35 p-4">
+                  <span className="block font-mono text-[10px] font-bold uppercase tracking-widest text-white/45 mb-3">
+                    Identidade Cromática do Template:
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {activeTemplate.palette.map((color) => (
+                      <div
+                        key={color.hex}
+                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2"
+                      >
+                        <span
+                          className="h-5 w-5 shrink-0 rounded-lg border border-white/20 shadow"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <div className="min-w-0">
+                          <span className="block truncate text-[10px] font-bold text-white">
+                            {color.name}
+                          </span>
+                          <span className="block font-mono text-[9px] text-white/45">
+                            {color.hex}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Módulos Funcionais Inclusos */}
+                <div>
+                  <span className="block font-mono text-[10px] font-bold uppercase tracking-widest text-white/45 mb-3">
+                    Engenharia & Módulos Inclusos:
+                  </span>
+                  <ul className="space-y-2.5">
+                    {activeTemplate.modules.map((mod, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-xs sm:text-sm text-white/85"
+                      >
+                        <CheckCircle2
+                          className={`h-4 w-4 shrink-0 mt-0.5 ${activeTemplate.accentText}`}
+                        />
+                        <span>{mod}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Stack Técnica */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {activeTemplate.stack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 font-mono text-[10px] text-white/70"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Botões de Ação do Console */}
+            <div className="mt-8 space-y-2.5 border-t border-white/10 pt-5">
+              <a
+                href={`https://wa.me/5551993583936?text=${encodeURIComponent(
+                  `Olá! Testei o modelo "${activeTemplate.title}" (${activeTemplate.brandName}) no console da FocusPulse e quero orçar um projeto baseado nessa estrutura.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${activeTemplate.btnGradient} py-4 px-5 text-xs font-black uppercase tracking-wider shadow-lg transition-transform hover:scale-[1.02]`}
+              >
+                <span>Quero este modelo para minha marca</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+
+              <Link
+                href={activeTemplate.href}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] hover:bg-white/10 py-3 px-4 text-xs font-bold uppercase tracking-wider text-white transition-colors"
+              >
+                <span>Abrir Página Completa Dedicada</span>
+                <MoveUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================
+          3. CATÁLOGO RÁPIDO LADO A LADO (VISÃO COMPARATIVA)
+      ========================================================= */}
+      <div className="relative z-10">
+        <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
+              // VISÃO COMPARATIVA DO CATÁLOGO
+            </p>
+            <h2 className="font-display text-2xl font-black uppercase tracking-tight text-white sm:text-4xl">
+              Todas as Arquiteturas Disponíveis ({templates.length})
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Clique em &ldquo;Carregar no Simulador&rdquo; ou abra diretamente a
+            demonstração em tela inteira.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {templates.map((template, idx) => {
+            const isCurrentlyLoaded = idx === selectedIndex;
+            return (
+              <article
+                key={template.href}
+                className={`group flex flex-col overflow-hidden rounded-[2rem] border bg-[#0c0e14]/90 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 ${isCurrentlyLoaded
+                    ? "border-violet-400/50 ring-1 ring-violet-400/30"
+                    : "border-white/10 hover:border-violet-300/30"
+                  }`}
+              >
+                {/* Topo com Preview Desktop em Escala */}
+                <div
+                  className={`relative h-[260px] overflow-hidden bg-gradient-to-br ${template.theme} p-4 sm:h-[290px] sm:p-5`}
+                >
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-[#0b0d10] shadow-2xl">
+                    <div className="flex h-8 items-center gap-1.5 border-b border-white/[0.08] bg-[#100d15] px-3">
+                      <span className="h-2 w-2 rounded-full bg-[#ff6b61]/80" />
+                      <span className="h-2 w-2 rounded-full bg-[#ffc14f]/80" />
+                      <span className="h-2 w-2 rounded-full bg-[#49c781]/80" />
+                      <span className="ml-auto truncate font-mono text-[9px] text-white/45">
+                        focuspulse.site{template.href}
+                      </span>
+                    </div>
+
+                    <div className="relative h-[calc(100%-2rem)] w-full overflow-hidden">
+                      <iframe
+                        src={template.href}
+                        title={`Prévia ${template.title}`}
+                        loading="lazy"
+                        scrolling="no"
+                        tabIndex={-1}
+                        className="pointer-events-none h-[200%] w-[200%] origin-top-left scale-50 border-0 bg-[#0b0d10]"
+                      />
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-white/[0.08] pt-4 text-xs font-semibold text-violet-200">
-                  <span>Abrir demonstração interativa</span>
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                {/* Corpo do Card */}
+                <div className="flex flex-1 flex-col justify-between p-6 sm:p-7">
+                  <div>
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                      <span
+                        className={`rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] ${template.badgeColor}`}
+                      >
+                        {template.category}
+                      </span>
+                      <span className="font-mono text-xs text-white/40">
+                        /{template.number} • {template.brandName}
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-2xl font-bold text-white">
+                      {template.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {template.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-t border-white/[0.08] pt-5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedIndex(idx);
+                        document
+                          .getElementById("template-live-console")
+                          ?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className={`rounded-xl py-3 px-4 font-mono text-xs font-bold uppercase tracking-wider transition-all ${isCurrentlyLoaded
+                          ? "bg-violet-500/20 border border-violet-400/40 text-violet-200"
+                          : "border border-white/10 bg-white/[0.04] text-white hover:bg-white/10"
+                        }`}
+                    >
+                      {isCurrentlyLoaded
+                        ? "● Ativo no Simulador"
+                        : "Testar no Simulador ↑"}
+                    </button>
+
+                    <Link
+                      href={template.href}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-violet-400 text-slate-950 py-3 px-4 text-xs font-black uppercase tracking-wider transition-colors"
+                    >
+                      <span>Abrir Site Inteiro</span>
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </article>
-        ))}
+              </article>
+            );
+          })}
+        </div>
       </div>
 
-      {/* CTA Direto para o Formulário de Contato no final de Templates */}
+      {/* =========================================================
+          4. CTA FINAL P/ PROJETO EXCLUSIVO
+      ========================================================= */}
       <div className="mt-16 rounded-3xl border border-white/10 bg-[#0c0e14]/90 p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
           <span className="font-mono text-xs uppercase tracking-widest text-violet-300 block mb-1">
-            // PROJETO SOB MEDIDA
+            // ARQUITETURA 100% PERSONALIZADA
           </span>
           <h3 className="font-display text-2xl font-bold text-white">
-            Quer uma arquitetura exclusiva para o seu negócio?
+            Seu segmento é diferente? Criamos um projeto inédito para a sua empresa.
           </h3>
         </div>
         <Link
@@ -1781,9 +1489,57 @@ export function TemplatesPageContent() {
           className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-violet-600 hover:bg-violet-500 px-6 py-4 text-xs font-black uppercase tracking-wider text-white transition-all shadow-lg"
         >
           <Flame className="h-4 w-4" />
-          <span>Ir para o Formulário de Contato</span>
+          <span>Solicitar Projeto Sob Medida</span>
         </Link>
       </div>
+
+      {/* =========================================================
+          MODAL DE TELA CHEIA DO TEMPLATE
+      ========================================================= */}
+      <AnimatePresence>
+        {fullscreenTemplate && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 bg-[#080a0f] px-5 py-3">
+              <div className="flex items-center gap-3">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="font-mono text-xs font-bold uppercase tracking-widest text-white">
+                  {fullscreenTemplate.brandName} — {fullscreenTemplate.title}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  href={fullscreenTemplate.href}
+                  className="rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
+                >
+                  Ir para a Rota Direta
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setFullscreenTemplate(null)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-bold uppercase text-white hover:bg-red-500/20 hover:border-red-400/50"
+                >
+                  <span>Fechar</span>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 w-full bg-white">
+              <iframe
+                src={fullscreenTemplate.href}
+                title={fullscreenTemplate.title}
+                className="h-full w-full border-0"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
