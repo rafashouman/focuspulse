@@ -1,22 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Gauge,
-  Zap,
   ShieldCheck,
-  Calendar,
-  Clock,
   Search,
-  SlidersHorizontal,
   ArrowUpRight,
   MessageCircle,
-  Volume2,
-  VolumeX,
   CheckCircle2,
-  Sparkles,
   Car,
   Fuel,
   Award,
@@ -29,6 +21,11 @@ import {
   LogIn,
   AlertTriangle,
   Menu,
+  FileCheck2,
+  BadgePercent,
+  CalendarCheck,
+  Sparkles,
+  SlidersHorizontal,
 } from "lucide-react";
 import { onAuthStateChanged, signInWithPopup, User } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/client";
@@ -38,308 +35,204 @@ import { trackMetaEvent } from "@/components/MetaPixel";
 // ==========================================
 // CONFIGURAÇÕES GERAIS
 // ==========================================
-const WHATSAPP_NUMBER = "5511999999999";
+const WHATSAPP_NUMBER = "5551993583936";
 const CURRENT_YEAR = new Date().getFullYear();
 
 // ==========================================
-// WEB AUDIO SYNTHESIZER (COCKPIT & ENGINE REV)
+// CATÁLOGO REALISTA DO MERCADO BRASILEIRO
 // ==========================================
-class AutomotiveSoundEngine {
-  private ctx: AudioContext | null = null;
-  public enabled: boolean = true;
-
-  private init() {
-    if (typeof window === "undefined") return;
-    if (!this.ctx) {
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
-    }
-    if (this.ctx && this.ctx.state === "suspended") {
-      this.ctx.resume();
-    }
-  }
-
-  playCockpitClick() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(920, now);
-    osc.frequency.exponentialRampToValueAtTime(240, now + 0.035);
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.linearRampToValueAtTime(0.005, now + 0.035);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.04);
-  }
-
-  // Simula o som de partida e giro do motor (Combustão vs Elétrico)
-  playEngineRev(type: "combustion" | "electric" = "combustion") {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-
-    if (type === "electric") {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.55);
-      osc.frequency.exponentialRampToValueAtTime(320, now + 0.85);
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.14, now + 0.4);
-      gain.gain.exponentialRampToValueAtTime(0.005, now + 0.88);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.9);
-      return;
-    }
-
-    // Ronco grave sintetizado com dois osciladores defasados (V8 / Flat-6)
-    [65, 98].forEach((baseFreq) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(baseFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(baseFreq * 2.9, now + 0.38);
-      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.3, now + 0.82);
-
-      gain.gain.setValueAtTime(0.02, now);
-      gain.gain.linearRampToValueAtTime(0.11, now + 0.25);
-      gain.gain.exponentialRampToValueAtTime(0.004, now + 0.85);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.86);
-    });
-  }
-
-  playLockChime() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-    [587.33, 880, 1174.66].forEach((freq, i) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + i * 0.075);
-      gain.gain.setValueAtTime(0.12, now + i * 0.075);
-      gain.gain.exponentialRampToValueAtTime(0.004, now + i * 0.075 + 0.3);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now + i * 0.075);
-      osc.stop(now + i * 0.075 + 0.32);
-    });
-  }
-}
-
-// ==========================================
-// CATÁLOGO DO ACERVO AUTOMOTIVO
-// ==========================================
-type VehicleCategory = "todos" | "superesportivos" | "suv-blindados" | "eletricos" | "sedans";
+type VehicleCategory = "todos" | "suvs" | "picapes" | "hibridos" | "sedans-hatches";
 
 interface Vehicle {
   id: string;
   brand: string;
   model: string;
+  version: string;
   year: string;
   price: number;
+  fipePrice: number;
   category: VehicleCategory;
-  soundProfile: "combustion" | "electric";
   image: string;
   km: string;
-  power: string;
-  zeroToHundred: string;
-  topSpeed: string;
+  fuel: string;
   transmission: string;
-  drivetrain: string;
+  power: string;
+  plateEnd: string;
   exteriorColor: string;
-  interiorSpec: string;
-  armored: boolean;
+  singleOwner: boolean;
+  ipvaPaid: boolean;
   badge?: string;
   highlights: string[];
 }
 
 const INVENTORY: Vehicle[] = [
   {
-    id: "car-01",
-    brand: "PORSCHE",
-    model: "911 GT3 RS (992) Weissach",
-    year: "2025/2026",
-    price: 2890000,
-    category: "superesportivos",
-    soundProfile: "combustion",
-    image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=85",
-    km: "1.150 km",
-    power: "525 cv",
-    zeroToHundred: "3.2 s",
-    topSpeed: "296 km/h",
-    transmission: "PDK 7 Marchas",
-    drivetrain: "Tração Traseira",
-    exteriorColor: "GT Silver Metallic",
-    interiorSpec: "Alcântara Preta & Carbono",
-    armored: false,
-    badge: "Pacote Weissach",
-    highlights: [
-      "Aerodinâmica ativa DRS de pista",
-      "Freios de Compósito Cerâmico (PCCB)",
-      "Bancos concha inteiriços em fibra de carbono",
-      "Sistema de elevação do eixo dianteiro (Front Lift)",
-    ],
-  },
-  {
-    id: "car-02",
-    brand: "MERCEDES-AMG",
-    model: "G 63 Magno Edition (Blindado III-A)",
-    year: "2025/2025",
-    price: 2350000,
-    category: "suv-blindados",
-    soundProfile: "combustion",
-    image: "https://images.unsplash.com/photo-1520031441872-265e4ff70366?auto=format&fit=crop&w=1200&q=85",
-    km: "4.800 km",
-    power: "585 cv",
-    zeroToHundred: "4.5 s",
-    topSpeed: "240 km/h",
-    transmission: "AMG Speedshift 9G",
-    drivetrain: "4MATIC Integral",
-    exteriorColor: "Night Black Magno (Fosco)",
-    interiorSpec: "Couro Nappa Vermelho Classic",
-    armored: true,
-    badge: "Blindado Nível III-A",
-    highlights: [
-      "Blindagem certificada com vidros AGP B33 ultra-leves",
-      "Motor V8 4.0 Biturbo montado à mão (One Man, One Engine)",
-      "Escapamento lateral AMG Performance com válvula ativa",
-      "Som Burmester High-End 3D Surround",
-    ],
-  },
-  {
-    id: "car-03",
-    brand: "AUDI",
-    model: "RS e-tron GT Performance",
-    year: "2026/2026",
-    price: 1120000,
-    category: "eletricos",
-    soundProfile: "electric",
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=85",
-    km: "0 km",
-    power: "646 cv",
-    zeroToHundred: "3.1 s",
-    topSpeed: "250 km/h",
-    transmission: "2 Velocidades EV",
-    drivetrain: "Quattro Elétrico",
-    exteriorColor: "Daytona Grey Pearl",
-    interiorSpec: "Couro Valcona Honeycomb",
-    armored: false,
-    badge: "100% Elétrico • 0 KM",
-    highlights: [
-      "Arquitetura de 800V (recarga de 5% a 80% em 22 minutos)",
-      "Teto panorâmico em polímero reforçado com carbono",
-      "Eixo traseiro direcional e suspensão pneumática adaptativa",
-      "Faróis Matrix LED com tecnologia Laserlight",
-    ],
-  },
-  {
-    id: "car-04",
-    brand: "BMW",
-    model: "M3 Competition Track Package",
-    year: "2025/2026",
-    price: 849000,
-    category: "sedans",
-    soundProfile: "combustion",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=85",
-    km: "3.200 km",
-    power: "510 cv",
-    zeroToHundred: "3.9 s",
-    topSpeed: "290 km/h",
-    transmission: "M Steptronic 8V",
-    drivetrain: "Traseira c/ M Drift Analyzer",
-    exteriorColor: "Brooklyn Grey",
-    interiorSpec: "Concha Carbono Kyalami Orange",
-    armored: false,
-    badge: "Pacote M Carbon",
-    highlights: [
-      "Bancos M Carbon Bucket com estrutura aparente",
-      "Freios M Carbono-Cerâmica com pinças douradas",
-      "Painel BMW Curved Display com telemetria M Setup",
-      "Garantia de fábrica vigente e PPF Full frontal aplicado",
-    ],
-  },
-  {
-    id: "car-05",
-    brand: "LAMBORGHINI",
-    model: "Urus Performante V8",
+    id: "br-01",
+    brand: "JEEP",
+    model: "Compass Overland",
+    version: "2.0 Hurricane 4 Turbo Gasolina 4x4 Aut.",
     year: "2024/2025",
-    price: 3690000,
-    category: "suv-blindados",
-    soundProfile: "combustion",
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=85",
-    km: "2.400 km",
-    power: "666 cv",
-    zeroToHundred: "3.3 s",
-    topSpeed: "306 km/h",
-    transmission: "Automática 8 Marchas",
-    drivetrain: "AWD c/ Diferencial Torsen",
-    exteriorColor: "Giallo Auge",
-    interiorSpec: "Alcântara Nero Cosmus",
-    armored: false,
-    badge: "Escape Akrapovič Titânio",
+    price: 224900,
+    fipePrice: 231500,
+    category: "suvs",
+    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=85",
+    km: "14.200 km",
+    fuel: "Gasolina",
+    transmission: "Automático 9M",
+    power: "272 cv",
+    plateEnd: "Final 8 (RS)",
+    exteriorColor: "Cinza Sting",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Abaixo da FIPE • 272 cv",
     highlights: [
-      "Sistema de exaustão original Akrapovič em titânio de série",
-      "Capô e teto em fibra de carbono visível",
-      "Modo de condução exclusivo RALLY para baixa aderência",
-      "Rodas Pelope 23 polegadas com parafusos em titânio",
+      "Motor 2.0 Hurricane Turbo de 272 cv e tração 4x4 com seletor de terrenos",
+      "Teto solar elétrico panorâmico Command View",
+      "Som Premium Alpine de 506W e painel digital de 10,25\"",
+      "Revisões carimbadas na concessionária e garantia de fábrica até 2027",
     ],
   },
   {
-    id: "car-06",
-    brand: "PORSCHE",
-    model: "Taycan Turbo S Cross Turismo",
-    year: "2025/2025",
-    price: 1190000,
-    category: "eletricos",
-    soundProfile: "electric",
-    image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&w=1200&q=85",
-    km: "5.900 km",
-    power: "761 cv",
-    zeroToHundred: "2.9 s",
-    topSpeed: "250 km/h",
-    transmission: "2 Velocidades EV",
-    drivetrain: "AWD Overboost",
-    exteriorColor: "Chalk (Giz)",
-    interiorSpec: "Couro Olea Club Basalt Black",
-    armored: true,
-    badge: "Blindado • 761 cv",
+    id: "br-02",
+    brand: "TOYOTA",
+    model: "Hilux SRX Plus",
+    version: "2.8 TDI 4x4 CD 16V Diesel Automático",
+    year: "2024/2024",
+    price: 298900,
+    fipePrice: 306400,
+    category: "picapes",
+    image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=1200&q=85",
+    km: "26.500 km",
+    fuel: "Diesel",
+    transmission: "Automático 6M",
+    power: "204 cv",
+    plateEnd: "Final 4 (RS)",
+    exteriorColor: "Branco Polar Perolizado",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Eixos Alargados • Única Dona",
     highlights: [
-      "Launch Control com 761 cv e 107 kgfm de torque instantâneo",
-      "Blindagem ultra-leve nível III-A sem perda dinâmica",
-      "Tela dedicada para o passageiro dianteiro + Sport Chrono",
-      "Suspensão ativa PASM com modo Gravel integrado",
+      "Nova suspensão SRX Plus com bitolas mais largas e freios a disco nas 4 rodas",
+      "Câmera 360º, Piloto Automático Adaptativo (ACC) e Toyota Safety Sense",
+      "Capota marítima original, protetor de caçamba e engate homologado",
+      "Laudo Cautelar Dekra 100% aprovado sem retoques de pintura",
+    ],
+  },
+  {
+    id: "br-03",
+    brand: "VOLKSWAGEN",
+    model: "Nivus Highline",
+    version: "1.0 200 TSI Total Flex Automático",
+    year: "2024/2025",
+    price: 129900,
+    fipePrice: 134800,
+    category: "suvs",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=85",
+    km: "11.800 km",
+    fuel: "Flex",
+    transmission: "Automático 6M",
+    power: "128 cv",
+    plateEnd: "Final 9 (RS)",
+    exteriorColor: "Cinza Moonstone",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Pacote Bicolor • 11 mil km",
+    highlights: [
+      "Painel Active Info Display 10,25\" + Multimídia VW Play com Apple CarPlay sem fio",
+      "ACC (Controle adaptativo de velocidade) e Frenagem Autônoma de Emergência",
+      "Bancos em couro sintético Native bicolor e ar digital Touch",
+      "4 pneus originais novos e estepe nunca rodou",
+    ],
+  },
+  {
+    id: "br-04",
+    brand: "BYD",
+    model: "Song Plus DM-i",
+    version: "1.5 Plug-in Hybrid (PHEV) 18,3 kWh Aut.",
+    year: "2024/2025",
+    price: 204900,
+    fipePrice: 212000,
+    category: "hibridos",
+    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=85",
+    km: "9.400 km",
+    fuel: "Híbrido Plug-in",
+    transmission: "E-CVT Híbrido",
+    power: "235 cv",
+    plateEnd: "Final 0 (Isento IPVA RS)",
+    exteriorColor: "Azul Time",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Autonomia 1.200 km • Bateria 18,3 kWh",
+    highlights: [
+      "Bateria Blade de 18,3 kWh com até 105 km de alcance 100% elétrico",
+      "Tela giratória elétrica de 15,6\" com câmeras 360º 3D em alta definição",
+      "Acompanha Wallbox original de 7kW e carregador portátil de viagem",
+      "Garantia de 8 anos para a bateria Blade e 6 anos para o veículo",
+    ],
+  },
+  {
+    id: "br-05",
+    brand: "FIAT",
+    model: "Fastback Limited Edition",
+    version: "1.3 Turbo 270 Flex Powered by Abarth Aut.",
+    year: "2024/2024",
+    price: 136900,
+    fipePrice: 142300,
+    category: "suvs",
+    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=1200&q=85",
+    km: "18.100 km",
+    fuel: "Flex",
+    transmission: "Automático 6M",
+    power: "185 cv",
+    plateEnd: "Final 2 (RS)",
+    exteriorColor: "Preto Vulcano c/ Cinza",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Powered by Abarth • 185 cv",
+    highlights: [
+      "Motor T270 de 185 cv com tecla Poison (modo esportivo Abarth no volante)",
+      "Porta-malas líder da categoria com 600 litros de capacidade",
+      "Rodas esportivas de 18 polegadas escurecidas e faróis Full LED",
+      "Freio de estacionamento eletrônico com Auto Hold e carregador por indução",
+    ],
+  },
+  {
+    id: "br-06",
+    brand: "TOYOTA",
+    model: "Corolla Altis Premium Hybrid",
+    version: "1.8 VVT-i Híbrido Flex Automático CVT",
+    year: "2024/2025",
+    price: 169900,
+    fipePrice: 175900,
+    category: "sedans-hatches",
+    image: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=1200&q=85",
+    km: "15.600 km",
+    fuel: "Híbrido Flex",
+    transmission: "Hybrid Transaxle",
+    power: "122 cv",
+    plateEnd: "Final 6 (RS)",
+    exteriorColor: "Prata Supernova",
+    singleOwner: true,
+    ipvaPaid: true,
+    badge: "Até 18,5 km/l • Pacote Premium",
+    highlights: [
+      "Pacote Altis Premium com teto solar elétrico e interior em couro bege/preto",
+      "Banco do motorista com regulagem elétrica de 8 posições",
+      "Consumo urbano superior a 18 km/l na gasolina com máxima confiabilidade",
+      "Elegível ao programa Toyota 10 (até 10 anos de garantia ativada em revisão)",
     ],
   },
 ];
 
 const CATEGORIES: { id: VehicleCategory; label: string }[] = [
-  { id: "todos", label: "Acervo Completo (6)" },
-  { id: "superesportivos", label: "Superesportivos" },
-  { id: "suv-blindados", label: "SUVs & Blindados" },
-  { id: "eletricos", label: "Hyper EVs" },
-  { id: "sedans", label: "Sedans de Pista" },
+  { id: "todos", label: "Todo o Estoque (6)" },
+  { id: "suvs", label: "SUVs & Crossovers" },
+  { id: "picapes", label: "Picapes 4x4" },
+  { id: "hibridos", label: "Híbridos & Elétricos" },
+  { id: "sedans-hatches", label: "Sedans Executivos" },
 ];
 
-const TEST_DRIVE_SLOTS = ["10:00", "11:30", "14:30", "16:00", "18:00"];
+const TEST_DRIVE_SLOTS = ["09:30", "11:00", "14:00", "15:30", "17:00"];
 
 const formatBRL = (val: number) =>
   val.toLocaleString("pt-BR", {
@@ -349,37 +242,33 @@ const formatBRL = (val: number) =>
   });
 
 export default function CarDealershipPage() {
-  const soundRef = useRef<AutomotiveSoundEngine | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filtros do Showroom
   const [activeCategory, setActiveCategory] = useState<VehicleCategory>("todos");
   const [searchQuery, setSearchQuery] = useState("");
-  const [onlyArmored, setOnlyArmored] = useState(false);
+  const [onlyBelowFipe, setOnlyBelowFipe] = useState(false);
   const [selectedVehicleModal, setSelectedVehicleModal] = useState<Vehicle | null>(null);
-  const [revvingId, setRevvingId] = useState<string | null>(null);
 
-  // Simulador Financeiro & Trade-In
-  const [simVehicle, setSimVehicle] = useState<Vehicle>(INVENTORY[3]); // Default BMW M3
-  const [downPaymentPct, setDownPaymentPct] = useState<number>(40);
-  const [months, setMonths] = useState<number>(36);
+  // Simulador Financeiro CDC & Avaliação de Troca
+  const [simVehicle, setSimVehicle] = useState<Vehicle>(INVENTORY[2]); // Default Nivus Highline
+  const [downPaymentPct, setDownPaymentPct] = useState<number>(30);
+  const [months, setMonths] = useState<number>(48);
   const [tradeInModel, setTradeInModel] = useState("");
   const [tradeInValue, setTradeInValue] = useState<number>(0);
 
-  // Agendamento de Test Drive VIP (Firebase Atomic Lock)
+  // Agendamento de Visita / Test Drive (Firebase Atomic Lock)
   const [user, setUser] = useState<User | null>(null);
   const [tdVehicle, setTdVehicle] = useState<Vehicle>(INVENTORY[0]);
   const [tdDate, setTdDate] = useState("");
   const [tdMinDate, setTdMinDate] = useState("");
-  const [tdSlot, setTdSlot] = useState<string>("14:30");
-  const [tdMode, setTdMode] = useState<"SHOWROOM" | "DELIVERY">("SHOWROOM");
+  const [tdSlot, setTdSlot] = useState<string>("14:00");
+  const [tdMode, setTdMode] = useState<"LOJA" | "VIDEOCHAMADA">("LOJA");
   const [tdStatus, setTdStatus] = useState<"IDLE" | "LOADING" | "SUCCESS" | "ERROR">("IDLE");
   const [tdFeedback, setTdFeedback] = useState("");
   const [tdProtocol, setTdProtocol] = useState<string | null>(null);
 
   useEffect(() => {
-    soundRef.current = new AutomotiveSoundEngine();
     const unsub = onAuthStateChanged(auth, setUser);
     const frameId = requestAnimationFrame(() => {
       const tomorrow = new Date();
@@ -399,24 +288,6 @@ export default function CarDealershipPage() {
     };
   }, []);
 
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    if (soundRef.current) {
-      soundRef.current.enabled = next;
-      if (next) soundRef.current.playCockpitClick();
-    }
-  };
-
-  const handleEngineRev = (vehicle: Vehicle, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    soundRef.current?.playEngineRev(vehicle.soundProfile);
-    setRevvingId(vehicle.id);
-    setTimeout(() => {
-      setRevvingId((prev) => (prev === vehicle.id ? null : prev));
-    }, 900);
-  };
-
   // Filtragem de estoque
   const filteredVehicles = useMemo(() => {
     return INVENTORY.filter((car) => {
@@ -424,16 +295,17 @@ export default function CarDealershipPage() {
       const matchSearch =
         car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        car.version.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.exteriorColor.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchArmor = !onlyArmored || car.armored;
-      return matchCat && matchSearch && matchArmor;
+      const matchFipe = !onlyBelowFipe || car.price < car.fipePrice;
+      return matchCat && matchSearch && matchFipe;
     });
-  }, [activeCategory, searchQuery, onlyArmored]);
+  }, [activeCategory, searchQuery, onlyBelowFipe]);
 
-  // Cálculos do Simulador Financeiro
+  // Cálculos do Simulador Financeiro CDC
   const downPaymentAmount = Math.round((simVehicle.price * downPaymentPct) / 100);
   const financedPrincipal = Math.max(0, simVehicle.price - downPaymentAmount - tradeInValue);
-  const monthlyRate = 0.0119; // Taxa Private Bank 1.19% a.m.
+  const monthlyRate = 0.0139; // Taxa média CDC Seminovos 1,39% a.m.
   const monthlyInstallment = useMemo(() => {
     if (financedPrincipal <= 0) return 0;
     const factor =
@@ -443,44 +315,41 @@ export default function CarDealershipPage() {
   }, [financedPrincipal, months]);
 
   const handleSendFinancingWhatsApp = () => {
-    soundRef.current?.playLockChime();
     trackMetaEvent("InitiateCheckout", {
       content_name: `Simulação ${simVehicle.brand} ${simVehicle.model}`,
       value: simVehicle.price,
       currency: "BRL",
     });
     trackMetaEvent("Lead", {
-      content_name: "Proposta Financiamento / Trade-In Aether Motors",
+      content_name: "Proposta Financiamento / Troca Prime Motors",
       value: simVehicle.price,
       currency: "BRL",
     });
 
-    const msg = `*PROPOSTA DE COMPRA / TRADE-IN — AETHER MOTORS* 🏎️✨\n----------------------------------\n*Veículo:* ${
+    const msg = `*SIMULAÇÃO DE FINANCIAMENTO & TROCA — PRIME MOTORS* 🚗\n----------------------------------\n*Veículo:* ${
       simVehicle.brand
-    } ${simVehicle.model} (${simVehicle.year})\n*Valor de Tabela:* ${formatBRL(
+    } ${simVehicle.model} (${simVehicle.year})\n*Valor à Vista:* ${formatBRL(
       simVehicle.price
-    )}\n----------------------------------\n*Entrada (${downPaymentPct}%):* ${formatBRL(
+    )} (FIPE: ${formatBRL(simVehicle.fipePrice)})\n----------------------------------\n*Entrada (${downPaymentPct}%):* ${formatBRL(
       downPaymentAmount
     )}\n${
       tradeInModel
-        ? `*Veículo na Troca:* ${tradeInModel} (Avaliação est.: ${formatBRL(tradeInValue)})\n`
+        ? `*Usado na Troca:* ${tradeInModel} (Valor est.: ${formatBRL(tradeInValue)})\n`
         : ""
-    }*Saldo Financiado:* ${formatBRL(
+    }*Saldo a Financiar:* ${formatBRL(
       financedPrincipal
-    )}\n*Plano Escolhido:* ${months}x de *${formatBRL(
+    )}\n*Plano Simulado:* ${months}x de *${formatBRL(
       monthlyInstallment
-    )}*\n----------------------------------\n_Solicito análise de crédito Private e avaliação presencial._`;
+    )}*\n----------------------------------\n_Gostaria de aprovar minha ficha por CPF e agendar avaliação do meu usado._`;
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
-  // Handlers de Autenticação e Agendamento de Test Drive VIP
+  // Handlers de Autenticação e Agendamento de Test Drive
   const handleGoogleLogin = async () => {
-    soundRef.current?.playCockpitClick();
     setTdStatus("LOADING");
     try {
       await signInWithPopup(auth, googleProvider);
-      soundRef.current?.playLockChime();
       setTdStatus("IDLE");
       setTdFeedback("");
     } catch {
@@ -492,16 +361,15 @@ export default function CarDealershipPage() {
   const handleConfirmTestDrive = async () => {
     if (!user) {
       setTdStatus("ERROR");
-      setTdFeedback("Autentique-se com Google para bloquear o veículo e o Concierge.");
+      setTdFeedback("Faça login com sua conta Google para reservar o horário.");
       return;
     }
 
-    soundRef.current?.playCockpitClick();
     setTdStatus("LOADING");
 
     try {
       const token = await user.getIdToken();
-      const serviceSummary = `TEST DRIVE ${tdMode} • ${tdVehicle.brand} ${tdVehicle.model}`;
+      const serviceSummary = `VISITA (${tdMode}) • ${tdVehicle.brand} ${tdVehicle.model}`;
 
       const res = await bookAppointment(
         {
@@ -513,12 +381,11 @@ export default function CarDealershipPage() {
       );
 
       if (res.success) {
-        soundRef.current?.playLockChime();
-        const code = res.bookingId?.slice(-6).toUpperCase() || "AET992";
+        const code = res.bookingId?.slice(-6).toUpperCase() || "PRM2026";
         setTdProtocol(code);
         setTdStatus("SUCCESS");
         setTdFeedback(
-          `Experiência reservada para ${tdDate} às ${tdSlot} • Protocolo #${code}`
+          `Reserva confirmada para ${tdDate} às ${tdSlot} • Protocolo #${code}`
         );
 
         trackMetaEvent("Schedule", {
@@ -528,110 +395,122 @@ export default function CarDealershipPage() {
         });
       } else {
         setTdStatus("ERROR");
-        setTdFeedback(res.error || "Horário indisponível para este chassi.");
+        setTdFeedback(res.error || "Este horário acabou de ser preenchido.");
       }
     } catch {
       setTdStatus("ERROR");
-      setTdFeedback("Falha de conexão com o servidor de reservas.");
+      setTdFeedback("Falha de conexão com o sistema de agendamentos.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#07080A] text-zinc-100 selection:bg-[#D4AF37] selection:text-zinc-950 font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
       {/* ==========================================
-          1. FLOATING METALLIC NAVBAR
+          0. TOP UTILITY BAR (CONCESSIONÁRIA REAL)
       ========================================== */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 pt-4 pointer-events-none">
-        <div className="max-w-7xl mx-auto bg-[#0B0C0E]/85 backdrop-blur-xl border border-zinc-800/90 rounded-2xl px-4 sm:px-6 py-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.75)] pointer-events-auto flex items-center justify-between gap-4">
-          <a href="#" className="flex items-center gap-3.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37] via-amber-200 to-amber-600 p-[1px]">
-              <div className="w-full h-full bg-[#090A0C] rounded-[11px] flex items-center justify-center">
-                <Gauge className="w-5 h-5 text-[#D4AF37]" />
-              </div>
+      <div className="bg-slate-900 text-slate-300 text-xs py-2.5 px-4 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+              <FileCheck2 className="w-3.5 h-3.5" />
+              100% do Estoque com Laudo Cautelar Dekra Aprovado
+            </span>
+            <span className="hidden md:inline text-slate-600">|</span>
+            <span className="hidden md:flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-blue-400" />
+              Av. Ipiranga, 4500 — Porto Alegre, RS
+            </span>
+          </div>
+          <div className="flex items-center gap-4 font-mono text-[11px]">
+            <span>Seg a Sáb: 08h30 às 19h</span>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-blue-400 font-bold flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3 text-blue-400" /> (51) 99358-3936
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ==========================================
+          1. CLEAN RETAIL NAVBAR (LIGHT THEME)
+      ========================================== */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          <a href="#" className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-blue-700 text-white flex items-center justify-center shadow-md shadow-blue-700/20">
+              <Car className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-lg font-black tracking-[0.14em] text-white block leading-none">
-                AETHER<span className="text-[#D4AF37]">.MOTORS</span>
+              <span className="text-xl font-black tracking-tight text-slate-900 block leading-none">
+                PRIME<span className="text-blue-700">MOTORS</span>
               </span>
-              <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-500">
-                Bespoke & Armored Showroom
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                Seminovos Selecionados & 0km
               </span>
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-xl p-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {[
-              { label: "Acervo Disponível", href: "#acervo" },
-              { label: "Simulador & Trade-In", href: "#simulador" },
-              { label: "Test Drive VIP", href: "#test-drive" },
-              { label: "Blindagem & Garantia", href: "#diferenciais" },
-              { label: "Contato", href: "#contato" },
+              { label: "Estoque Atual", href: "#estoque" },
+              { label: "Simular Financiamento", href: "#financiamento" },
+              { label: "Avaliamos seu Usado", href: "#financiamento" },
+              { label: "Agendar Test Drive", href: "#agendamento" },
+              { label: "Garantia & Laudo", href: "#garantias" },
             ].map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                onClick={() => soundRef.current?.playCockpitClick()}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/70 transition-all"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-blue-700 hover:bg-slate-100 transition-colors"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={toggleSound}
-              title="Áudio de Cockpit & Ronco dos Motores"
-              className={`p-2.5 rounded-xl border transition-all ${
-                soundEnabled
-                  ? "bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#D4AF37]"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-500"
-              }`}
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-
+          <div className="flex items-center gap-3">
             <a
-              href="#test-drive"
-              onClick={() => soundRef.current?.playCockpitClick()}
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(212,175,55,0.3)]"
+              href="#agendamento"
+              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-700/20"
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Agendar Experiência</span>
+              <CalendarCheck className="w-4 h-4" />
+              <span>Agendar Visita</span>
             </a>
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300"
+              className="lg:hidden p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Nav Dropdown */}
+        {/* Mobile Nav */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="lg:hidden max-w-7xl mx-auto mt-2 bg-[#0B0C0E]/95 backdrop-blur-xl border border-zinc-800 rounded-2xl p-4 pointer-events-auto flex flex-col gap-2"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-white border-b border-slate-200 px-4 py-4 flex flex-col gap-1"
             >
               {[
-                { label: "Acervo Disponível", href: "#acervo" },
-                { label: "Simulador Financeiro & Troca", href: "#simulador" },
-                { label: "Agendar Test Drive VIP", href: "#test-drive" },
-                { label: "Blindagem & Certificação", href: "#diferenciais" },
-                { label: "Falar com Concierge", href: "#contato" },
+                { label: "Estoque Atual", href: "#estoque" },
+                { label: "Simulador de Financiamento & Troca", href: "#financiamento" },
+                { label: "Agendar Visita / Test Drive", href: "#agendamento" },
+                { label: "Laudo Cautelar & Garantias", href: "#garantias" },
               ].map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-[#D4AF37]"
+                  className="px-4 py-3 rounded-xl text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700"
                 >
                   {item.label}
                 </a>
@@ -642,148 +521,158 @@ export default function CarDealershipPage() {
       </header>
 
       {/* ==========================================
-          2. HERO SECTION (COCKPIT TELEMETRY + FLAGSHIP)
+          2. EDITORIAL SHOWROOM HERO (BRIGHT & REALISTIC)
       ========================================== */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden border-b border-zinc-900">
-        {/* Metallic Grid Overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
-            backgroundSize: "56px 56px",
-          }}
-        />
-        <div className="absolute top-1/4 left-1/4 w-[550px] h-[550px] bg-[#D4AF37]/10 rounded-full blur-[160px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Column (7 Cols) */}
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 mb-6">
-                <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] font-mono text-[10px] font-bold uppercase">
-                  PRIVATE COLLECTION 2026
-                </span>
-                <span className="text-xs text-zinc-300 font-medium">
-                  Curadoria de Superesportivos & Blindados Certificados
-                </span>
+      <section className="relative bg-white pt-10 pb-20 lg:pt-14 lg:pb-24 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Coluna Esquerda: Proposta de Valor Clara (6 Cols) */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold">
+                <BadgePercent className="w-4 h-4 text-blue-600" />
+                <span>Taxas a partir de 0,99% a.m. • Superavaliação na Troca</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black uppercase tracking-tighter leading-[0.94] text-white mb-6">
-                Engenharia que <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-amber-200 to-zinc-400 italic">
-                  domina o asfalto.
+              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.05]">
+                Seu próximo carro com{" "}
+                <span className="text-blue-700 underline decoration-blue-200 decoration-8 underline-offset-4">
+                  procedência comprovada.
                 </span>
               </h1>
 
-              <p className="text-zinc-400 text-base sm:text-lg max-w-xl leading-relaxed mb-8 border-l-2 border-[#D4AF37]/60 pl-5">
-                Cada veículo do nosso acervo passa por perícia cautelar de 240 pontos, leitura
-                eletrônica de telemetria de pista e certificação balística nível III-A. Pronta
-                entrega imediata em todo o território nacional.
+              <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-xl">
+                Seminovos de única dona, baixa quilometragem real, IPVA {CURRENT_YEAR} quitado e{" "}
+                <strong className="text-slate-900">Laudo Cautelar Dekra 100% aprovado</strong>.
+                Recebemos seu veículo na troca com pagamento à vista da diferença.
               </p>
 
-              <div className="flex flex-wrap items-center gap-4">
-                <a
-                  href="#acervo"
-                  onClick={() => soundRef.current?.playCockpitClick()}
-                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-amber-300 to-[#D4AF37] text-zinc-950 font-black uppercase tracking-wider text-xs sm:text-sm shadow-[0_0_40px_rgba(212,175,55,0.3)] hover:scale-[1.02] transition-all flex items-center gap-3"
-                >
-                  <span>Explorar Showroom (6 Unidades)</span>
-                  <ChevronRight className="w-4 h-4" />
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => handleEngineRev(INVENTORY[0])}
-                  className="px-6 py-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2.5"
-                >
-                  <Volume2 className="w-4 h-4 text-[#D4AF37] animate-pulse" />
-                  <span>Ouvir Ignição GT3 RS</span>
-                </button>
+              {/* Destaques Rápidos em Pílulas Claras */}
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-xs font-bold text-blue-700 block">Tabela FIPE</span>
+                  <span className="text-lg font-black text-slate-900">Até 100%</span>
+                  <span className="text-[11px] text-slate-500 block">Na avaliação do seu usado</span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-xs font-bold text-emerald-700 block">Documentação</span>
+                  <span className="text-lg font-black text-slate-900">IPVA {CURRENT_YEAR}</span>
+                  <span className="text-[11px] text-slate-500 block">Totalmente pago</span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-xs font-bold text-blue-700 block">Aprovação</span>
+                  <span className="text-lg font-black text-slate-900">Em 15 min</span>
+                  <span className="text-[11px] text-slate-500 block">6 bancos parceiros</span>
+                </div>
               </div>
 
-              {/* Quick Telemetry Metrics */}
-              <div className="mt-12 pt-8 border-t border-zinc-800/80 grid grid-cols-3 gap-6 max-w-lg">
-                <div>
-                  <span className="text-[10px] font-mono text-[#D4AF37] block">// LAUDO</span>
-                  <span className="text-xl sm:text-2xl font-black text-white">100% Aprovado</span>
-                  <span className="text-xs text-zinc-500 block">Vistoria Dekra & Fábrica</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-[#D4AF37] block">// BLINDAGEM</span>
-                  <span className="text-xl sm:text-2xl font-black text-white">Nível III-A</span>
-                  <span className="text-xs text-zinc-500 block">Vidros Ultra-Leves AGP</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-[#D4AF37] block">// LOGÍSTICA</span>
-                  <span className="text-xl sm:text-2xl font-black text-white">Plataforma Fechada</span>
-                  <span className="text-xs text-zinc-500 block">Entrega em Todo o Brasil</span>
-                </div>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <a
+                  href="#estoque"
+                  className="px-7 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm shadow-lg shadow-blue-700/25 transition-all flex items-center gap-2"
+                >
+                  <span>Ver Estoque Disponível</span>
+                  <ChevronRight className="w-4 h-4" />
+                </a>
+                <a
+                  href="#financiamento"
+                  className="px-6 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-all flex items-center gap-2"
+                >
+                  <Calculator className="w-4 h-4 text-blue-700" />
+                  <span>Simular Parcelas</span>
+                </a>
               </div>
             </div>
 
-            {/* Right Column: Flagship Showcase Card (5 Cols) */}
-            <div className="lg:col-span-5">
-              <div className="relative rounded-[2.5rem] overflow-hidden border border-zinc-800 bg-zinc-900 aspect-[4/4.3] group shadow-2xl">
-                <Image
-                  src={INVENTORY[0].image}
-                  alt={INVENTORY[0].model}
-                  fill
-                  unoptimized
-                  className="object-cover group-hover:scale-105 transition-transform duration-1000"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#07080A] via-[#07080A]/25 to-transparent" />
-
-                <div className="absolute top-5 left-5 right-5 flex items-center justify-between">
-                  <span className="px-3.5 py-1.5 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-[#D4AF37]/40 font-mono text-[10px] font-bold uppercase text-[#D4AF37] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> DESTAQUE DO ACERVO
+            {/* Coluna Direita: Oportunidade da Semana em Layout Card Limpo (6 Cols) */}
+            <div className="lg:col-span-6">
+              <div className="rounded-3xl bg-white border-2 border-slate-200 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.12)] overflow-hidden">
+                <div className="bg-slate-900 text-white px-6 py-3 flex items-center justify-between text-xs font-bold">
+                  <span className="flex items-center gap-2 text-amber-400 uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4" /> Oportunidade da Semana • Abaixo da FIPE
                   </span>
-                  <span className="px-3 py-1.5 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-zinc-800 font-mono text-[10px] text-zinc-300">
+                  <span className="font-mono text-slate-300">
                     {INVENTORY[0].year} • {INVENTORY[0].km}
                   </span>
                 </div>
 
-                <div className="absolute bottom-5 left-5 right-5 p-6 rounded-3xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800/90 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-[#D4AF37]">
-                        {INVENTORY[0].brand}
-                      </span>
-                      <h2 className="text-xl font-black text-white uppercase tracking-tight">
-                        {INVENTORY[0].model}
-                      </h2>
-                    </div>
-                    <span className="text-lg font-black text-[#D4AF37] shrink-0">
-                      {formatBRL(INVENTORY[0].price)}
+                <div className="relative h-64 sm:h-80 w-full bg-slate-100">
+                  <Image
+                    src={INVENTORY[0].image}
+                    alt={INVENTORY[0].model}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                  <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow">
+                      Economia de {formatBRL(INVENTORY[0].fipePrice - INVENTORY[0].price)} sob a FIPE
+                    </span>
+                    <span className="px-3 py-1 rounded-lg bg-white/95 text-slate-900 text-xs font-bold shadow">
+                      Único Dono • IPVA Pago
                     </span>
                   </div>
+                </div>
 
-                  {/* Mini Telemetry Strip */}
-                  <div className="grid grid-cols-3 gap-2 py-2.5 px-3 rounded-xl bg-zinc-900/90 border border-zinc-800 font-mono text-[11px] text-center">
+                <div className="p-6 sm:p-7 space-y-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <span className="text-zinc-500 block text-[9px]">POTÊNCIA</span>
-                      <strong className="text-white">{INVENTORY[0].power}</strong>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-blue-700">
+                        {INVENTORY[0].brand}
+                      </span>
+                      <h2 className="text-2xl font-black text-slate-900">
+                        {INVENTORY[0].model}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">{INVENTORY[0].version}</p>
                     </div>
-                    <div className="border-x border-zinc-800">
-                      <span className="text-zinc-500 block text-[9px]">0-100 KM/H</span>
-                      <strong className="text-[#D4AF37]">{INVENTORY[0].zeroToHundred}</strong>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500 block text-[9px]">VEL. MÁX</span>
-                      <strong className="text-white">{INVENTORY[0].topSpeed}</strong>
+                    <div className="text-right">
+                      <span className="text-xs text-slate-400 line-through block">
+                        FIPE: {formatBRL(INVENTORY[0].fipePrice)}
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-black text-blue-700">
+                        {formatBRL(INVENTORY[0].price)}
+                      </span>
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundRef.current?.playCockpitClick();
-                      setSelectedVehicleModal(INVENTORY[0]);
-                    }}
-                    className="w-full py-3.5 rounded-xl bg-white hover:bg-[#D4AF37] text-zinc-950 font-black uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
-                  >
-                    <span>Inspecionar Ficha Técnica Completa</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
+                  <div className="grid grid-cols-4 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-semibold block">MOTOR</span>
+                      <strong className="text-slate-800">{INVENTORY[0].power}</strong>
+                    </div>
+                    <div className="border-x border-slate-200">
+                      <span className="text-[10px] text-slate-400 font-semibold block">CÂMBIO</span>
+                      <strong className="text-slate-800">Aut. 9M</strong>
+                    </div>
+                    <div className="border-r border-slate-200">
+                      <span className="text-[10px] text-slate-400 font-semibold block">COMBUSTÍVEL</span>
+                      <strong className="text-slate-800">{INVENTORY[0].fuel}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-semibold block">PLACA</span>
+                      <strong className="text-slate-800">{INVENTORY[0].plateEnd}</strong>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVehicleModal(INVENTORY[0])}
+                      className="py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <span>Ver Laudo & Opcionais</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSimVehicle(INVENTORY[0]);
+                        document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="py-3.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs uppercase tracking-wider transition-colors"
+                    >
+                      Simular Financiamento
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -792,249 +681,245 @@ export default function CarDealershipPage() {
       </section>
 
       {/* ==========================================
-          3. SHOWROOM INTERATIVO & FILTROS
+          3. ESTOQUE MULTIMARCAS & BUSCADOR PORTAL
       ========================================== */}
-      <section id="acervo" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-          <div>
-            <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#D4AF37] block mb-2">
-              // 01. SHOWROOM DISPONÍVEL
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white">
-              Acervo <span className="text-[#D4AF37] italic">Selecionado</span>
-            </h2>
-          </div>
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-500">
-            CLIQUE NO ÍCONE DE ÁUDIO DE QUALQUER VEÍCULO PARA OUVIR A IGNIÇÃO
-          </p>
-        </div>
+      <section id="estoque" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
+        {/* Barra de Filtro Estilo Portal Webmotors */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm mb-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 mb-5 border-b border-slate-100">
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-blue-700 block">
+                Estoque Verificado Presencialmente
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                Veículos Pronta Entrega
+              </h2>
+            </div>
 
-        {/* Filter Bar */}
-        <div className="bg-zinc-900/60 border border-zinc-800/90 rounded-2xl p-4 mb-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setOnlyBelowFipe(!onlyBelowFipe)}
+                className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                  onlyBelowFipe
+                    ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
+                    : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <BadgePercent className="w-4 h-4" />
+                <span>Apenas Abaixo da FIPE</span>
+              </button>
+
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar Hilux, Compass, Nivus, BYD..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Categorias */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span className="text-xs font-bold text-slate-400 flex items-center gap-1 mr-2 shrink-0">
+              <SlidersHorizontal className="w-3.5 h-3.5" /> Carroceria:
+            </span>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => {
-                  soundRef.current?.playCockpitClick();
-                  setActiveCategory(cat.id);
-                }}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   activeCategory === cat.id
-                    ? "bg-[#D4AF37] text-zinc-950 shadow-[0_0_20px_rgba(212,175,55,0.35)]"
-                    : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800"
+                    ? "bg-blue-700 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
                 {cat.label}
               </button>
             ))}
           </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                soundRef.current?.playCockpitClick();
-                setOnlyArmored(!onlyArmored);
-              }}
-              className={`px-4 py-2.5 rounded-xl border text-xs font-mono font-bold uppercase flex items-center justify-center gap-2 transition-all ${
-                onlyArmored
-                  ? "bg-emerald-500/15 border-emerald-400 text-emerald-300"
-                  : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white"
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Apenas Blindados</span>
-            </button>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar marca, modelo ou cor..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Vehicles Grid */}
+        {/* Grid de Carros */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
           {filteredVehicles.map((car) => {
-            const isRevving = revvingId === car.id;
+            const fipeDiff = car.fipePrice - car.price;
             return (
-              <motion.div
+              <motion.article
                 layout
                 key={car.id}
-                onClick={() => {
-                  soundRef.current?.playCockpitClick();
-                  setSelectedVehicleModal(car);
-                }}
-                className="group cursor-pointer rounded-3xl bg-zinc-900/40 border border-zinc-800/90 hover:border-[#D4AF37]/60 overflow-hidden flex flex-col justify-between transition-all hover:shadow-[0_15px_50px_rgba(0,0,0,0.65)]"
+                onClick={() => setSelectedVehicleModal(car)}
+                className="group cursor-pointer rounded-3xl bg-white border border-slate-200 hover:border-blue-600 overflow-hidden flex flex-col justify-between transition-all shadow-sm hover:shadow-xl"
               >
                 <div>
-                  {/* Image Container */}
-                  <div className="relative h-60 w-full overflow-hidden bg-zinc-950">
+                  {/* Imagem do Carro */}
+                  <div className="relative h-56 w-full overflow-hidden bg-slate-100">
                     <Image
                       src={car.image}
                       alt={`${car.brand} ${car.model}`}
                       fill
                       unoptimized
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/35" />
 
-                    {/* Top Badges */}
-                    <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                      {car.badge ? (
-                        <span className="px-3 py-1 rounded-lg bg-[#D4AF37] text-zinc-950 font-mono text-[10px] font-black uppercase tracking-wider shadow">
+                    {/* Badges Superiores */}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                      {car.badge && (
+                        <span className="px-3 py-1 rounded-lg bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold shadow">
                           {car.badge}
                         </span>
-                      ) : (
-                        <span />
                       )}
-
-                      <button
-                        type="button"
-                        onClick={(e) => handleEngineRev(car, e)}
-                        title="Ouvir Ronco / Propulsão"
-                        className={`px-2.5 py-1.5 rounded-lg backdrop-blur-md border font-mono text-[10px] font-bold uppercase flex items-center gap-1.5 transition-all ${
-                          isRevving
-                            ? "bg-[#D4AF37] text-zinc-950 border-[#D4AF37] scale-105"
-                            : "bg-zinc-950/85 text-zinc-200 border-zinc-700 hover:border-[#D4AF37]"
-                        }`}
-                      >
-                        <Volume2 className={`w-3.5 h-3.5 ${isRevving ? "animate-bounce" : "text-[#D4AF37]"}`} />
-                        <span>{isRevving ? "ACELERANDO..." : "REV"}</span>
-                      </button>
+                      {fipeDiff > 0 && (
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold shadow">
+                          -{formatBRL(fipeDiff)} FIPE
+                        </span>
+                      )}
                     </div>
 
-                    <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-mono text-zinc-300">
-                      <span>{car.year}</span>
-                      <span>•</span>
-                      <span>{car.km}</span>
-                      <span>•</span>
-                      <span className="text-[#D4AF37]">{car.drivetrain}</span>
+                    {/* Faixa Inferior da Foto */}
+                    <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                      <span className="px-2.5 py-1 rounded-md bg-white/95 text-slate-900 font-bold text-[11px] shadow">
+                        {car.year}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-md bg-white/95 text-slate-700 font-semibold text-[11px] shadow">
+                        {car.km}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Specs Body */}
+                  {/* Corpo de Especificações */}
                   <div className="p-6">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] block mb-1">
-                      {car.brand}
-                    </span>
-                    <h3 className="text-xl font-black text-white uppercase tracking-tight mb-4 group-hover:text-[#D4AF37] transition-colors">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-700">
+                        {car.brand}
+                      </span>
+                      <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Laudo Dekra OK
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-blue-700 transition-colors">
                       {car.model}
                     </h3>
+                    <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 mb-4">
+                      {car.version}
+                    </p>
 
-                    <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 font-mono text-xs text-center">
+                    <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-center">
                       <div>
-                        <span className="text-[9px] text-zinc-500 block">POTÊNCIA</span>
-                        <strong className="text-white">{car.power}</strong>
-                      </div>
-                      <div className="border-x border-zinc-800">
-                        <span className="text-[9px] text-zinc-500 block">0-100 KM/H</span>
-                        <strong className="text-[#D4AF37]">{car.zeroToHundred}</strong>
-                      </div>
-                      <div>
-                        <span className="text-[9px] text-zinc-500 block">CÂMBIO</span>
-                        <strong className="text-white truncate block px-1">
-                          {car.transmission.split(" ")[0]}
+                        <span className="text-[10px] text-slate-400 font-semibold block">CÂMBIO</span>
+                        <strong className="text-slate-800 truncate block">
+                          {car.transmission.replace("Automático", "Aut.")}
                         </strong>
+                      </div>
+                      <div className="border-x border-slate-200">
+                        <span className="text-[10px] text-slate-400 font-semibold block">MOTOR</span>
+                        <strong className="text-slate-800">{car.power}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-semibold block">COMBUST.</span>
+                        <strong className="text-slate-800 truncate block">{car.fuel}</strong>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Footer */}
-                <div className="px-6 pb-6 pt-4 border-t border-zinc-800/60 flex items-center justify-between">
+                {/* Rodapé de Preço e Ação */}
+                <div className="px-6 pb-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-zinc-500 block">
-                      Valor à Vista / Trade-In
+                    <span className="text-[11px] text-slate-400 line-through block">
+                      Tabela FIPE: {formatBRL(car.fipePrice)}
                     </span>
-                    <span className="text-xl font-black text-white">{formatBRL(car.price)}</span>
+                    <span className="text-2xl font-black text-slate-900">
+                      {formatBRL(car.price)}
+                    </span>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        soundRef.current?.playCockpitClick();
                         setSimVehicle(car);
-                        document.getElementById("simulador")?.scrollIntoView({ behavior: "smooth" });
+                        document
+                          .getElementById("financiamento")
+                          ?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-[10px] font-mono font-bold uppercase text-zinc-200 transition-colors"
+                      className="px-3.5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs transition-colors"
                     >
                       Simular
                     </button>
-                    <div className="w-10 h-10 rounded-xl bg-zinc-800 group-hover:bg-[#D4AF37] group-hover:text-zinc-950 text-white flex items-center justify-center transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 group-hover:bg-blue-700 text-white flex items-center justify-center transition-colors">
                       <ArrowUpRight className="w-5 h-5" />
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             );
           })}
         </div>
       </section>
 
       {/* ==========================================
-          4. SIMULADOR DE FINANCIAMENTO & TRADE-IN
+          4. SIMULADOR DE FINANCIAMENTO CDC & AVALIAÇÃO DE TROCA
       ========================================== */}
       <section
-        id="simulador"
-        className="py-20 bg-zinc-950/80 border-y border-zinc-900 scroll-mt-20"
+        id="financiamento"
+        className="py-16 bg-white border-y border-slate-200 scroll-mt-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2.5rem] bg-gradient-to-br from-zinc-900 via-[#0B0C0F] to-zinc-950 border border-[#D4AF37]/30 p-6 sm:p-10 lg:p-12 shadow-[0_0_80px_rgba(212,175,55,0.07)]">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 mb-10 border-b border-zinc-800">
+          <div className="rounded-3xl bg-slate-50 border border-slate-200 p-6 sm:p-10 lg:p-12 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 mb-10 border-b border-slate-200">
               <div>
-                <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.2em] text-[#D4AF37] mb-2">
-                  <Calculator className="w-4 h-4" /> 02. Aether Financial & Trade-In Desk
+                <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-blue-700 mb-2">
+                  <Calculator className="w-4 h-4" /> Simulador de Crédito Automotivo & Troca
                 </span>
-                <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
-                  Simulador <span className="text-[#D4AF37] italic">Private Banking & Troca</span>
+                <h2 className="text-2xl sm:text-4xl font-black text-slate-900">
+                  Calcule suas parcelas e inclua seu usado
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
-                Configure sua entrada, inclua seu veículo atual como parte de pagamento e envie a
-                estrutura diretamente para aprovação na nossa mesa de crédito.
+              <p className="text-sm text-slate-600 max-w-md">
+                Trabalhamos com Itaú, Santander, Bradesco, Safra e BV Financeira. Simule abaixo e
+                envie para aprovação imediata sem burocracia.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              {/* Left 7 Cols: Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              {/* Controles (7 Cols) */}
               <div className="lg:col-span-7 space-y-6">
-                {/* 1. Escolha o Veículo */}
+                {/* 1. Seleção do Carro */}
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4AF37] font-bold mb-2.5">
-                    01. Veículo Desejado do Estoque
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-3">
+                    1. Selecione o veículo do estoque
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {INVENTORY.map((v) => (
                       <button
                         key={v.id}
                         type="button"
-                        onClick={() => {
-                          soundRef.current?.playCockpitClick();
-                          setSimVehicle(v);
-                        }}
-                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                        onClick={() => setSimVehicle(v)}
+                        className={`p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all ${
                           simVehicle.id === v.id
-                            ? "bg-[#D4AF37]/15 border-[#D4AF37] text-white"
-                            : "bg-zinc-950/70 border-zinc-800 text-zinc-400 hover:text-white"
+                            ? "bg-blue-700 border-blue-700 text-white shadow-md"
+                            : "bg-white border-slate-200 text-slate-700 hover:border-blue-400"
                         }`}
                       >
                         <div className="truncate pr-2">
-                          <span className="text-[10px] font-mono text-[#D4AF37] block">
+                          <span
+                            className={`text-[10px] font-bold block ${
+                              simVehicle.id === v.id ? "text-blue-200" : "text-blue-700"
+                            }`}
+                          >
                             {v.brand}
                           </span>
                           <span className="text-xs font-bold truncate block">{v.model}</span>
                         </div>
-                        <span className="text-xs font-mono font-bold shrink-0">
+                        <span className="text-xs font-extrabold shrink-0">
                           {formatBRL(v.price)}
                         </span>
                       </button>
@@ -1042,51 +927,48 @@ export default function CarDealershipPage() {
                   </div>
                 </div>
 
-                {/* 2. Slider de Entrada */}
-                <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/90 space-y-3">
+                {/* 2. Entrada */}
+                <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-mono uppercase text-zinc-300 font-bold">
-                      02. Entrada em Recursos Próprios ({downPaymentPct}%)
+                    <label className="text-xs font-extrabold uppercase text-slate-700">
+                      2. Valor de Entrada ({downPaymentPct}%)
                     </label>
-                    <span className="text-base font-black text-[#D4AF37]">
+                    <span className="text-lg font-black text-blue-700">
                       {formatBRL(downPaymentAmount)}
                     </span>
                   </div>
                   <input
                     type="range"
-                    min={20}
+                    min={10}
                     max={80}
                     step={5}
                     value={downPaymentPct}
                     onChange={(e) => setDownPaymentPct(Number(e.target.value))}
-                    className="w-full accent-[#D4AF37] cursor-pointer"
+                    className="w-full accent-blue-700 cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] font-mono text-zinc-500">
-                    <span>MÍN: 20%</span>
-                    <span>50%</span>
-                    <span>MÁX: 80%</span>
+                  <div className="flex justify-between text-[11px] font-semibold text-slate-400">
+                    <span>Mínimo: 10%</span>
+                    <span>Ideal: 40%</span>
+                    <span>Máximo: 80%</span>
                   </div>
                 </div>
 
-                {/* 3. Prazo & Veículo na Troca */}
+                {/* 3. Prazo & Troca */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/90">
-                    <label className="block text-xs font-mono uppercase text-zinc-300 font-bold mb-3">
-                      03. Prazo de Amortização
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200">
+                    <label className="block text-xs font-extrabold uppercase text-slate-700 mb-3">
+                      3. Prazo (Meses)
                     </label>
                     <div className="grid grid-cols-4 gap-2">
-                      {[12, 24, 36, 48].map((m) => (
+                      {[12, 24, 36, 48, 60].slice(0, 4).map((m) => (
                         <button
                           key={m}
                           type="button"
-                          onClick={() => {
-                            soundRef.current?.playCockpitClick();
-                            setMonths(m);
-                          }}
-                          className={`py-2.5 rounded-xl font-mono text-xs font-bold border transition-all ${
+                          onClick={() => setMonths(m)}
+                          className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${
                             months === m
-                              ? "bg-[#D4AF37] text-zinc-950 border-[#D4AF37]"
-                              : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
+                              ? "bg-blue-700 text-white border-blue-700"
+                              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                           }`}
                         >
                           {m}x
@@ -1095,34 +977,34 @@ export default function CarDealershipPage() {
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/90 space-y-2.5">
-                    <label className="block text-xs font-mono uppercase text-zinc-300 font-bold">
-                      04. Seu Veículo na Troca (Opcional)
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-2.5">
+                    <label className="block text-xs font-extrabold uppercase text-slate-700">
+                      4. Seu Carro na Troca (Opcional)
                     </label>
                     <input
                       type="text"
                       value={tradeInModel}
                       onChange={(e) => setTradeInModel(e.target.value)}
-                      placeholder="Ex: Porsche Macan 2023..."
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
+                      placeholder="Ex: Onix Premier 2022"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600"
                     />
                     <input
                       type="number"
                       min={0}
-                      step={10000}
+                      step={5000}
                       value={tradeInValue || ""}
                       onChange={(e) => setTradeInValue(Number(e.target.value) || 0)}
-                      placeholder="Valor estimado (R$)"
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
+                      placeholder="Valor estimado FIPE (R$)"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Right 5 Cols: Live Financial Summary Card */}
-              <div className="lg:col-span-5 rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-8 space-y-6 shadow-2xl">
-                <div className="flex items-center gap-4 pb-5 border-b border-zinc-800">
-                  <div className="relative w-20 h-16 rounded-2xl overflow-hidden shrink-0 border border-zinc-700">
+              {/* Card de Resumo Financeiro (5 Cols) */}
+              <div className="lg:col-span-5 rounded-3xl bg-white border-2 border-blue-600 p-6 sm:p-8 space-y-6 shadow-xl">
+                <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
+                  <div className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200">
                     <Image
                       src={simVehicle.image}
                       alt={simVehicle.model}
@@ -1132,58 +1014,58 @@ export default function CarDealershipPage() {
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-[#D4AF37]">
-                      RESUMO DA OPERAÇÃO
+                    <span className="text-[11px] font-bold uppercase text-blue-700">
+                      Resumo da Simulação
                     </span>
-                    <h3 className="text-base font-black text-white uppercase">
+                    <h3 className="text-base font-black text-slate-900">
                       {simVehicle.brand} {simVehicle.model}
                     </h3>
-                    <span className="text-xs font-mono text-zinc-400">
-                      Valor: {formatBRL(simVehicle.price)}
+                    <span className="text-xs font-semibold text-slate-500">
+                      Valor à vista: {formatBRL(simVehicle.price)}
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-2.5 text-xs font-mono">
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Entrada ({downPaymentPct}%)</span>
-                    <span className="text-white font-bold">{formatBRL(downPaymentAmount)}</span>
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Entrada em dinheiro ({downPaymentPct}%)</span>
+                    <span className="text-slate-900 font-bold">{formatBRL(downPaymentAmount)}</span>
                   </div>
                   {tradeInValue > 0 && (
-                    <div className="flex justify-between text-emerald-400">
-                      <span>Abatimento Trade-In ({tradeInModel || "Usado"})</span>
+                    <div className="flex justify-between text-emerald-700 font-semibold">
+                      <span>Seu usado ({tradeInModel || "Troca"})</span>
                       <span className="font-bold">- {formatBRL(tradeInValue)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Saldo a Financiar</span>
-                    <span className="text-white font-bold">{formatBRL(financedPrincipal)}</span>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Valor Financiado</span>
+                    <span className="text-slate-900 font-bold">{formatBRL(financedPrincipal)}</span>
                   </div>
-                  <div className="flex justify-between text-zinc-500">
-                    <span>Taxa Private Estimada</span>
-                    <span>1,19% a.m. (CET reduzido)</span>
+                  <div className="flex justify-between text-slate-400">
+                    <span>Taxa referencial CDC</span>
+                    <span>1,39% a.m. (Sujeito a análise)</span>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-[#D4AF37]/15 via-zinc-900 to-zinc-950 border border-[#D4AF37]/40">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#D4AF37] block mb-1">
-                    PARCELA MENSAL ESTIMADA ({months} MESES)
+                <div className="p-5 rounded-2xl bg-blue-50 border border-blue-200">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-800 block mb-1">
+                    PARCELA FIXA ESTIMADA ({months} MESES)
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    <span className="text-3xl sm:text-4xl font-black text-blue-700">
                       {formatBRL(monthlyInstallment)}
                     </span>
-                    <span className="text-xs font-mono text-zinc-400">/mês</span>
+                    <span className="text-xs font-bold text-slate-500">/mês</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleSendFinancingWhatsApp}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all"
+                  className="w-full py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Enviar Proposta p/ Mesa Private</span>
+                  <span>Aprovar Ficha pelo WhatsApp</span>
                 </button>
               </div>
             </div>
@@ -1192,40 +1074,39 @@ export default function CarDealershipPage() {
       </section>
 
       {/* ==========================================
-          5. AGENDAMENTO ATÔMICO DE TEST DRIVE VIP (FIREBASE)
+          5. AGENDAMENTO DE VISITA / TEST DRIVE (FIRESTORE)
       ========================================== */}
-      <section id="test-drive" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
-        <div className="rounded-[2.5rem] bg-[#0B0C0F] border border-zinc-800 p-6 sm:p-10 lg:p-12 relative overflow-hidden shadow-2xl">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-6 mb-8">
+      <section id="agendamento" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
+        <div className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 lg:p-12 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-8">
             <div>
-              <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.2em] text-[#D4AF37] mb-1.5">
-                <KeyRound className="w-3.5 h-3.5" /> 03. Firestore Atomic Lock • Concierge
+              <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-blue-700 mb-1.5">
+                <KeyRound className="w-4 h-4" /> Reserva Online em Tempo Real
               </span>
-              <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
-                Agendar <span className="text-[#D4AF37] italic">Test Drive & Visita VIP</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                Agendar Test Drive ou Chamada de Vídeo Ao Vivo
               </h2>
             </div>
 
-            <div className="font-mono text-[11px] bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-xl text-right">
-              <p className="text-zinc-400">SYNC: FIRESTORE TX</p>
-              <p className="text-emerald-400 font-bold">● RESERVA EXCLUSIVA DE CHASSI</p>
+            <div className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-xl font-bold">
+              ● Deixamos o carro higienizado e separado para você
             </div>
           </div>
 
-          {/* Auth Bar */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 p-4">
+          {/* Barra de Login Google */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-50 border border-slate-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase text-zinc-500 block">
-                  Protocolo de Segurança & Blindagem
+                <span className="text-[11px] font-bold uppercase text-slate-400 block">
+                  Identificação do Cliente
                 </span>
-                <p className="text-xs sm:text-sm font-bold text-zinc-200">
+                <p className="text-xs sm:text-sm font-bold text-slate-800">
                   {user
-                    ? `Membro Autenticado: ${user.displayName || user.email}`
-                    : "Conecte sua conta Google para bloquear um horário exclusivo com nosso piloto instrutor."}
+                    ? `Conectado como: ${user.displayName || user.email}`
+                    : "Entre com sua conta Google para confirmar o agendamento instantâneo."}
                 </p>
               </div>
             </div>
@@ -1234,48 +1115,48 @@ export default function CarDealershipPage() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="px-4 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all"
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all"
               >
-                <LogIn className="w-4 h-4" /> Autenticar Google
+                <LogIn className="w-4 h-4" /> Entrar com Google
               </button>
             )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-            <div className="lg:col-span-5 space-y-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5">
+            <div className="lg:col-span-5 space-y-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
               <div>
-                <label className="block text-xs font-mono uppercase text-[#D4AF37] font-bold mb-2">
-                  1. Modalidade da Experiência
+                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-2">
+                  1. Como prefere conhecer o veículo?
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setTdMode("SHOWROOM")}
-                    className={`p-3 rounded-xl border text-xs font-bold uppercase transition-all ${
-                      tdMode === "SHOWROOM"
-                        ? "bg-[#D4AF37] text-zinc-950 border-[#D4AF37]"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400"
+                    onClick={() => setTdMode("LOJA")}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                      tdMode === "LOJA"
+                        ? "bg-blue-700 text-white border-blue-700"
+                        : "bg-white border-slate-200 text-slate-600"
                     }`}
                   >
-                    Lounge Privado
+                    Test Drive na Loja
                   </button>
                   <button
                     type="button"
-                    onClick={() => setTdMode("DELIVERY")}
-                    className={`p-3 rounded-xl border text-xs font-bold uppercase transition-all ${
-                      tdMode === "DELIVERY"
-                        ? "bg-[#D4AF37] text-zinc-950 border-[#D4AF37]"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400"
+                    onClick={() => setTdMode("VIDEOCHAMADA")}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                      tdMode === "VIDEOCHAMADA"
+                        ? "bg-blue-700 text-white border-blue-700"
+                        : "bg-white border-slate-200 text-slate-600"
                     }`}
                   >
-                    Delivery VIP (Em Casa)
+                    Vídeo Ao Vivo (WhatsApp)
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#D4AF37] font-bold mb-2">
-                  2. Data Desejada
+                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-2">
+                  2. Escolha a Data
                 </label>
                 <input
                   type="date"
@@ -1285,15 +1166,15 @@ export default function CarDealershipPage() {
                     setTdDate(e.target.value);
                     setTdStatus("IDLE");
                   }}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white font-mono text-sm focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 font-semibold text-sm focus:outline-none focus:border-blue-600"
                 />
               </div>
             </div>
 
-            <div className="lg:col-span-7 space-y-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5">
+            <div className="lg:col-span-7 space-y-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
               <div>
-                <label className="block text-xs font-mono uppercase text-[#D4AF37] font-bold mb-2">
-                  3. Escolha a Máquina para Preparação
+                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-2">
+                  3. Veículo de Interesse
                 </label>
                 <select
                   value={tdVehicle.id}
@@ -1301,19 +1182,19 @@ export default function CarDealershipPage() {
                     const found = INVENTORY.find((i) => i.id === e.target.value);
                     if (found) setTdVehicle(found);
                   }}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm font-bold focus:outline-none focus:border-blue-600"
                 >
                   {INVENTORY.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.brand} {v.model} ({v.power} • {formatBRL(v.price)})
+                      {v.brand} {v.model} — {v.year} ({formatBRL(v.price)})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#D4AF37] font-bold mb-2">
-                  4. Janela de Horário
+                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-2">
+                  4. Horário Disponível
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   {TEST_DRIVE_SLOTS.map((slot) => (
@@ -1321,14 +1202,13 @@ export default function CarDealershipPage() {
                       key={slot}
                       type="button"
                       onClick={() => {
-                        soundRef.current?.playCockpitClick();
                         setTdSlot(slot);
                         setTdStatus("IDLE");
                       }}
-                      className={`py-3 rounded-xl font-mono text-xs font-black border transition-all ${
+                      className={`py-3 rounded-xl text-xs font-extrabold border transition-all ${
                         tdSlot === slot
-                          ? "bg-[#D4AF37] text-zinc-950 border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.35)]"
-                          : "bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-[#D4AF37]/50"
+                          ? "bg-blue-700 text-white border-blue-700 shadow-sm"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-blue-400"
                       }`}
                     >
                       {slot}
@@ -1339,27 +1219,29 @@ export default function CarDealershipPage() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs font-mono">
+          <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs font-semibold">
               {tdStatus !== "IDLE" ? (
                 <span
                   className={`flex items-center gap-2 ${
                     tdStatus === "ERROR"
-                      ? "text-red-400"
+                      ? "text-red-600"
                       : tdStatus === "SUCCESS"
-                      ? "text-emerald-400 font-bold"
-                      : "text-[#D4AF37]"
+                      ? "text-emerald-700 font-bold"
+                      : "text-blue-700"
                   }`}
                 >
                   {tdStatus === "SUCCESS" && <CheckCircle2 className="w-4 h-4" />}
                   {tdStatus === "ERROR" && <AlertTriangle className="w-4 h-4" />}
-                  {tdStatus === "LOADING"
-                    ? "Executando lock transacional no Firestore..."
-                    : tdFeedback}
+                  {tdStatus === "LOADING" ? "Reservando horário na agenda..." : tdFeedback}
                 </span>
               ) : (
-                <span className="text-zinc-400">
-                  Selecionado: <strong className="text-white">{tdVehicle.brand} {tdVehicle.model}</strong> ({tdMode}) às <strong className="text-[#D4AF37]">{tdSlot}</strong>
+                <span className="text-slate-500">
+                  Selecionado:{" "}
+                  <strong className="text-slate-900">
+                    {tdVehicle.brand} {tdVehicle.model}
+                  </strong>{" "}
+                  ({tdMode}) às <strong className="text-blue-700">{tdSlot}</strong>
                 </span>
               )}
             </div>
@@ -1369,15 +1251,15 @@ export default function CarDealershipPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const txt = `*CREDENTIAL VIP TEST DRIVE — AETHER MOTORS* 🏎️\n*Protocolo:* #${tdProtocol}\n*Veículo:* ${tdVehicle.brand} ${tdVehicle.model}\n*Modalidade:* ${tdMode}\n*Data/Hora:* ${tdDate} às ${tdSlot}`;
+                    const txt = `*AGENDAMENTO CONFIRMADO — PRIME MOTORS* 🚗\n*Protocolo:* #${tdProtocol}\n*Veículo:* ${tdVehicle.brand} ${tdVehicle.model}\n*Modalidade:* ${tdMode}\n*Data/Hora:* ${tdDate} às ${tdSlot}`;
                     window.open(
                       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(txt)}`,
                       "_blank"
                     );
                   }}
-                  className="px-5 py-4 rounded-xl bg-zinc-900 border border-emerald-500/40 text-emerald-400 font-black text-xs uppercase tracking-wider flex items-center gap-2"
+                  className="px-5 py-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                 >
-                  <MessageCircle className="w-4 h-4" /> Enviar Credencial no WhatsApp
+                  <MessageCircle className="w-4 h-4" /> Enviar Comprovante no WhatsApp
                 </button>
               )}
 
@@ -1385,9 +1267,9 @@ export default function CarDealershipPage() {
                 type="button"
                 onClick={handleConfirmTestDrive}
                 disabled={tdStatus === "LOADING"}
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all disabled:opacity-50"
+                className="px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all disabled:opacity-50"
               >
-                {tdStatus === "LOADING" ? "Reservando Chassi..." : "Confirmar Agendamento Atômico"}
+                {tdStatus === "LOADING" ? "Confirmando..." : "Confirmar Agendamento"}
               </button>
             </div>
           </div>
@@ -1395,47 +1277,47 @@ export default function CarDealershipPage() {
       </section>
 
       {/* ==========================================
-          6. DIFERENCIAIS & GARANTIA (BENTO GRID)
+          6. GARANTIAS & COMPROMISSOS (TEMA CLARO)
       ========================================== */}
-      <section id="diferenciais" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="garantias" className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: ShieldCheck,
-              tag: "CERTIFICAÇÃO BALÍSTICA",
-              title: "Blindagem Nível III-A Ultra-Leve",
-              desc: "Parceria oficial com as maiores blindadoras do país. Vidros de baixa espessura sem delaminação e mantas de aramida de última geração.",
+              icon: FileCheck2,
+              tag: "VISTORIA DEKRA",
+              title: "Laudo Cautelar 100% Aprovado",
+              desc: "Nenhum veículo do nosso pátio possui passagem por leilão, sinistro ou adulteração estrutural. Entregamos o laudo impresso na compra.",
             },
             {
               icon: Award,
-              tag: "LAUDO 240 PONTOS",
-              title: "Perícia Óptica & Scanner de Pista",
-              desc: "Verificação de espessura de pintura a laser, histórico de revisões em concessionária e leitura de horas de motor (Overrev check).",
+              tag: "GARANTIA MECÂNICA",
+              title: "Até 1 Ano de Garantia Gestauto",
+              desc: "Cobertura nacional para motor e câmbio, além de assistência 24h com guincho e carro reserva em todo o território brasileiro.",
             },
             {
-              icon: Car,
-              tag: "CONCIERGE LOGÍSTICO",
-              title: "Entrega em Caminhão Fechado",
-              desc: "Seu veículo viaja em prancha sider 100% blindada contra detritos e intempéries, com seguro total até a porta da sua residência.",
+              icon: Fuel,
+              tag: "ENTREGA IMEDIATA",
+              title: "Tanque Cheio & Transferência Ágil",
+              desc: "Despachante próprio integrado ao Detran-RS para emissão do CRLV digital no mesmo dia da aprovação do contrato.",
             },
           ].map((item, i) => {
             const Icon = item.icon;
             return (
               <div
                 key={i}
-                className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-[#D4AF37]/40 transition-all flex flex-col justify-between"
+                className="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                     {item.tag}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-black uppercase text-white mb-2">{item.title}</h3>
-                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{item.desc}</p>
+                  <h3 className="text-lg font-black text-slate-900 mb-2">{item.title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             );
@@ -1444,30 +1326,30 @@ export default function CarDealershipPage() {
       </section>
 
       {/* ==========================================
-          7. CONTATO & FOOTER
+          7. RODAPÉ INSTITUCIONAL
       ========================================== */}
-      <footer id="contato" className="bg-[#040506] border-t border-zinc-900 py-16">
+      <footer className="bg-slate-900 text-slate-300 py-14 mt-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-zinc-900 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10 border-b border-slate-800 items-center">
             <div className="lg:col-span-7 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
-                  <Gauge className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                  <Car className="w-5 h-5" />
                 </div>
-                <span className="text-lg font-black tracking-widest text-white">
-                  AETHER<span className="text-[#D4AF37]">.MOTORS</span>
+                <span className="text-lg font-black tracking-tight text-white">
+                  PRIME<span className="text-blue-400">MOTORS</span>
                 </span>
               </div>
-              <p className="text-sm text-zinc-400 max-w-lg">
-                Showroom Flagship com heliponto homologado e atendimento individualizado com hora
-                marcada.
+              <p className="text-sm text-slate-400 max-w-lg">
+                Comércio de Veículos Multimarcas Ltda. Seminovos periciados com financiamento
+                imediato e avaliação justa do seu usado na troca.
               </p>
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs font-mono text-zinc-400">
+              <div className="flex flex-wrap items-center gap-6 pt-1 text-xs text-slate-400">
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#D4AF37]" /> Av. Europa, 880 - Jardim Europa, SP
+                  <MapPin className="w-4 h-4 text-blue-400" /> Av. Ipiranga, 4500 — Porto Alegre, RS
                 </span>
                 <span className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#D4AF37]" /> (11) 99999-9999
+                  <Phone className="w-4 h-4 text-blue-400" /> (51) 99358-3936
                 </span>
               </div>
             </div>
@@ -1475,49 +1357,49 @@ export default function CarDealershipPage() {
             <div className="lg:col-span-5 flex lg:justify-end">
               <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                  "Olá! Gostaria de falar com um consultor Private da Aether Motors."
+                  "Olá! Vi o estoque da Prime Motors no site e gostaria de falar com um consultor."
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
                   trackMetaEvent("Contact", {
-                    content_name: "Footer WhatsApp Aether Motors",
+                    content_name: "Footer WhatsApp Prime Motors",
                   })
                 }
-                className="px-7 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider flex items-center gap-2.5 shadow-lg"
+                className="px-6 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2.5 shadow-lg"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Atendimento Private via WhatsApp</span>
+                <span>Chamar Vendedor no WhatsApp</span>
               </a>
             </div>
           </div>
 
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono uppercase text-zinc-600">
-            <p>© {CURRENT_YEAR} AETHER MOTORS SHOWROOM. TODOS OS DIREITOS RESERVADOS.</p>
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <p>© {CURRENT_YEAR} Prime Motors Seminovos. Todos os direitos reservados.</p>
             <p>
-              ARQUITETURA DESENVOLVIDA POR <strong className="text-[#D4AF37]">FOCUSPULSE</strong>
+              Tecnologia & Design por <strong className="text-white">FocusPulse</strong>
             </p>
           </div>
         </div>
       </footer>
 
       {/* ==========================================
-          MODAL DE FICHA TÉCNICA COMPLETA DO VEÍCULO
+          MODAL DE FICHA TÉCNICA & LAUDO DO VEÍCULO
       ========================================== */}
       <AnimatePresence>
         {selectedVehicleModal && (
           <div
             onClick={() => setSelectedVehicleModal(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-zinc-950 border border-[#D4AF37]/40 shadow-2xl no-scrollbar"
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white border border-slate-200 shadow-2xl no-scrollbar"
             >
-              <div className="relative h-64 sm:h-72 w-full">
+              <div className="relative h-64 sm:h-72 w-full bg-slate-100">
                 <Image
                   src={selectedVehicleModal.image}
                   alt={selectedVehicleModal.model}
@@ -1525,105 +1407,115 @@ export default function CarDealershipPage() {
                   unoptimized
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
                 <button
                   type="button"
                   onClick={() => setSelectedVehicleModal(null)}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-800 text-white flex items-center justify-center hover:bg-[#D4AF37] hover:text-zinc-950 transition-colors"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/95 border border-slate-200 text-slate-900 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-colors shadow"
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => handleEngineRev(selectedVehicleModal, e)}
-                  className="absolute bottom-4 right-4 px-4 py-2 rounded-xl bg-[#D4AF37] text-zinc-950 font-mono text-xs font-black uppercase flex items-center gap-2 shadow-lg"
-                >
-                  <Volume2 className="w-4 h-4" /> Ouvir Ronco / Ignição
-                </button>
+                <div className="absolute bottom-3 left-4 flex gap-2">
+                  <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow">
+                    Laudo Dekra 100% Aprovado
+                  </span>
+                  {selectedVehicleModal.ipvaPaid && (
+                    <span className="px-3 py-1 rounded-lg bg-blue-700 text-white text-xs font-bold shadow">
+                      IPVA {CURRENT_YEAR} Pago
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="p-6 sm:p-8 space-y-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5">
                   <div>
-                    <span className="text-xs font-mono uppercase tracking-widest text-[#D4AF37]">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-blue-700">
                       {selectedVehicleModal.brand} • {selectedVehicleModal.year}
                     </span>
-                    <h3 className="text-2xl sm:text-3xl font-black text-white uppercase">
+                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
                       {selectedVehicleModal.model}
                     </h3>
+                    <p className="text-xs text-slate-500 mt-1">{selectedVehicleModal.version}</p>
                   </div>
-                  <span className="text-2xl font-black text-[#D4AF37]">
-                    {formatBRL(selectedVehicleModal.price)}
-                  </span>
-                </div>
-
-                {/* Specs Table */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 text-xs">
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">COR EXTERNA</span>
-                    <strong className="text-white">{selectedVehicleModal.exteriorColor}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">INTERIOR</span>
-                    <strong className="text-white">{selectedVehicleModal.interiorSpec}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">QUILOMETRAGEM</span>
-                    <strong className="text-white">{selectedVehicleModal.km}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">POTÊNCIA</span>
-                    <strong className="text-[#D4AF37]">{selectedVehicleModal.power}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">0 A 100 KM/H</span>
-                    <strong className="text-[#D4AF37]">{selectedVehicleModal.zeroToHundred}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 block">BLINDAGEM</span>
-                    <strong className="text-white">
-                      {selectedVehicleModal.armored ? "Sim (Nível III-A)" : "Original Não Blindado"}
-                    </strong>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-400 line-through block">
+                      FIPE: {formatBRL(selectedVehicleModal.fipePrice)}
+                    </span>
+                    <span className="text-2xl font-black text-blue-700">
+                      {formatBRL(selectedVehicleModal.price)}
+                    </span>
                   </div>
                 </div>
 
-                {/* Highlights */}
+                {/* Tabela de Especificações */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">QUILOMETRAGEM</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.km}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">CÂMBIO</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.transmission}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">POTÊNCIA</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.power}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">COMBUSTÍVEL</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.fuel}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">COR</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.exteriorColor}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block">FINAL DA PLACA</span>
+                    <strong className="text-slate-900">{selectedVehicleModal.plateEnd}</strong>
+                  </div>
+                </div>
+
+                {/* Opcionais e Destaques */}
                 <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-bold mb-3">
-                    Configuração & Opcionais de Fábrica
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-3">
+                    Destaques & Histórico deste Veículo
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {selectedVehicleModal.highlights.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                      <div key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{h}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => {
                       setSimVehicle(selectedVehicleModal);
                       setSelectedVehicleModal(null);
-                      document.getElementById("simulador")?.scrollIntoView({ behavior: "smooth" });
+                      document
+                        .getElementById("financiamento")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="py-3.5 px-5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white font-bold text-xs uppercase tracking-wider"
+                    className="py-3.5 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider"
                   >
-                    Simular Financiamento / Troca
+                    Simular Parcelas / Troca
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setTdVehicle(selectedVehicleModal);
                       setSelectedVehicleModal(null);
-                      document.getElementById("test-drive")?.scrollIntoView({ behavior: "smooth" });
+                      document
+                        .getElementById("agendamento")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="py-3.5 px-5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider"
+                    className="py-3.5 px-5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs uppercase tracking-wider"
                   >
-                    Reservar Test Drive deste Chassi
+                    Agendar Visita p/ Este Carro
                   </button>
                 </div>
               </div>

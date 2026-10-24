@@ -62,6 +62,18 @@ const projects = [
     badgeColor: "border-violet-300/30 bg-violet-400/10 text-violet-200",
     barGradient: "from-violet-600 to-fuchsia-300",
   },
+  {
+    number: "04",
+    category: "Automotivo & Seminovos",
+    title: "Prime Motors",
+    description:
+      "Portal automotivo em tema claro com comparativo FIPE, simulador CDC e reserva de visita online.",
+    href: "/templates/carros",
+    theme: "from-blue-500/20 via-[#101726] to-[#0c0d0f]",
+    glowColor: "rgba(37, 99, 235, 0.25)",
+    badgeColor: "border-blue-400/30 bg-blue-500/10 text-blue-200",
+    barGradient: "from-blue-600 to-cyan-300",
+  },
 ];
 
 const AUTOPLAY_TIME = 6000;
@@ -70,7 +82,6 @@ export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Valores para o efeito 3D Tilt suave com o mouse
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -83,7 +94,6 @@ export function Hero() {
     damping: 22,
   });
 
-  // Autoplay inteligente (pausa quando o usuário passa o mouse)
   useEffect(() => {
     if (isHovered) return;
     const timer = setInterval(() => {
@@ -139,7 +149,7 @@ export function Hero() {
       />
 
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 items-center gap-14 lg:grid-cols-[1.05fr_.95fr] lg:gap-10">
-        {/* COLUNA ESQUERDA: Texto & CTAs Originais */}
+        {/* COLUNA ESQUERDA */}
         <div className="relative z-10 w-full min-w-0 max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -203,7 +213,7 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* COLUNA DIREITA: Carrossel 3D com seus Templates Reais */}
+        {/* COLUNA DIREITA: Carrossel 3D com 4 Templates */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96, x: 18 }}
           animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -214,7 +224,6 @@ export function Hero() {
           onMouseLeave={handleMouseLeave}
           style={{ perspective: 1200 }}
         >
-          {/* Glow dinâmico que acompanha a cor do template ativo */}
           <motion.div
             aria-hidden
             animate={{ backgroundColor: activeProject.glowColor }}
@@ -222,12 +231,10 @@ export function Hero() {
             className="pointer-events-none absolute inset-8 -z-10 rounded-full blur-[95px]"
           />
 
-          {/* Container 3D (Stack de Navegadores) */}
           <motion.div
             style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
             className="relative aspect-[1.02] w-full select-none"
           >
-            {/* Molduras traseiras decorativas do seu design original */}
             <div className="pointer-events-none absolute inset-[7%] -z-20 rotate-[-7deg] rounded-[2rem] border border-white/10 bg-white/[0.025] shadow-2xl shadow-violet-950/40" />
 
             {projects.map((project, index) => {
@@ -246,7 +253,7 @@ export function Hero() {
                     y: isFront ? 0 : isSecond ? -20 : -38,
                     x: isFront ? 0 : isSecond ? 18 : -18,
                     rotateZ: isFront ? 0 : isSecond ? 3.5 : -4.5,
-                    opacity: isFront ? 1 : isSecond ? 0.5 : 0.2,
+                    opacity: isFront ? 1 : isSecond ? 0.5 : 0.18,
                     zIndex: projects.length - offset,
                   }}
                   transition={{
@@ -272,7 +279,6 @@ export function Hero() {
                     }
                   `}
                 >
-                  {/* Barra Superior do Navegador */}
                   <div className="flex h-13 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#0b0e13]/90 px-5 sm:px-6">
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full bg-[#ff6b61]" />
@@ -296,15 +302,12 @@ export function Hero() {
                     </Link>
                   </div>
 
-                  {/* Área do Iframe + Tema de Gradiente do Projeto */}
                   <div
                     className={`relative flex-1 overflow-hidden bg-gradient-to-br ${project.theme} p-4 sm:p-5`}
                   >
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,rgba(255,255,255,.1),transparent_60%)]" />
 
-                    {/* Moldura Interna com o Iframe Real do Template */}
                     <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-[#0b0d10] shadow-2xl">
-                      {/* Iframe escalado em 50% (200% de largura/altura) para renderizar a visão Desktop real sem cortes */}
                       <iframe
                         src={project.href}
                         title={`Prévia do template ${project.title}`}
@@ -314,10 +317,8 @@ export function Hero() {
                         className="pointer-events-none h-[200%] w-[200%] origin-top-left scale-50 border-0 bg-[#0b0d10]"
                       />
 
-                      {/* Gradiente inferior sobre o iframe para leitura perfeita das informações */}
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/45 to-transparent" />
 
-                      {/* Badge de Categoria no Topo da Prévia */}
                       <div className="absolute left-4 top-4 flex items-center gap-2">
                         <span
                           className={`rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md ${project.badgeColor}`}
@@ -326,7 +327,6 @@ export function Hero() {
                         </span>
                       </div>
 
-                      {/* Informações do Projeto Sobrepostas na Base */}
                       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 sm:p-6">
                         <div className="max-w-xs">
                           <div className="flex items-center gap-2">
@@ -353,7 +353,6 @@ export function Hero() {
                     </div>
                   </div>
 
-                  {/* Barra Inferior Estilo FocusPulse */}
                   <div className="flex h-14 shrink-0 items-center justify-between border-t border-white/10 bg-[#0b0e13]/95 px-5 sm:px-6">
                     <div>
                       <p className="text-[8px] uppercase tracking-[0.18em] text-white/40">
@@ -364,11 +363,7 @@ export function Hero() {
                       </p>
                     </div>
 
-                    {/* Mini Equalizador Visual com a cor do projeto */}
-                    <div
-                      aria-hidden
-                      className="flex h-7 items-end gap-1"
-                    >
+                    <div aria-hidden className="flex h-7 items-end gap-1">
                       {[12, 22, 16, 26, 18, 28, 15].map((height, idx) => (
                         <span
                           key={idx}
@@ -382,7 +377,6 @@ export function Hero() {
               );
             })}
 
-            {/* Pílula Flutuante Externa (Canto Inferior Esquerdo) */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeProject.number}
@@ -412,7 +406,7 @@ export function Hero() {
                   <button
                     key={proj.number}
                     onClick={() => setActiveIndex(idx)}
-                    className={`relative flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs transition-all ${
+                    className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs transition-all ${
                       isActive
                         ? "bg-white/10 font-semibold text-white"
                         : "text-white/45 hover:text-white/80"
@@ -423,7 +417,6 @@ export function Hero() {
                     </span>
                     <span className="whitespace-nowrap">{proj.title}</span>
 
-                    {/* Barra de progresso do Autoplay */}
                     {isActive && !isHovered && (
                       <motion.span
                         layoutId="heroProjectProgress"
@@ -441,7 +434,6 @@ export function Hero() {
               })}
             </div>
 
-            {/* Controles Manuais */}
             <div className="flex shrink-0 items-center gap-1.5">
               <button
                 onClick={prevSlide}

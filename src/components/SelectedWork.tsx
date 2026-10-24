@@ -6,7 +6,8 @@ const projects = [
     number: "01",
     category: "Fitness & bem-estar",
     title: "PulseFit",
-    description: "Uma experiência de marca enérgica para transformar interesse em novas matrículas.",
+    description:
+      "Uma experiência de marca enérgica para transformar interesse em novas matrículas.",
     href: "/templates/academias",
     theme: "from-orange-500/20 via-[#181512] to-[#0c0d0f]",
   },
@@ -14,7 +15,8 @@ const projects = [
     number: "02",
     category: "Gastronomia",
     title: "Kobra Burger Lab",
-    description: "Cardápio digital com personalidade, pensado para abrir o apetite e facilitar pedidos.",
+    description:
+      "Cardápio digital com personalidade, pensado para abrir o apetite e facilitar pedidos.",
     href: "/templates/cardapio",
     theme: "from-amber-200/15 via-[#1c1713] to-[#0c0d0f]",
   },
@@ -22,9 +24,19 @@ const projects = [
     number: "03",
     category: "E-commerce & moda",
     title: "Vortex Atelier",
-    description: "Uma vitrine editorial para uma marca que tem atitude em cada detalhe.",
+    description:
+      "Uma vitrine editorial para uma marca que tem atitude em cada detalhe.",
     href: "/templates/streetwear",
     theme: "from-violet-300/20 via-[#17111f] to-[#0c0d0f]",
+  },
+  {
+    number: "04",
+    category: "Automotivo & Seminovos",
+    title: "Prime Motors",
+    description:
+      "Portal de concessionária em tema claro com comparativo FIPE, simulador CDC e agendamento de visita.",
+    href: "/templates/carros",
+    theme: "from-blue-500/20 via-[#101726] to-[#0c0d0f]",
   },
 ];
 
@@ -44,16 +56,21 @@ export function SelectedWork() {
             <h2 className="text-balance font-display text-4xl font-semibold leading-[1.02] tracking-[-0.055em] sm:text-5xl md:text-6xl">
               Não é só um site.
               <br />
-              <span className="text-violet-gradient">É a sua próxima impressão.</span>
+              <span className="text-violet-gradient">
+                É a sua próxima impressão.
+              </span>
             </h2>
           </div>
           <p className="max-w-sm text-base leading-7 text-muted-foreground">
             Explore alguns conceitos demonstrativos e descubra como{" "}
-            <span className="font-medium text-violet-100">estratégia, conteúdo e identidade visual</span> podem trabalhar juntos.
+            <span className="font-medium text-violet-100">
+              estratégia, conteúdo e identidade visual
+            </span>{" "}
+            podem trabalhar juntos.
           </p>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {projects.map((project) => (
             <article
               key={project.number}
@@ -122,10 +139,10 @@ export function SelectedWork() {
             Os exemplos são demonstrativos e podem ser adaptados à sua marca.
           </p>
           <Link
-            href="/design"
+            href="/templates"
             className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-violet-200"
           >
-            Ver portfólio de design
+            Ver todos os templates
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
