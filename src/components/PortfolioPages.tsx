@@ -16,79 +16,97 @@ import {
   SlidersHorizontal,
   CalendarClock,
   Gamepad2,
+  BarChart3,
+  Cpu,
+  Radio,
+  Maximize2,
+  Terminal,
+  Flame,
+  MessageSquare,
 } from "lucide-react";
 import ChronosBooking from "@/components/ChronosBooking";
 import MemoryMatrix from "@/components/games/MemoryMatrix";
 import PulseSpinRoulette from "@/components/games/SpinToWin";
 import ArcadeCabinetHub from "@/components/ArcadeCabinetHub";
 import PulseMetricsDashboard from "@/components/PulseMetricsDashboard";
-import { BarChart3 } from "lucide-react"; // junto aos demais ícones da lucide-react
 
 type InteractiveProjectId =
+  | "pulsemetrics"
   | "chronos"
   | "pulsespin"
   | "memory"
-  | "voxelvaders"
-  | "pulsemetrics";
+  | "voxelvaders";
+
+type AppCategoryFilter = "ALL" | "SYSTEMS" | "GAMIFICATION";
 
 const interactiveProjects: Array<{
   id: InteractiveProjectId;
   title: string;
   category: string;
+  filterGroup: AppCategoryFilter;
+  statusBadge: string;
+  metricsLabel: string;
   description: string;
   tech: string[];
   accent: string;
+  borderGlow: string;
   icon: typeof CalendarClock;
 }> = [
     {
       id: "pulsemetrics",
       title: "PulseMetrics BI & Pixel",
       category: "Analytics & Telemetria",
+      filterGroup: "SYSTEMS",
+      statusBadge: "META PIXEL LIVE",
+      metricsLabel: "ROAS 6.8x • 99.9% Sync",
       description:
-        "Dashboard executivo de indicativos de performance, funil de atribuição e console de auditoria ao vivo do Meta Pixel.",
+        "Dashboard executivo de indicativos de performance, funil de atribuição em tempo real e console de auditoria ao vivo do Meta Pixel.",
       tech: ["Meta Pixel SDK", "Web Audio Synth", "SVG Telemetry", "Firebase Auth"],
-      accent: "from-cyan-400/20 via-teal-500/5 to-transparent",
+      accent: "from-cyan-400/25 via-teal-500/10 to-transparent",
+      borderGlow: "hover:border-cyan-400/50",
       icon: BarChart3,
     },
     {
       id: "chronos",
-      title: "ChronosBook",
-      category: "Agendamentos",
+      title: "ChronosBook Executive",
+      category: "Engine de Agendamento Atômico",
+      filterGroup: "SYSTEMS",
+      statusBadge: "FIRESTORE TX LOCK",
+      metricsLabel: "Zero Double-Booking • 39ms",
       description:
-        "Demonstração de seleção de horários com autenticação e reserva protegida por transação no Firestore.",
-      tech: ["Firebase Auth", "Firestore Transactions", "Next.js"],
-      accent: "from-blue-500/20 via-indigo-500/5 to-transparent",
+        "Sistema executivo de reservas com catálogo visual de especialistas, lock transacional no Firestore, dashboard de auditoria e síntese sonora.",
+      tech: ["Firebase Auth", "Firestore Transactions", "Next.js", "Web Audio"],
+      accent: "from-blue-500/25 via-indigo-500/10 to-transparent",
+      borderGlow: "hover:border-blue-400/50",
       icon: CalendarClock,
     },
     {
       id: "pulsespin",
-      title: "PulseSpin",
-      category: "Mini app interativo",
+      title: "PulseSpin Roulette",
+      category: "Gamificação de Conversão",
+      filterGroup: "GAMIFICATION",
+      statusBadge: "HIGH CONVERSION",
+      metricsLabel: "+34% Captura de Leads",
       description:
-        "Roleta promocional demonstrativa com animação e resultado exibido no navegador.",
-      tech: ["Framer Motion", "CSS conic-gradient"],
-      accent: "from-cyan-400/20 via-blue-500/5 to-transparent",
+        "Roleta promocional interativa com física de desaceleração, gatilhos de recompensa e resgate imediato para campanhas de e-commerce.",
+      tech: ["Framer Motion", "CSS Conic-Gradient", "Lead Capture"],
+      accent: "from-fuchsia-500/20 via-violet-500/10 to-transparent",
+      borderGlow: "hover:border-fuchsia-400/50",
       icon: Gamepad2,
     },
     {
       id: "memory",
-      title: "Memory Matrix",
-      category: "Jogo de memória",
+      title: "Memory Matrix 3D",
+      category: "Desafio Cognitivo & Ranking",
+      filterGroup: "GAMIFICATION",
+      statusBadge: "LEADERBOARD ATIVO",
+      metricsLabel: "60 FPS 3D Flip • OAuth",
       description:
-        "Desafio de pares com animações 3D e opção de registrar a pontuação após entrar com Google.",
-      tech: ["React", "Firebase Auth", "Firebase Admin"],
-      accent: "from-lime-400/20 via-emerald-500/5 to-transparent",
+        "Desafio de memória espacial com perspectiva 3D, contador de precisão e gravação de recordes autenticada via Google.",
+      tech: ["React 19", "Firebase Auth", "Firebase Admin", "CSS 3D"],
+      accent: "from-lime-400/20 via-emerald-500/10 to-transparent",
+      borderGlow: "hover:border-lime-400/50",
       icon: Layers3,
-    },
-    {
-      id: "voxelvaders",
-      title: "Voxel Vaders 3D",
-      category: "WebGL Arcade & Gamificação",
-      description:
-        "Space Invaders tridimensional com Three.js, partículas e controles híbridos para desktop e dispositivos móveis.",
-      tech: ["Three.js WebGL", "3D Particles", "Touch HUD", "Firebase Leaderboard"],
-      accent: "from-pink-500/20 via-purple-600/5 to-transparent",
-      icon: Gamepad2,
     },
   ];
 
@@ -96,22 +114,22 @@ const projects = [
   {
     href: "/webdev/arknoid",
     number: "01",
-    title: "Arknoid",
-    category: "Experimento interativo",
+    title: "Arknoid Lab",
+    category: "Experimento Físico 2D",
     tag: "HTML5 Canvas · 60 FPS",
     description:
-      "Uma releitura de Arkanoid feita para explorar movimento, física, colisão e partículas direto no navegador.",
+      "Releitura vetorial de Arkanoid projetada para testar deflexão angular, colisão elástica e partículas direto no navegador.",
     icon: Code2,
-    accent: "from-violet-500/20 via-fuchsia-500/5 to-transparent",
+    accent: "from-amber-400/20 via-orange-500/5 to-transparent",
   },
   {
     href: "/webdev/images-blend",
     number: "02",
-    title: "Image Blend",
-    category: "Laboratório visual",
+    title: "Image Blend Studio",
+    category: "Laboratório de Shaders & Cor",
     tag: "CSS Mix-Blend · Real-Time",
     description:
-      "Uma composição de imagens em camadas com controles de cor, opacidade e blend modes para testar combinações visuais.",
+      "Composição multicamada em tempo real com controle de opacidade, matiz e blend modes para direção de arte digital.",
     icon: Layers3,
     accent: "from-fuchsia-500/20 via-indigo-500/5 to-transparent",
   },
@@ -120,6 +138,8 @@ const projects = [
 export function AppsPageContent() {
   const [activeProject, setActiveProject] =
     useState<InteractiveProjectId | null>(null);
+  const [categoryFilter, setCategoryFilter] =
+    useState<AppCategoryFilter>("ALL");
 
   useEffect(() => {
     if (!activeProject) return;
@@ -137,146 +157,175 @@ export function AppsPageContent() {
     };
   }, [activeProject]);
 
+  const filteredInteractive = interactiveProjects.filter(
+    (item) => categoryFilter === "ALL" || item.filterGroup === categoryFilter
+  );
+
   return (
-    <section className="container-luxe py-32 sm:py-40">
-      <div className="mb-14 max-w-3xl">
-        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
-          <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
-          FocusPulse Labs · Aplicativos
-        </span>
-        <h1 className="mb-6 font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-          Ideias que viram{" "}
-          <span className="text-violet-gradient">experiências.</span>
-        </h1>
-        <p className="text-lg leading-relaxed text-muted-foreground">
-          Aplicativos e experimentos interativos desenvolvidos para explorar
-          física, renderização e micro-interações diretamente no navegador.
-        </p>
-      </div>
+    <section className="container-luxe py-28 sm:py-36 relative">
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute top-12 left-1/4 h-[450px] w-[450px] rounded-full bg-violet-600/10 blur-[150px]" />
+      <div className="pointer-events-none absolute top-1/3 right-10 h-[400px] w-[400px] rounded-full bg-cyan-500/10 blur-[140px]" />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {projects.map((project) => {
-          const Icon = project.icon;
-          return (
-            <Link
-              key={project.href}
-              href={project.href}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 p-8 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300/35 hover:shadow-violet-glow sm:p-10"
-            >
-              <div
-                aria-hidden
-                className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${project.accent} opacity-60 transition-opacity duration-500 group-hover:opacity-100`}
-              />
+      {/* =========================================================
+          1. HERO HEADER COM TELEMETRIA E ATALHO P/ CONTATO
+      ========================================================= */}
+      <div className="relative z-10 mb-16 flex flex-col justify-between gap-8 border-b border-white/10 pb-12 lg:flex-row lg:items-end">
+        <div className="max-w-3xl">
+          <div className="mb-5 flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-400/[0.08] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
+              <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
+              FocusPulse Labs · Engenharia Interativa
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-bold text-emerald-300">
+              <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
+              SISTEMAS ONLINE
+            </span>
+          </div>
 
-              <div className="relative z-10">
-                <div className="mb-10 flex items-center justify-between">
-                  <div className="grid h-14 w-14 place-items-center rounded-2xl border border-violet-300/25 bg-violet-400/[0.08] text-violet-200 transition-transform duration-300 group-hover:scale-105 group-hover:bg-violet-500 group-hover:text-white">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-violet-200">
-                      {project.tag}
-                    </span>
-                    <span className="font-mono text-sm text-white/35">
-                      /{project.number}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">
-                  {project.category}
-                </p>
-                <div className="mb-3 flex items-center justify-between gap-4">
-                  <h2 className="font-display text-3xl font-bold tracking-tight text-white">
-                    {project.title}
-                  </h2>
-                  <span className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/5 text-white/70 transition-all group-hover:border-white group-hover:bg-white group-hover:text-black">
-                    <ArrowUpRight className="h-5 w-5" />
-                  </span>
-                </div>
-                <p className="max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  {project.description}
-                </p>
-              </div>
-
-              <div className="relative z-10 mt-8 flex items-center justify-between border-t border-white/[0.08] pt-4 text-xs font-semibold text-violet-200/80">
-                <span>Executar experimento no navegador</span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-white/40 group-hover:text-violet-200">
-                  Interactive Demo →
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      <div className="mt-20">
-        <div className="mb-8 max-w-2xl">
-          <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-violet-200">
-            Demonstrações ao vivo
-          </p>
-          <h2 className="mb-3 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-            Experimente os sistemas
-          </h2>
-          <p className="leading-relaxed text-muted-foreground">
-            Abra uma demonstração interativa. Algumas funções que gravam dados
-            exigem autenticação e configuração do Firebase.
+          <h1 className="mb-6 font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl lg:leading-[1.02]">
+            Ideias que viram{" "}
+            <span className="text-violet-gradient italic">
+              sistemas vivos.
+            </span>
+          </h1>
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Dashboards de alta precisão, motores de agendamento atômico no
+            Firestore e experiências WebGL/Canvas rodando em tempo real direto
+            no seu navegador.
           </p>
         </div>
 
-        <div className="grid auto-rows-[minmax(260px,auto)] gap-5 md:grid-cols-3">
-          {interactiveProjects.map((project) => {
-            const Icon = project.icon;
-            const isFeatured =
-              project.id === "chronos" || project.id === "voxelvaders";
+        {/* Quick Navigation Bar */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <a
+            href="#arcade-live-arena"
+            className="inline-flex items-center gap-2 rounded-2xl border border-[#00F5D4]/40 bg-[#00F5D4]/10 px-5 py-3.5 font-mono text-xs font-black uppercase tracking-wider text-[#00F5D4] transition-all hover:bg-[#00F5D4] hover:text-slate-950 shadow-[0_0_25px_rgba(0,245,212,0.2)]"
+          >
+            <Gamepad2 className="h-4 w-4" />
+            Jogar no Arcade Agora
+          </a>
+          <Link
+            href="/#contato"
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.05] px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:border-violet-300/50 hover:bg-violet-600"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Solicitar Orçamento
+          </Link>
+        </div>
+      </div>
 
+      {/* =========================================================
+          3. SISTEMAS & DASHBOARDS AO VIVO (BENTO GRID DINÂMICO)
+      ========================================================= */}
+      <div className="relative z-10 mb-24">
+        <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
+              // ENGENHARIA DE SOFTWARE & DADOS
+            </p>
+            <h2 className="font-display text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+              Sistemas & Dashboards Interativos
+            </h2>
+          </div>
+
+          {/* Filtro Rápido de Categoria */}
+          <div className="inline-flex items-center gap-1.5 rounded-2xl border border-white/10 bg-[#0c0e14]/90 p-1.5">
+            {[
+              { id: "ALL", label: "Todos (4)" },
+              { id: "SYSTEMS", label: "BI & Agendamento" },
+              { id: "GAMIFICATION", label: "Mini-Apps & Jogos" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setCategoryFilter(tab.id as AppCategoryFilter)}
+                className={`rounded-xl px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all ${categoryFilter === tab.id
+                  ? "bg-violet-600 text-white shadow-lg"
+                  : "text-white/50 hover:text-white"
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid auto-rows-[minmax(310px,auto)] gap-6 md:grid-cols-2">
+          {filteredInteractive.map((project, idx) => {
+            const Icon = project.icon;
             return (
               <motion.article
+                layout
                 key={project.id}
-                whileHover={{ y: -4 }}
-                className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 p-7 shadow-2xl backdrop-blur-2xl transition-colors hover:border-violet-300/35 sm:p-8 ${isFeatured ? "md:col-span-2" : ""
-                  }`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.06 }}
+                whileHover={{ y: -5 }}
+                onClick={() => setActiveProject(project.id)}
+                className={`group cursor-pointer relative flex min-w-0 flex-col justify-between overflow-hidden rounded-[2.2rem] border border-white/10 bg-[#0c0e14]/90 p-7 shadow-2xl backdrop-blur-2xl transition-all duration-300 ${project.borderGlow} sm:p-9`}
               >
                 <div
                   aria-hidden
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${project.accent} opacity-60 transition-opacity duration-500 group-hover:opacity-100`}
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${project.accent} opacity-65 transition-opacity duration-500 group-hover:opacity-100`}
                 />
 
                 <div className="relative z-10">
-                  <div className="mb-7 flex items-center justify-between gap-3">
-                    <span className="rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-violet-200">
-                      {project.category}
-                    </span>
-                    <Icon
-                      aria-hidden
-                      className="h-5 w-5 shrink-0 text-violet-200"
-                    />
+                  {/* Top Telemetry Bar inside Card */}
+                  <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white">
+                        {project.category}
+                      </span>
+                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] font-bold text-emerald-300">
+                        ● {project.statusBadge}
+                      </span>
+                    </div>
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-black/40 text-white transition-transform duration-300 group-hover:scale-110 group-hover:border-violet-400 group-hover:bg-violet-600">
+                      <Icon aria-hidden className="h-5 w-5" />
+                    </div>
                   </div>
-                  <h3 className="mb-3 font-display text-2xl font-bold text-white transition-colors group-hover:text-violet-200 sm:text-3xl">
+
+                  <h3 className="mb-2.5 font-display text-2xl font-black uppercase tracking-tight text-white transition-colors group-hover:text-violet-200 sm:text-3xl">
                     {project.title}
                   </h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                     {project.description}
                   </p>
+
+                  {/* Mini Live Telemetry Strip */}
+                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-4 py-3 font-mono text-xs">
+                    <span className="flex items-center gap-2 text-white/70">
+                      <Cpu className="h-4 w-4 text-violet-400" />
+                      Telemetria:
+                    </span>
+                    <span className="font-bold text-cyan-300">
+                      {project.metricsLabel}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="relative z-10 mt-8">
-                  <ul className="mb-6 flex flex-wrap gap-2">
+                <div className="relative z-10 mt-7 pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <ul className="flex flex-wrap gap-1.5">
                     {project.tech.map((item) => (
                       <li
                         key={item}
-                        className="rounded border border-white/10 bg-black/30 px-2.5 py-1 font-mono text-[10px] text-white/70"
+                        className="rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 font-mono text-[10px] text-white/75"
                       >
                         {item}
                       </li>
                     ))}
                   </ul>
+
                   <button
                     type="button"
-                    onClick={() => setActiveProject(project.id)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveProject(project.id);
+                    }}
+                    className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-950 group-hover:bg-violet-500 group-hover:text-white px-5 py-3 text-xs font-black uppercase tracking-wider transition-all shadow-lg"
                   >
-                    Abrir demonstração
+                    <span>Executar App</span>
                     <MoveUpRight aria-hidden className="h-4 w-4" />
                   </button>
                 </div>
@@ -286,6 +335,125 @@ export function AppsPageContent() {
         </div>
       </div>
 
+
+
+      {/* =========================================================
+          4. LABORATÓRIO DEDICADO (ARKANOID STANDALONE & IMAGE BLEND)
+      ========================================================= */}
+      <div className="relative z-10">
+        <div className="mb-8">
+          <p className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+            // SANDBOX CRIATIVO
+          </p>
+          <h2 className="font-display text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
+            Experimentos de Renderização & Shaders
+          </h2>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {projects.map((project) => {
+            const Icon = project.icon;
+            return (
+              <Link
+                key={project.href}
+                href={project.href}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0e14]/85 p-8 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300/35 hover:shadow-violet-glow sm:p-10"
+              >
+                <div
+                  aria-hidden
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${project.accent} opacity-60 transition-opacity duration-500 group-hover:opacity-100`}
+                />
+
+                <div className="relative z-10">
+                  <div className="mb-8 flex items-center justify-between">
+                    <div className="grid h-14 w-14 place-items-center rounded-2xl border border-violet-300/25 bg-violet-400/[0.08] text-violet-200 transition-transform duration-300 group-hover:scale-105 group-hover:bg-violet-500 group-hover:text-white">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-violet-200">
+                        {project.tag}
+                      </span>
+                      <span className="font-mono text-sm text-white/35">
+                        /{project.number}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">
+                    {project.category}
+                  </p>
+                  <div className="mb-3 flex items-center justify-between gap-4">
+                    <h3 className="font-display text-3xl font-bold tracking-tight text-white">
+                      {project.title}
+                    </h3>
+                    <span className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/5 text-white/70 transition-all group-hover:border-white group-hover:bg-white group-hover:text-black">
+                      <ArrowUpRight className="h-5 w-5" />
+                    </span>
+                  </div>
+                  <p className="max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {project.description}
+                  </p>
+                </div>
+
+                <div className="relative z-10 mt-8 flex items-center justify-between border-t border-white/[0.08] pt-4 text-xs font-semibold text-violet-200/80">
+                  <span>Abrir rota dedicada do experimento</span>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-white/40 group-hover:text-violet-200">
+                    Launch Sandbox →
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* =========================================================
+          2. ARENA ARCADE EMBUTIDA (NITIDAMENTE NA PÁGINA!)
+      ========================================================= */}
+      
+      <div className="relative z-10 mt-16 gap-4 border-t border-white/10 pt-8">
+        <br /><br /><br />
+        <div className="mb-8">
+          <p className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300"></p>
+          <div id="arcade-live-arena" className="relative z-10 mb-24 scroll-mt-28">
+            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <div className="mb-2 inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.22em] text-[#00F5D4]">
+                  <Radio className="h-4 w-4 animate-pulse" />
+                  Destaque Interativo · Hardware Emulado no Navegador
+                </div>
+                <h2 className="font-display text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+                  PulseDeck <span className="text-[#FFB800]">Arcade Hub</span> (Live)
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="hidden font-mono text-xs text-white/50 sm:inline">
+                  Troque os cartuchos ou jogue direto abaixo
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveProject("voxelvaders")}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white transition-all hover:border-[#00F5D4] hover:text-[#00F5D4]"
+                >
+                  <Maximize2 className="h-3.5 w-3.5" />
+                  Modo Tela Cheia
+                </button>
+              </div>
+            </div>
+
+            {/* Container com Moldura Neon que abriga o ArcadeCabinetHub ao vivo */}
+            <div className="relative rounded-[2.5rem] border border-white/15 bg-gradient-to-b from-[#13111C] via-[#0B0A10] to-[#07060B] p-2 sm:p-4 shadow-[0_30px_100px_rgba(0,0,0,0.85)]">
+              <div className="pointer-events-none absolute -top-px left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-[#00F5D4] to-transparent opacity-70" />
+              <ArcadeCabinetHub />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================
+          MODAL DE EXECUÇÃO EM TELA CHEIA
+      ========================================================= */}
       <AnimatePresence>
         {activeProject && (
           <motion.div
@@ -297,41 +465,43 @@ export function AppsPageContent() {
                 setActiveProject(null);
               }
             }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-2 backdrop-blur-xl sm:p-6"
           >
             <motion.div
               role="dialog"
               aria-modal="true"
               aria-labelledby="interactive-project-title"
-              initial={{ scale: 0.97, y: 16 }}
+              initial={{ scale: 0.96, y: 16 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.97, y: 16 }}
-              className="flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e14] shadow-2xl"
+              exit={{ scale: 0.96, y: 16 }}
+              className="flex max-h-[94dvh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0c0e14] shadow-2xl"
             >
-              <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#090a10] px-4 py-3 sm:px-6">
+              <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-[#07080d] px-5 py-3.5 sm:px-7">
                 <div className="flex min-w-0 items-center gap-3">
                   <span
                     aria-hidden
-                    className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-emerald-400"
+                    className="h-2.5 w-2.5 shrink-0 animate-ping rounded-full bg-emerald-400"
                   />
+                  <Terminal className="h-4 w-4 text-violet-400 shrink-0" />
                   <h2
                     id="interactive-project-title"
-                    className="truncate font-mono text-xs uppercase tracking-widest text-white/80"
+                    className="truncate font-mono text-xs font-bold uppercase tracking-widest text-white"
                   >
-                    {interactiveProjects.find(
-                      (project) => project.id === activeProject
-                    )?.title ?? "Demonstração"}
+                    {activeProject === "voxelvaders"
+                      ? "PULSEDECK ARCADE HUB // FULLSCREEN"
+                      : interactiveProjects.find(
+                        (project) => project.id === activeProject
+                      )?.title ?? "Demonstração Interativa"}
                   </h2>
                 </div>
                 <button
                   type="button"
                   autoFocus
                   onClick={() => setActiveProject(null)}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:border-red-400/50 hover:bg-red-500/20"
                 >
-                  <span className="hidden sm:inline">Fechar</span>
+                  <span className="hidden sm:inline">Encerrar Sessão</span>
                   <X aria-hidden className="h-4 w-4" />
-                  <span className="sr-only">Fechar demonstração</span>
                 </button>
               </div>
 
@@ -339,7 +509,6 @@ export function AppsPageContent() {
                 {activeProject === "chronos" && <ChronosBooking />}
                 {activeProject === "pulsespin" && <PulseSpinRoulette />}
                 {activeProject === "memory" && <MemoryMatrix />}
-                {activeProject === "voxelvaders" && <ArcadeCabinetHub />}
                 {activeProject === "pulsemetrics" && <PulseMetricsDashboard />}
               </div>
             </motion.div>
@@ -347,19 +516,32 @@ export function AppsPageContent() {
         )}
       </AnimatePresence>
 
-      <div className="mt-12 flex flex-wrap gap-3">
+
+
+      {/* Footer Navigation Links */}
+      <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-8">
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/design"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-violet-300/30 hover:text-violet-200"
+          >
+            Explorar portfólio de design
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/templates"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-violet-300/30 hover:text-violet-200"
+          >
+            Ver templates web
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+
         <Link
-          href="/design"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-violet-300/30 hover:text-violet-200"
+          href="/#contato"
+          className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-500 px-6 py-2.5 text-xs font-black uppercase tracking-wider text-white transition-all shadow-lg"
         >
-          Explorar portfólio de design
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
-        <Link
-          href="/templates"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-violet-300/30 hover:text-violet-200"
-        >
-          Ver templates web
+          <span>Falar com a FocusPulse</span>
           <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
@@ -704,36 +886,47 @@ export function TemplatesPageContent() {
   const templates = [
     {
       number: "01",
-      category: "Fitness & bem-estar",
-      title: "Academias & Esportes",
-      brandName: "PulseFit",
+      category: "Fitness & Biomecânica",
+      title: "Academias & Alta Performance",
+      brandName: "PulseFit Lab",
       description:
-        "Página de alta conversão focada em matrículas, exibição de planos e horários.",
+        "Página de alta conversão na identidade Acid Lime & Emerald, focada em matrículas, passaportes e tour interativo.",
       href: "/templates/academias",
-      theme: "from-orange-500/20 via-[#181512] to-[#0c0d0f]",
-      badgeColor: "border-orange-400/30 bg-orange-500/10 text-orange-200",
+      theme: "from-lime-400/20 via-[#101914] to-[#080b09]",
+      badgeColor: "border-lime-400/35 bg-lime-400/10 text-lime-200",
     },
     {
       number: "02",
-      category: "Gastronomia",
-      title: "Cardápios & Restaurantes",
-      brandName: "Kobra Burger Lab",
+      category: "Gastronomia & PDV KDS",
+      title: "Hamburguerias & Delivery",
+      brandName: "Kobra Burger Fire",
       description:
-        "Um cardápio digital com identidade marcante, pensado para apresentar pratos e facilitar pedidos.",
+        "Vitrine gastronômica em tons de brasa e carmesim integrada ao App de Vendas, Comanda Digital, Mesas VIP e Monitor KDS.",
       href: "/templates/cardapio",
-      theme: "from-amber-200/15 via-[#1c1713] to-[#0c0d0f]",
-      badgeColor: "border-amber-300/30 bg-amber-400/10 text-amber-200",
+      theme: "from-orange-500/25 via-[#1c110e] to-[#0c0807]",
+      badgeColor: "border-orange-400/35 bg-orange-500/10 text-orange-200",
     },
     {
       number: "03",
-      category: "E-commerce & moda",
-      title: "Lojas virtuais",
+      category: "E-commerce & Moda",
+      title: "Lojas Virtuais & Streetwear",
       brandName: "Vortex Atelier",
       description:
-        "Uma vitrine editorial para apresentar coleções e criar uma experiência de compra envolvente.",
+        "Vitrine editorial de luxo para apresentar coleções exclusivas e criar uma jornada de compra envolvente.",
       href: "/templates/streetwear",
       theme: "from-violet-300/20 via-[#17111f] to-[#0c0d0f]",
       badgeColor: "border-violet-300/30 bg-violet-400/10 text-violet-200",
+    },
+    {
+      number: "04",
+      category: "Automotivo & Blindados",
+      title: "Showroom & Concessionárias",
+      brandName: "Aether Motors",
+      description:
+        "Showroom de veículos premium com ignição sonora, simulador de financiamento/trade-in e agendamento de Test Drive VIP.",
+      href: "/templates/carros",
+      theme: "from-amber-300/20 via-[#141310] to-[#07080a]",
+      badgeColor: "border-amber-300/35 bg-amber-400/10 text-amber-200",
     },
   ];
 
@@ -755,7 +948,7 @@ export function TemplatesPageContent() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
         {templates.map((template) => (
           <article
             key={template.href}
@@ -838,6 +1031,25 @@ export function TemplatesPageContent() {
             </Link>
           </article>
         ))}
+      </div>
+
+      {/* CTA Direto para o Formulário de Contato no final de Templates */}
+      <div className="mt-16 rounded-3xl border border-white/10 bg-[#0c0e14]/90 p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div>
+          <span className="font-mono text-xs uppercase tracking-widest text-violet-300 block mb-1">
+            // PROJETO SOB MEDIDA
+          </span>
+          <h3 className="font-display text-2xl font-bold text-white">
+            Quer uma arquitetura exclusiva para o seu negócio?
+          </h3>
+        </div>
+        <Link
+          href="/#contato"
+          className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-violet-600 hover:bg-violet-500 px-6 py-4 text-xs font-black uppercase tracking-wider text-white transition-all shadow-lg"
+        >
+          <Flame className="h-4 w-4" />
+          <span>Ir para o Formulário de Contato</span>
+        </Link>
       </div>
     </section>
   );

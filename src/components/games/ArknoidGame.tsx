@@ -14,8 +14,12 @@ import {
   Pause,
   Heart,
   Zap,
+  Gauge,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/firebase";
+import { arcadeSynth } from "@/lib/audio/arcadeSynth";
 
 const WIDTH = 900;
 const HEIGHT = 520;
@@ -57,6 +61,10 @@ export function ArknoidGame() {
   const [paused, setPaused] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [score, setScore] = useState(0);
+  const [bricksRemaining, setBricksRemaining] = useState(40);
+  const [ballSpeedHud, setBallSpeedHud] = useState("6.1");
+  const [isMuted, setIsMuted] = useState(false);
+
   const highScore = useSyncExternalStore(
     subscribeToHighScore,
     getHighScoreSnapshot,
@@ -79,6 +87,13 @@ export function ArknoidGame() {
       });
     }
   }, [score, highScore]);
+
+  const toggleSound = () => {
+    const next = !isMuted;
+    arcadeSynth.setMuted(next);
+    setIsMuted(next);
+    if (!next) arcadeSynth.playCoinUp();
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -108,9 +123,9 @@ export function ArknoidGame() {
     const particles: Particle[] = [];
 
     const spawnParticles = (x: number, y: number, color: string) => {
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 14; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 1.5 + Math.random() * 3.5;
+        const speed = 1.5 + Math.random() * 4.0;
         particles.push({
           x,
           y,
@@ -158,11 +173,9 @@ export function ArknoidGame() {
     };
 
     const draw = () => {
-      // Fundo escuro profundo estilo FocusPulse
       context.fillStyle = "#080a12";
       context.fillRect(0, 0, WIDTH, HEIGHT);
 
-      // Grade sutil no canvas
       context.strokeStyle = "rgba(148, 163, 184, 0.045)";
       context.lineWidth = 1;
       for (let gx = 0; gx < WIDTH; gx += 45) {
@@ -178,7 +191,6 @@ export function ArknoidGame() {
         context.stroke();
       }
 
-      // Glow radial central
       const glow = context.createRadialGradient(
         WIDTH / 2,
         160,
@@ -203,25 +215,31 @@ export function ArknoidGame() {
         trail.push({ x: ballX, y: ballY });
         if (trail.length > 10) trail.shift();
 
-        // Colisão com paredes laterais e topo
-        if (ballX < 12 || ballX > WIDTH - 12) velocityX *= -1;
-        if (ballY < 12) velocityY *= -1;
+        if (ballX < 12 || ballX > WIDTH - 12) {
+          velocityX *= -1;
+          arcadeSynth.playBounce("wall");
+        }
+        if (ballY < 12) {
+          velocityY *= -1;
+          arcadeSynth.playBounce("wall");
+        }
 
-        // Colisão com a plataforma (rebatedor)
         if (
           ballY > HEIGHT - 54 &&
           ballY < HEIGHT - 36 &&
           Math.abs(ballX - paddleX) < 66
         ) {
+          arcadeSynth.playBounce("paddle");
           velocityY = -Math.abs(velocityY);
-          velocityX += (ballX - paddleX) * 0.04;
+          velocityX += (ballX - paddleX) * 0.045;
+          setBallSpeedHud(Math.hypot(velocityX, velocityY).toFixed(1));
           currentCombo = 1;
           setCombo(1);
           spawnParticles(ballX, HEIGHT - 44, "#a78bfa");
         }
 
-        // Queda da bola
         if (ballY > HEIGHT + 14) {
+          arcadeSynth.playExplosion();
           currentLives -= 1;
           setLives(currentLives);
           currentCombo = 1;
@@ -247,7 +265,6 @@ export function ArknoidGame() {
           }
         }
 
-        // Colisão com os blocos
         for (const brick of bricks) {
           if (
             brick.visible &&
@@ -258,19 +275,26 @@ export function ArknoidGame() {
           ) {
             brick.visible = false;
             velocityY *= -1;
+            arcadeSynth.playBounce("brick");
+
             const gained = 10 * currentCombo;
             const nextScore = currentScoreRef.current + gained;
             currentScoreRef.current = nextScore;
             setScore(nextScore);
             currentCombo = Math.min(8, currentCombo + 1);
             setCombo(currentCombo);
+
+            const remaining = bricks.filter((b) => b.visible).length;
+            setBricksRemaining(remaining);
+
             spawnParticles(brick.x + 40, brick.y + 10, brick.color);
             break;
           }
         }
 
         if (bricks.every((brick) => !brick.visible)) {
-          setMessage("Parabéns! Você destruiu todos os módulos com perfeição!");
+          arcadeSynth.playCoinUp();
+          setMessage("Parabéns! Você destruiu todos os 40 módulos com perfeição!");
           trackAnalyticsEvent({
             eventName: "game_end",
             appId: "arknoid",
@@ -283,7 +307,6 @@ export function ArknoidGame() {
         }
       }
 
-      // Desenha os blocos com cantos arredondados e neon
       for (const brick of bricks) {
         if (!brick.visible) continue;
         context.fillStyle = brick.color;
@@ -293,7 +316,6 @@ export function ArknoidGame() {
       }
       context.shadowBlur = 0;
 
-      // Desenha partículas de explosão
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
@@ -314,7 +336,6 @@ export function ArknoidGame() {
         context.restore();
       }
 
-      // Desenha o rastro da esfera
       trail.forEach((pos, idx) => {
         const ratio = (idx + 1) / trail.length;
         context.beginPath();
@@ -323,7 +344,6 @@ export function ArknoidGame() {
         context.fill();
       });
 
-      // Desenha a plataforma (rebatedor) com gradiente
       const paddleGrad = context.createLinearGradient(
         paddleX - 58,
         0,
@@ -338,7 +358,6 @@ export function ArknoidGame() {
       context.shadowBlur = 18;
       drawRoundedRect(paddleX - 58, HEIGHT - 44, 116, 12, 6);
 
-      // Desenha a bola
       context.beginPath();
       context.arc(ballX, ballY, 8.5, 0, Math.PI * 2);
       context.fillStyle = "#ffffff";
@@ -364,11 +383,14 @@ export function ArknoidGame() {
   }, [playing, paused, gameKey]);
 
   const startGame = () => {
+    arcadeSynth.unlock();
+    arcadeSynth.playCoinUp();
     currentScoreRef.current = 0;
     gameStartedAtRef.current = Date.now();
     setScore(0);
     setLives(3);
     setCombo(1);
+    setBricksRemaining(40);
     setPaused(false);
     setMessage("Modo Arcade ativo! Mantenha a bola em jogo para multiplicar o combo.");
     setGameKey((currentKey) => currentKey + 1);
@@ -376,9 +398,10 @@ export function ArknoidGame() {
     trackAnalyticsEvent({ eventName: "game_start", appId: "arknoid" });
   };
 
+  const demolitionPct = Math.round(((40 - bricksRemaining) / 40) * 100);
+
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Moldura de Console FocusPulse */}
       <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0e14]/90 shadow-[0_30px_100px_-30px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
         {/* Barra Superior de Telemetria / HUD */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] bg-white/[0.02] px-6 py-4">
@@ -389,13 +412,11 @@ export function ArknoidGame() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#49c781]" />
             </div>
             <span className="ml-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-200">
-              focuspulse.arcade // v2.0
+              focuspulse.arcade // v2.4
             </span>
           </div>
 
-          {/* Métricas do Jogo */}
-          <div className="flex flex-wrap items-center gap-5">
-            {/* Vidas */}
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1.5" aria-label={`Vidas restantes: ${lives}`}>
               {Array.from({ length: 3 }).map((_, i) => (
                 <Heart
@@ -409,7 +430,6 @@ export function ArknoidGame() {
               ))}
             </div>
 
-            {/* Multiplicador de Combo */}
             <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1">
               <Zap className="h-3.5 w-3.5 text-amber-300" />
               <span className="font-mono text-xs font-bold text-white">
@@ -417,7 +437,11 @@ export function ArknoidGame() {
               </span>
             </div>
 
-            {/* Pontuação Atual */}
+            <div className="hidden md:flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1 font-mono text-xs text-cyan-300">
+              <Gauge className="h-3.5 w-3.5" />
+              <span>{ballSpeedHud} m/s</span>
+            </div>
+
             <div className="flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-500/10 px-3.5 py-1">
               <Sparkles className="h-3.5 w-3.5 text-violet-300" />
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-violet-100">
@@ -425,7 +449,6 @@ export function ArknoidGame() {
               </span>
             </div>
 
-            {/* Recorde */}
             <div className="hidden items-center gap-1.5 text-xs font-semibold text-white/60 sm:flex">
               <Trophy className="h-3.5 w-3.5 text-amber-400" />
               <span className="font-mono">Recorde: {highScore}</span>
@@ -433,7 +456,20 @@ export function ArknoidGame() {
           </div>
         </div>
 
-        {/* Área do Canvas + Overlay Interativo */}
+        {/* Barra de Progresso de Demolição dos Módulos */}
+        <div className="px-6 py-2 bg-black/40 border-b border-white/[0.05] flex items-center justify-between gap-4 font-mono text-[11px]">
+          <span className="text-white/60">
+            DEMOLIÇÃO DE MÓDULOS: <strong className="text-violet-300">{40 - bricksRemaining}/40</strong> ({demolitionPct}%)
+          </span>
+          <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 transition-all duration-300"
+              style={{ width: `${demolitionPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Área do Canvas */}
         <div className="relative bg-[#080a12] p-3 sm:p-5">
           <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-inner">
             <canvas
@@ -441,10 +477,9 @@ export function ArknoidGame() {
               width={WIDTH}
               height={HEIGHT}
               aria-label="Jogo Arknoid. Mova a plataforma com o mouse ou as setas."
-              className="block w-full touch-none"
+              className="block w-full touch-none cursor-ew-resize"
             />
 
-            {/* Overlay quando parado ou pausado */}
             {(!playing || paused) && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#080a12]/80 p-6 text-center backdrop-blur-md">
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-500/15 px-3.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-200">
@@ -486,7 +521,7 @@ export function ArknoidGame() {
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>Controles:</span>
             <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
-              Mouse
+              Mouse / Touch
             </kbd>
             <kbd className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/80">
               ← →
@@ -500,6 +535,15 @@ export function ArknoidGame() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={toggleSound}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-violet-300/30 hover:text-white"
+            >
+              {!isMuted ? <Volume2 className="h-3.5 w-3.5 text-emerald-400" /> : <VolumeX className="h-3.5 w-3.5 text-white/40" />}
+              <span>{!isMuted ? "SFX ON" : "MUTE"}</span>
+            </button>
+
             {playing && (
               <button
                 type="button"

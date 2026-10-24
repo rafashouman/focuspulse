@@ -17,6 +17,8 @@ import {
   Crosshair,
   ShieldAlert,
   Sparkles,
+  Flame,
+  Target,
 } from "lucide-react";
 
 interface VoxelVadersProps {
@@ -30,11 +32,15 @@ export default function VoxelVadersGame({
 }: VoxelVadersProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
-  // Estados de HUD do React (atualizados apenas em eventos discretos)
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [wave, setWave] = useState(1);
+  const [killStreak, setKillStreak] = useState(0);
+  const [accuracy, setAccuracy] = useState(100);
+  const [weaponReady, setWeaponReady] = useState(true);
+  const [lastFloatingGain, setLastFloatingGain] = useState<string | null>(null);
+
   const [gameState, setGameState] = useState<"START" | "PLAYING" | "GAMEOVER">(
     "START"
   );
@@ -44,14 +50,12 @@ export default function VoxelVadersGame({
   const [leaderboardError, setLeaderboardError] = useState("");
   const [finalResult, setFinalResult] = useState({ score: 0, wave: 1 });
 
-  // Controles compartilhados entre Teclado e Botões Touch
   const controlsRef = useRef({
     left: false,
     right: false,
     shoot: false,
   });
 
-  // Trigger para reiniciar a partida de dentro do motor Three.js
   const restartTriggerRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -81,9 +85,6 @@ export default function VoxelVadersGame({
     const container = mountRef.current;
     if (!container) return;
 
-    // ==========================================
-    // 1. SETUP DA CENA THREE.JS & CÂMERA TÁTICA
-    // ==========================================
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("#04020C");
     scene.fog = new THREE.FogExp2("#04020C", 0.022);
@@ -106,27 +107,22 @@ export default function VoxelVadersGame({
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
-    // Iluminação Cyberpunk
-    const ambientLight = new THREE.AmbientLight("#ffffff", 0.6);
+    const ambientLight = new THREE.AmbientLight("#ffffff", 0.65);
     scene.add(ambientLight);
 
-    const pointLightCyan = new THREE.PointLight("#00F5D4", 4, 45);
+    const pointLightCyan = new THREE.PointLight("#00F5D4", 4.5, 45);
     pointLightCyan.position.set(-12, -10, 12);
     scene.add(pointLightCyan);
 
-    const pointLightMagenta = new THREE.PointLight("#FF0055", 4, 45);
+    const pointLightMagenta = new THREE.PointLight("#FF0055", 4.5, 45);
     pointLightMagenta.position.set(12, 12, 10);
     scene.add(pointLightMagenta);
 
-    // Grid Synthwave de Fundo
     const gridHelper = new THREE.GridHelper(70, 35, "#FF0055", "#190B33");
     gridHelper.rotation.x = Math.PI / 2;
     gridHelper.position.z = -2;
     scene.add(gridHelper);
 
-    // ==========================================
-    // 2. GEOMETRIAS & MATERIAIS COMPARTILHADOS
-    // ==========================================
     const playerGeo = new THREE.ConeGeometry(1.1, 2.2, 4);
     const playerMat = new THREE.MeshStandardMaterial({
       color: "#00F5D4",
@@ -162,12 +158,8 @@ export default function VoxelVadersGame({
     const bulletGeo = new THREE.BoxGeometry(0.24, 0.9, 0.24);
     const playerBulletMat = new THREE.MeshBasicMaterial({ color: "#00F5D4" });
     const enemyBulletMat = new THREE.MeshBasicMaterial({ color: "#FF0055" });
-
     const particleGeo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
 
-    // ==========================================
-    // 3. ESTADO INTERNO DO MOTOR DE JOGO
-    // ==========================================
     interface InvaderNode {
       mesh: THREE.Mesh;
       alive: boolean;
@@ -196,6 +188,9 @@ export default function VoxelVadersGame({
     let currentScore = 0;
     let currentLives = 3;
     let currentWave = 1;
+    let currentStreak = 0;
+    let shotsFired = 0;
+    let shotsHit = 0;
     let isRunning = false;
 
     const spawnWave = (waveNumber: number) => {
@@ -230,14 +225,14 @@ export default function VoxelVadersGame({
 
     const spawnExplosion = (pos: THREE.Vector3, colorHex: string) => {
       const mat = new THREE.MeshBasicMaterial({ color: colorHex });
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 12; i++) {
         const pMesh = new THREE.Mesh(particleGeo, mat);
         pMesh.position.copy(pos);
         scene.add(pMesh);
         particles.push({
           mesh: pMesh,
-          vx: (Math.random() - 0.5) * 10,
-          vy: (Math.random() - 0.5) * 10,
+          vx: (Math.random() - 0.5) * 11,
+          vy: (Math.random() - 0.5) * 11,
           vz: Math.random() * 6,
           life: 0.45,
         });
@@ -253,11 +248,16 @@ export default function VoxelVadersGame({
       currentScore = 0;
       currentLives = 3;
       currentWave = 1;
+      currentStreak = 0;
+      shotsFired = 0;
+      shotsHit = 0;
       playerMesh.position.set(0, -11, 0);
 
       setScore(0);
       setLives(3);
       setWave(1);
+      setKillStreak(0);
+      setAccuracy(100);
       setGameState("PLAYING");
       arcadeSynth.playCoinUp();
       setScoreSaved(false);
@@ -270,9 +270,6 @@ export default function VoxelVadersGame({
 
     restartTriggerRef.current = resetAndStartGame;
 
-    // ==========================================
-    // 4. LISTENERS DE TECLADO E RESIZE
-    // ==========================================
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A")
         controlsRef.current.left = true;
@@ -303,9 +300,6 @@ export default function VoxelVadersGame({
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("resize", onResize);
 
-    // ==========================================
-    // 5. GAME LOOP PRINCIPAL (60 FPS)
-    // ==========================================
     let animationFrameId: number;
     let prevTime = performance.now();
 
@@ -314,11 +308,9 @@ export default function VoxelVadersGame({
       const dt = Math.min((now - prevTime) / 1000, 0.1);
       prevTime = now;
 
-      // Movimento sutil do grid de fundo
       gridHelper.position.y = ((now * 0.004) % 2) - 1;
 
       if (isRunning) {
-        // A. Movimentação da Nave com Tilt Dinâmico
         const moveSpeed = 16;
         if (controlsRef.current.left) {
           playerMesh.position.x = Math.max(
@@ -348,8 +340,10 @@ export default function VoxelVadersGame({
           );
         }
 
-        // B. Disparo Laser do Jogador
-        if (controlsRef.current.shoot && now - lastShotTime > 240) {
+        const cooldownElapsed = now - lastShotTime > 240;
+        setWeaponReady(cooldownElapsed);
+
+        if (controlsRef.current.shoot && cooldownElapsed) {
           const bMesh = new THREE.Mesh(bulletGeo, playerBulletMat);
           bMesh.position.set(
             playerMesh.position.x,
@@ -358,11 +352,12 @@ export default function VoxelVadersGame({
           );
           scene.add(bMesh);
           bullets.push({ mesh: bMesh, vy: 26, fromPlayer: true });
+          shotsFired += 1;
+          setAccuracy(Math.min(100, Math.round((shotsHit / shotsFired) * 100)));
           arcadeSynth.playLaser();
           lastShotTime = now;
         }
 
-        // C. Movimentação em Bloco da Frota Invasora
         let hitEdge = false;
         const aliveInvaders = invaders.filter((i) => i.alive);
 
@@ -391,8 +386,10 @@ export default function VoxelVadersGame({
           }
         }
 
-        // D. Disparo Inimigo Aleatório
-        if (aliveInvaders.length > 0 && Math.random() < 0.025 * (1 + currentWave * 0.2)) {
+        if (
+          aliveInvaders.length > 0 &&
+          Math.random() < 0.025 * (1 + currentWave * 0.2)
+        ) {
           const shooter =
             aliveInvaders[Math.floor(Math.random() * aliveInvaders.length)];
           const ebMesh = new THREE.Mesh(bulletGeo, enemyBulletMat);
@@ -401,20 +398,21 @@ export default function VoxelVadersGame({
           bullets.push({ mesh: ebMesh, vy: -13, fromPlayer: false });
         }
 
-        // E. Atualização de Projéteis e Colisões
         for (let i = bullets.length - 1; i >= 0; i--) {
           const b = bullets[i];
           b.mesh.position.y += b.vy * dt;
 
-          // Remove projéteis fora da arena
           if (b.mesh.position.y > 15 || b.mesh.position.y < -15) {
+            if (b.fromPlayer) {
+              currentStreak = 0;
+              setKillStreak(0);
+            }
             scene.remove(b.mesh);
             bullets.splice(i, 1);
             continue;
           }
 
           if (b.fromPlayer) {
-            // Colisão com Invasores
             for (const inv of aliveInvaders) {
               if (b.mesh.position.distanceTo(inv.mesh.position) < 1.05) {
                 inv.alive = false;
@@ -422,15 +420,24 @@ export default function VoxelVadersGame({
                 scene.remove(b.mesh);
                 bullets.splice(i, 1);
 
+                shotsHit += 1;
+                currentStreak += 1;
+                setKillStreak(currentStreak);
+                setAccuracy(
+                  Math.min(100, Math.round((shotsHit / Math.max(1, shotsFired)) * 100))
+                );
+
+                const bonus = inv.points + Math.min(currentStreak * 25, 250);
+                currentScore += bonus;
+                setScore(currentScore);
+                setLastFloatingGain(`+${bonus} PTS`);
+
                 spawnExplosion(inv.mesh.position, "#FF0055");
                 arcadeSynth.playExplosion();
-                currentScore += inv.points;
-                setScore(currentScore);
                 break;
               }
             }
           } else {
-            // Colisão com a Nave do Jogador
             if (b.mesh.position.distanceTo(playerMesh.position) < 1.15) {
               scene.remove(b.mesh);
               bullets.splice(i, 1);
@@ -438,7 +445,9 @@ export default function VoxelVadersGame({
               arcadeSynth.playExplosion();
 
               currentLives -= 1;
+              currentStreak = 0;
               setLives(currentLives);
+              setKillStreak(0);
 
               if (currentLives <= 0) {
                 isRunning = false;
@@ -451,15 +460,14 @@ export default function VoxelVadersGame({
           }
         }
 
-        // F. Verifica se limpou a Onda
         if (invaders.length > 0 && invaders.every((inv) => !inv.alive)) {
           currentWave += 1;
           setWave(currentWave);
+          arcadeSynth.playCoinUp();
           spawnWave(currentWave);
         }
       }
 
-      // G. Atualização das Partículas 3D
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.mesh.position.x += p.vx * dt;
@@ -479,7 +487,6 @@ export default function VoxelVadersGame({
 
     animationFrameId = requestAnimationFrame(animate);
 
-    // Cleanup completo da GPU ao desmontar
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("keydown", onKeyDown);
@@ -542,38 +549,70 @@ export default function VoxelVadersGame({
         embedded ? "h-[640px]" : "min-h-screen"
       } bg-[#04020C] text-white font-mono overflow-hidden flex flex-col justify-between select-none`}
     >
-      {/* ==========================================
-          1. HUD TELEMETRY SUPERIOR
-      ========================================== */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-[#04020C]/80 backdrop-blur-md border-b border-[#FF0055]/30">
-        <div className="flex items-center gap-6">
+      {/* Alerta de Escudo Crítico quando resta 1 vida */}
+      {lives === 1 && gameState === "PLAYING" && (
+        <div className="pointer-events-none absolute inset-0 z-20 border-4 border-red-500/50 animate-pulse" />
+      )}
+
+      {/* 1. HUD TELEMETRY SUPERIOR */}
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 bg-[#04020C]/85 backdrop-blur-md border-b border-[#FF0055]/30">
+        <div className="flex items-center gap-5">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.25em] text-[#FF0055] block">
+            <span className="text-[9px] uppercase tracking-[0.25em] text-[#FF0055] block">
               {"// SCORE ATUAL"}
             </span>
-            <span className="text-2xl font-black text-[#00F5D4] drop-shadow-[0_0_10px_rgba(0,245,212,0.5)]">
-              {String(score).padStart(6, "0")}
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-[#00F5D4] drop-shadow-[0_0_10px_rgba(0,245,212,0.5)]">
+                {String(score).padStart(6, "0")}
+              </span>
+              {lastFloatingGain && (
+                <span className="text-[10px] font-bold text-amber-400">
+                  {lastFloatingGain}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="hidden sm:block border-l border-white/10 pl-5">
+            <span className="text-[9px] uppercase tracking-[0.25em] text-purple-400 flex items-center gap-1">
+              <Trophy className="w-3 h-3" /> RECORDE
+            </span>
+            <span className="text-base font-bold text-white">
+              {String(highScore).padStart(6, "0")}
             </span>
           </div>
 
-          <div className="hidden sm:block border-l border-white/10 pl-6">
-            <span className="text-[10px] uppercase tracking-[0.25em] text-purple-400 flex items-center gap-1">
-              <Trophy className="w-3 h-3" /> RECORDE
+          <div className="hidden md:block border-l border-white/10 pl-5">
+            <span className="text-[9px] uppercase tracking-[0.25em] text-amber-400 flex items-center gap-1">
+              <Flame className="w-3 h-3" /> STREAK / MIRA
             </span>
-            <span className="text-lg font-bold text-white">
-              {String(highScore).padStart(6, "0")}
+            <span className="text-base font-bold text-white">
+              {killStreak}x{" "}
+              <span className="text-xs text-[#00F5D4]">({accuracy}%)</span>
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          {/* Indicador de Plasma / Arma */}
+          <div className="hidden sm:flex flex-col items-end">
+            <span className="text-[9px] uppercase tracking-widest text-zinc-400 flex items-center gap-1">
+              <Target className="w-3 h-3 text-[#00F5D4]" /> CANHÃO PLASMA
+            </span>
+            <span
+              className={`text-[10px] font-bold ${
+                weaponReady ? "text-[#00F5D4]" : "text-amber-400"
+              }`}
+            >
+              {weaponReady ? "● PRONTO" : "RECARREGANDO"}
+            </span>
+          </div>
+
           <div className="text-right">
-            <span className="text-[10px] uppercase tracking-[0.25em] text-purple-400 block">
+            <span className="text-[9px] uppercase tracking-[0.25em] text-purple-400 block">
               WAVE
             </span>
-            <span className="text-lg font-black text-white">
-              0{wave}
-            </span>
+            <span className="text-lg font-black text-white">0{wave}</span>
           </div>
 
           <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-2 rounded-xl">
@@ -591,14 +630,10 @@ export default function VoxelVadersGame({
         </div>
       </div>
 
-      {/* ==========================================
-          2. CANVAS THREE.JS (WEBGL STAGE)
-      ========================================== */}
+      {/* 2. CANVAS THREE.JS */}
       <div ref={mountRef} className="absolute inset-0 z-10 w-full h-full" />
 
-      {/* ==========================================
-          3. OVERLAYS DE INÍCIO E GAME OVER
-      ========================================== */}
+      {/* 3. OVERLAYS DE INÍCIO E GAME OVER */}
       <AnimatePresence>
         {gameState !== "PLAYING" && (
           <motion.div
@@ -619,14 +654,14 @@ export default function VoxelVadersGame({
               <p className="text-xs text-purple-200/70 leading-relaxed mb-6">
                 {gameState === "START"
                   ? "Defenda a grade orbital contra o enxame de octaedros. Use [A/D] ou [Setas] para manobrar e [ESPAÇO] para disparar."
-                  : `Defesa rompida na Wave 0${wave}. Pontuação final registrada: ${score} PTS.`}
+                  : `Defesa rompida na Wave 0${wave}. Pontuação final: ${score} PTS (Precisão: ${accuracy}%).`}
               </p>
 
               {gameState === "GAMEOVER" && (
                 <div className="mb-5 space-y-3">
                   {scoreSaved ? (
                     <p role="status" className="text-sm font-bold text-[#00F5D4]">
-                      Pontuação registrada no leaderboard.
+                      Pontuação registrada no leaderboard!
                     </p>
                   ) : (
                     <>
@@ -680,9 +715,7 @@ export default function VoxelVadersGame({
         )}
       </AnimatePresence>
 
-      {/* ==========================================
-          4. CONTROLES TÁTEIS MOBILE / MOUSE BAR
-      ========================================== */}
+      {/* 4. CONTROLES TÁTEIS MOBILE / MOUSE BAR */}
       <div className="relative z-20 px-6 py-4 bg-[#04020C]/85 border-t border-white/10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <button

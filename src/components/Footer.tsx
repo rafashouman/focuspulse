@@ -12,13 +12,6 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" aria-label="FocusPulse — início" className="logo-pulse group flex items-center gap-2 mb-6">
               <Image
-                src="/images/logo-icon.png"
-                alt=""
-                width={32}
-                height={32}
-                className="h-8 w-8 transition-transform duration-300 group-hover:rotate-[360deg]"
-              />
-              <Image
                 src="/images/logo-text.png"
                 alt="FocusPulse"
                 width={202}
@@ -48,7 +41,7 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-foreground mb-6 uppercase tracking-widest text-xs">Redes Sociais</h4>
             <ul className="space-y-4 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-violet-200 transition-colors">Instagram</a></li>
+              <li><a href="#" className="hover:text-violet-200 transition-colors">Facebook</a></li>
               <li><a href="#" className="hover:text-violet-200 transition-colors">LinkedIn</a></li>
               <li><a href="#" className="hover:text-violet-200 transition-colors">GitHub</a></li>
             </ul>

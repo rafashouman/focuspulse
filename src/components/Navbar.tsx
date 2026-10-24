@@ -10,10 +10,10 @@ const links = [
   { label: "Contato", href: "/#contato" },
   { label: "Projetos", href: "/#trabalhos" },
   { label: "Serviços", href: "/#servicos" },
-  { label: "Templates", href: "/templates" },
-  { label: "Design", href: "/design" },
+  { label: "Sites", href: "/templates" },
   { label: "Apps", href: "/apps" },
-  { label: "Arcade", href: "/arcade" },
+  { label: "Web Design", href: "/design" },
+    { label: "Arcade Lab", href: "/arcade" },
 ];
 
 const WA = "https://wa.me/5551993583936?text=" + encodeURIComponent("Olá! Gostaria de solicitar um orçamento para o meu site.");
@@ -35,8 +35,8 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${scrolled
-          ? "backdrop-blur-2xl bg-background/55 border-b border-violet-200/10 shadow-elegant"
-          : "bg-transparent"
+        ? "backdrop-blur-2xl bg-background/55 border-b border-violet-200/10 shadow-elegant"
+        : "bg-transparent"
         }`}
     >
       <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between gap-6 px-6 sm:px-10 lg:px-16">
@@ -44,9 +44,9 @@ export function Navbar() {
           <Image
             src="/images/logo-text.png"
             alt="FocusPulse"
-            width={202}
-            height={24}
-            className="h-6 w-auto transition-transform duration-300 group-hover:scale-105"
+            width={300}
+            height={99}
+            className="h-6 h-auto transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
 
