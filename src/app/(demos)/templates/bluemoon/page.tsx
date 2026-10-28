@@ -6,6 +6,14 @@ import TarotTableScene from '@/components/three/TarotTableScene';
 import { useGameStore, ACT_1_SPREADS, SpreadStage } from '@/store/useGameStore';
 import { CONJUNCTION_TABLE, SUIT_INFO, SPREAD_BOARD_SLOTS } from '@/lib/games/tarot-engine';
 import { soundFX } from '@/lib/audio/sound-fx';
+import { useFocusTrap } from '@/components/ui/useFocusTrap';
+
+const onActivate = (action: () => void) => (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    action();
+  }
+};
 import {
   FateLuckIcon,
   CyberCreditIcon,
@@ -49,9 +57,14 @@ export default function DaemonArcanaGamePage() {
 
   const [showBriefing, setShowBriefing] = useState(false);
   const [showHandsGuide, setShowHandsGuide] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const shopTrapRef = useFocusTrap<HTMLDivElement>(isShopOpen);
+  const briefingTrapRef = useFocusTrap<HTMLDivElement>(showBriefing, () => setShowBriefing(false));
+  const handsTrapRef = useFocusTrap<HTMLDivElement>(showHandsGuide, () => setShowHandsGuide(false));
 
   useEffect(() => {
+    soundFX.muted = true;
     initRun();
   }, [initRun]);
 
@@ -68,15 +81,16 @@ export default function DaemonArcanaGamePage() {
 
   return (
     <main id="conteudo" className="relative w-screen h-screen overflow-hidden bg-[#07080B] text-slate-100 font-mono select-none">
+      <a href="#mesa-controles" className="skip-link">Ir para os controles da mesa</a>
       {/* PALCO 3D */}
-      <div className="absolute inset-0 z-0">
+      <div aria-hidden className="absolute inset-0 z-0">
         <TarotTableScene />
       </div>
 
       {/* BANNER CENTRAL DE RESOLUÇÃO PASSO A PASSO */}
       {activeStepBanner && (
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <div className="bg-[#0A0B0E]/95 border-2 border-[#00F5D4] px-6 py-2.5 shadow-[0_0_30px_rgba(0,245,212,0.5)]">
+        <div role="status" aria-live="polite" className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
+          <div className="animate-pulse bg-[#0A0B0E]/95 border-2 border-[#00F5D4] px-6 py-2.5 shadow-[0_0_30px_rgba(0,245,212,0.5)]">
             <p className="text-xs md:text-sm font-extrabold text-[#00F5D4] tracking-wider text-center">
               {activeStepBanner}
             </p>
@@ -85,7 +99,7 @@ export default function DaemonArcanaGamePage() {
       )}
 
       {/* HUD PRINCIPAL */}
-      <div className="relative z-10 pointer-events-none flex flex-col justify-between h-full p-3.5 md:p-5">
+      <div id="mesa-controles" className="relative z-10 pointer-events-none flex flex-col justify-between h-full overflow-y-auto p-3.5 md:p-5">
         
         {/* TOPO: PROGRESSO DA TIRAGEM + ARCANOS MAIORES EQUIPADOS + RECURSOS */}
         <header className="flex flex-wrap items-start justify-between gap-3">
@@ -195,6 +209,7 @@ export default function DaemonArcanaGamePage() {
               <button
                 type="button"
                 onClick={() => setShowBriefing(true)}
+                aria-haspopup="dialog"
                 className="px-2.5 py-1 bg-slate-900/90 border border-[#00F5D4]/60 text-[10px] font-bold text-[#00F5D4]"
               >
                 [?] REGRAS & ADJACÊNCIA
@@ -202,6 +217,7 @@ export default function DaemonArcanaGamePage() {
               <button
                 type="button"
                 onClick={() => setShowHandsGuide(!showHandsGuide)}
+                aria-haspopup="dialog"
                 className="px-2.5 py-1 bg-slate-900/90 border border-[#8B5CF6] text-[10px] font-bold text-white"
               >
                 [≡] TABELA DE MÃOS
@@ -209,6 +225,8 @@ export default function DaemonArcanaGamePage() {
               <button
                 type="button"
                 onClick={toggleMute}
+                aria-pressed={!isMuted}
+                aria-label={isMuted ? 'Ativar som' : 'Desativar som'}
                 className="px-2.5 py-1 bg-slate-900/90 border border-slate-700 text-[10px] text-slate-300"
               >
                 {isMuted ? 'SOM: OFF' : 'SOM: ON'}
@@ -277,8 +295,12 @@ export default function DaemonArcanaGamePage() {
                 return (
                   <div
                     key={slot.slotIndex}
+                    role={occupant ? 'button' : undefined}
+                    tabIndex={occupant ? 0 : undefined}
+                    aria-label={occupant ? `Retirar ${occupant.name} da casa ${slot.name}` : undefined}
                     onClick={() => occupant && removeCardFromSlot(slot.slotIndex)}
-                    className={`p-1.5 border text-[10px] flex justify-between items-center cursor-pointer ${
+                    onKeyDown={occupant ? onActivate(() => removeCardFromSlot(slot.slotIndex)) : undefined}
+                    className={`p-1.5 border text-[10px] flex justify-between items-center transition-colors ${occupant ? 'cursor-pointer hover:bg-[#2a2150]' : ''} ${
                       occupant
                         ? 'bg-[#1D1836] border-[#00F5D4] text-white'
                         : 'bg-slate-950/60 border-slate-800 text-slate-400'
@@ -308,8 +330,14 @@ export default function DaemonArcanaGamePage() {
             {hand.map((card) => (
               <div
                 key={card.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`${card.name}, ${SUIT_INFO[card.suit].name}, ${card.isReversed ? 'invertida' : 'normal'}. Colocar ou retirar da mesa`}
                 onClick={() => placeOrRemoveCard(card.id)}
-                className="cursor-pointer p-2 border-2 bg-[#0C0E14]/95 border-slate-800 hover:border-[#00F5D4] transition-all flex flex-col justify-between"
+                onKeyDown={(e) => {
+                  if (e.target === e.currentTarget) onActivate(() => placeOrRemoveCard(card.id))(e);
+                }}
+                className="cursor-pointer p-2 border-2 bg-[#0C0E14]/95 border-slate-800 hover:border-[#00F5D4] hover:-translate-y-1 hover:shadow-[0_0_18px_rgba(0,245,212,0.25)] focus-visible:-translate-y-1 transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-center text-[9px]">
@@ -359,7 +387,7 @@ export default function DaemonArcanaGamePage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0C0E14]/95 border border-slate-800 px-4 py-2">
-            <div className="text-[11px] text-slate-300">
+            <div role="status" aria-live="polite" className="text-[11px] text-slate-300">
               {combatLog[0] || 'Clique nas cartas da mão para colocá-las nas 5 Casas da Cruz Central.'}
             </div>
 
@@ -415,7 +443,13 @@ export default function DaemonArcanaGamePage() {
       {/* MODAL DA LOJA: "O PONTO CEGO" (SPRINT 3 & 4) */}
       {isShopOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0C0E14] border-2 border-[#00F5D4] max-w-3xl w-full p-6 shadow-2xl space-y-5">
+          <div
+            ref={shopTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Loja O Ponto Cego"
+            className="bg-[#0C0E14] border-2 border-[#00F5D4] max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-5"
+          >
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <span className="text-[10px] text-[#00F5D4] uppercase font-bold tracking-widest">
@@ -508,8 +542,18 @@ export default function DaemonArcanaGamePage() {
 
       {/* MODAL DE EXPLICAÇÃO DE ADJACÊNCIA */}
       {showBriefing && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0C0E14] border-2 border-[#00F5D4] max-w-2xl w-full p-6 space-y-3 text-xs">
+        <div
+          onClick={() => setShowBriefing(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+        >
+          <div
+            ref={briefingTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Regras e adjacência"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0C0E14] border-2 border-[#00F5D4] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-3 text-xs"
+          >
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h2 className="text-base font-extrabold text-white">
                 COMO FUNCIONAM AS 5 CASAS E A ADJACÊNCIA NA MESA
@@ -519,7 +563,7 @@ export default function DaemonArcanaGamePage() {
               </button>
             </div>
             <p className="text-slate-300">
-              A **Casa 1 (O NEXO)** fica no centro exato da mesa e está conectada às outras 4 casas ao redor. Toda carta colocada nas casas ao redor interage diretamente com a carta que estiver no Nexo:
+              A <strong>Casa 1 (O NEXO)</strong> fica no centro exato da mesa e está conectada às outras 4 casas ao redor. Toda carta colocada nas casas ao redor interage diretamente com a carta que estiver no Nexo:
             </p>
             <ul className="space-y-1.5 text-slate-200 bg-slate-950 p-3 border border-slate-800">
               <li>• <strong className="text-[#00F5D4]">Ressonância de Vizinhança (BUFF):</strong> Cartas do mesmo Naipe conectadas ganham <strong>+12 Sincronia</strong> cada.</li>
@@ -533,11 +577,21 @@ export default function DaemonArcanaGamePage() {
 
       {/* MODAL TABELA DE MÃOS */}
       {showHandsGuide && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0C0E14] border-2 border-[#8B5CF6] max-w-xl w-full p-5 space-y-3">
+        <div
+          onClick={() => setShowHandsGuide(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+        >
+          <div
+            ref={handsTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tabela de conjunções"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0C0E14] border-2 border-[#8B5CF6] max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-3"
+          >
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h2 className="text-base font-extrabold text-white">TABELA DE CONJUNÇÕES</h2>
-              <button onClick={() => setShowHandsGuide(false)} className="text-xs font-bold text-slate-400">
+              <button onClick={() => setShowHandsGuide(false)}               className="text-xs font-bold text-slate-300 hover:text-white">
                 FECHAR [X]
               </button>
             </div>

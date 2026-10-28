@@ -76,43 +76,41 @@ const projects = [
     barGradient: "from-blue-600 to-cyan-300",
   },
   {
-  number: "05",
-  code: "ARCH // AVIATION-LIFE",
-  category: "Aviação & Seguros",
-  title: "Seguro de Vida & CMA p/ Pilotos",
-  brandName: "Aero.Shield",
-  description:
-    "Hotsite especializado para pilotos de pequeno e médio porte com comparativo de apólice, simulador de Perda de CMA e agendamento por CANAC.",
-  href: "/templates/seguro-piloto",
-  theme: "from-sky-500/25 via-[#0a192f] to-[#071120]",
-  badgeColor: "border-sky-400/35 bg-sky-500/10 text-sky-200",
-  accentText: "text-sky-300",
-  btnGradient: "from-sky-500 to-cyan-400 text-slate-950",
-  palette: [
-    { name: "Stratosphere", hex: "#F4F7FB" },
-    { name: "Garmin Navy", hex: "#0A192F" },
-    { name: "Horizon Sky", hex: "#0284C7" },
-  ],
-  conversionFocus: "Cotação Qualificada por Categoria RAB & Horas de Voo",
-  modules: [
-    "Comparativo Técnico: Seguro de Banco vs. Endosso Aeronáutico",
-    "Simulador por Equipamento (Pistão, Turboélice, Jato, Agrícola)",
-    "Cálculo de Perda Definitiva de CMA (ANAC) & Diária DIT",
-    "Agendamento de Subscrição com Código CANAC no Firestore",
-  ],
-  stack: ["Next.js App Router", "Firebase Auth", "Firestore Lock", "Aviation UI"],
-},
-{
-      number: "06",
-      category: "Arte 3D & Colecionáveis",
-      title: "Impressão 3D & Miniaturas",
-      brandName: "Alchemist Voxel",
-      description:
-        "Estúdio criativo de impressão em resina 12K e pintura de miniaturas com Raio-X de 3 estágios, receitas de tintas e calculadora de encomendas.",
-      href: "/templates/miniaturas",
-      theme: "from-fuchsia-500/25 via-[#140d1f] to-[#08060c]",
-      badgeColor: "border-fuchsia-400/35 bg-fuchsia-500/10 text-fuchsia-200",
-    },
+    number: "05",
+    category: "Arte 3D & Colecionáveis",
+    title: "Alchemist Voxel",
+    description:
+      "Estúdio de impressão em resina 12K e pintura de miniaturas, com Raio-X de 3 estágios e calculadora de encomendas.",
+    href: "/templates/miniaturas",
+    theme: "from-fuchsia-500/25 via-[#140d1f] to-[#08060c]",
+    glowColor: "rgba(217, 70, 239, 0.25)",
+    badgeColor: "border-fuchsia-400/35 bg-fuchsia-500/10 text-fuchsia-200",
+    barGradient: "from-fuchsia-600 to-pink-300",
+  },
+  {
+    number: "06",
+    category: "Bem-estar & Experiência",
+    title: "Oráculo Connection",
+    description:
+      "Jornada interativa em 3 etapas: escolha do monte, intenção e revelação, desenhada para reter e converter.",
+    href: "/templates/connection",
+    theme: "from-amber-500/20 via-[#14110a] to-[#070709]",
+    glowColor: "rgba(245, 158, 11, 0.22)",
+    badgeColor: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+    barGradient: "from-amber-500 to-yellow-200",
+  },
+  {
+    number: "07",
+    category: "Restaurantes & Reservas",
+    title: "Kobra Fire Reservas",
+    description:
+      "Reserva de mesas VIP, comanda digital e pedidos em um único painel para a operação do restaurante.",
+    href: "/templates/reservas",
+    theme: "from-red-500/20 via-[#1c0f0e] to-[#0c0807]",
+    glowColor: "rgba(239, 68, 68, 0.22)",
+    badgeColor: "border-red-400/30 bg-red-500/10 text-red-200",
+    barGradient: "from-red-500 to-orange-300",
+  },
 ];
 
 const AUTOPLAY_TIME = 6000;

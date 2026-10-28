@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,7 +25,13 @@ import {
   MessageSquare,
   UtensilsCrossed,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  GalleryHorizontal,
 } from "lucide-react";
+import { Reveal, CountUp } from "@/components/ui/MotionKit";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 import ChronosBooking from "@/components/ChronosBooking";
 import MemoryMatrix from "@/components/games/MemoryMatrix";
 import PulseSpinRoulette from "@/components/games/SpinToWin";
@@ -709,21 +715,202 @@ const formatWorkTitle = (filename: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+type DesignWork = { src: string; title: string; category: string; kind: string };
+
+function WorkCard({
+  work,
+  onOpen,
+  className = "",
+}: {
+  work: DesignWork;
+  onOpen: () => void;
+  className?: string;
+}) {
+  return (
+    <figure
+      role="button"
+      tabIndex={0}
+      aria-label={`Ampliar peça: ${work.title}`}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className={`group h-full cursor-pointer overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#0c0e14]/80 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/35 hover:shadow-xl focus-visible:-translate-y-1 focus-visible:border-violet-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300/60 ${className}`}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#080a0f]">
+        <NextImage
+          src={work.src}
+          alt={`${work.category}: ${work.title}`}
+          fill
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 46vw, 32vw"
+          className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2 text-xs font-semibold text-white">
+            <ZoomIn className="h-3.5 w-3.5 text-violet-300" />
+            Ampliar Peça
+          </span>
+        </div>
+      </div>
+      <figcaption className="flex items-center justify-between gap-2 border-t border-white/[0.06] px-5 py-3.5">
+        <span className="truncate text-sm font-medium capitalize text-foreground/90 group-hover:text-violet-100">
+          {work.title}
+        </span>
+        <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-white/50">
+          {work.kind}
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function WorksCarousel({
+  works,
+  onOpen,
+  label,
+}: {
+  works: DesignWork[];
+  onOpen: (index: number) => void;
+  label: string;
+}) {
+  const trackRef = useRef<HTMLUListElement>(null);
+  const [progress, setProgress] = useState(0);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(true);
+
+  const update = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setProgress(max > 0 ? el.scrollLeft / max : 1);
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(el.scrollLeft < max - 4);
+  }, []);
+
+  useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [update, works.length]);
+
+  const scrollByPage = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+  };
+
+  const arrow =
+    "grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#0c0e14]/90 text-white backdrop-blur transition-all hover:border-violet-300/50 hover:bg-violet-500/25 disabled:pointer-events-none disabled:opacity-30";
+
+  return (
+    <div role="region" aria-roledescription="carrossel" aria-label={label}>
+      <ul
+        ref={trackRef}
+        onScroll={update}
+        tabIndex={-1}
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-4 pb-4 sm:-mx-6 sm:px-6"
+      >
+        {works.map((work, i) => (
+          <li
+            key={work.src}
+            className="w-[78%] shrink-0 snap-center sm:w-[46%] lg:w-[32%]"
+          >
+            <WorkCard work={work} onOpen={() => onOpen(i)} />
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex items-center gap-4">
+        <div
+          aria-hidden
+          className="h-1 flex-1 overflow-hidden rounded-full bg-white/10"
+        >
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-400 to-fuchsia-400 transition-[width] duration-200"
+            style={{ width: `${Math.max(8, progress * 100)}%` }}
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => scrollByPage(-1)}
+            disabled={!canPrev}
+            aria-label="Peças anteriores"
+            className={arrow}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByPage(1)}
+            disabled={!canNext}
+            aria-label="Próximas peças"
+            className={arrow}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DesignPageContent() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [lightboxItem, setLightboxItem] = useState<{
-    src: string;
-    title: string;
-    category: string;
+  const [viewMode, setViewMode] = useState<"carousel" | "grid">("carousel");
+  const [lightbox, setLightbox] = useState<{
+    items: DesignWork[];
+    index: number;
   } | null>(null);
+  const lightboxItem = lightbox ? lightbox.items[lightbox.index] : null;
+
+  const closeLightbox = () => setLightbox(null);
+  const stepLightbox = useCallback((dir: 1 | -1) => {
+    setLightbox((cur) =>
+      cur
+        ? {
+            ...cur,
+            index: (cur.index + dir + cur.items.length) % cur.items.length,
+          }
+        : cur
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") stepLightbox(1);
+      if (e.key === "ArrowLeft") stepLightbox(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox, stepLightbox]);
+
+  const lightboxTrapRef = useFocusTrap<HTMLDivElement>(
+    lightbox !== null,
+    closeLightbox
+  );
 
   const visibleGalleries = DESIGN_GALLERIES.filter(
     (g) => activeTab === "all" || g.id === activeTab
   );
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const totalWorks = DESIGN_GALLERIES.reduce((n, g) => n + g.works.length, 0);
+  const totalMatches = visibleGalleries.reduce(
+    (n, g) =>
+      n +
+      g.works.filter((f) =>
+        formatWorkTitle(f).toLowerCase().includes(normalizedQuery)
+      ).length,
+    0
+  );
 
   return (
-    <section className="container-luxe py-32 sm:py-40">
+    <section id="conteudo-design" className="container-luxe py-32 sm:py-40">
       <div className="mb-12 max-w-3xl">
         <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-200">
           <Sparkles className="h-3.5 w-3.5 text-fuchsia-300" />
@@ -737,6 +924,24 @@ export function DesignPageContent() {
           Uma seleção com mais de 100 projetos de design gráfico, identidade
           visual, banners para e-commerce e campanhas digitais.
         </p>
+        <dl className="mt-8 grid max-w-md grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <dt className="font-mono text-[10px] uppercase tracking-widest text-white/50">
+              Projetos
+            </dt>
+            <dd className="font-display text-3xl font-bold text-white">
+              <CountUp to={totalWorks} prefix="+" />
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <dt className="font-mono text-[10px] uppercase tracking-widest text-white/50">
+              Categorias
+            </dt>
+            <dd className="font-display text-3xl font-bold text-white">
+              <CountUp to={DESIGN_GALLERIES.length} />
+            </dd>
+          </div>
+        </dl>
       </div>
 
       {/* Barra de Filtro + Busca Rápida */}
@@ -748,6 +953,7 @@ export function DesignPageContent() {
           </span>
           <button
             type="button"
+            aria-pressed={activeTab === "all"}
             onClick={() => setActiveTab("all")}
             className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === "all"
                 ? "bg-violet-gradient text-white shadow-violet-glow"
@@ -763,6 +969,7 @@ export function DesignPageContent() {
             <button
               key={gallery.id}
               type="button"
+              aria-pressed={activeTab === gallery.id}
               onClick={() => setActiveTab(gallery.id)}
               className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${activeTab === gallery.id
                   ? "bg-violet-gradient text-white shadow-violet-glow"
@@ -782,19 +989,89 @@ export function DesignPageContent() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar peça (ex: banner, cartão)..."
-            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2 pl-9 pr-4 text-xs text-white placeholder:text-white/35 focus:border-violet-300/40 focus:outline-none"
+            aria-label="Buscar peça"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2 pl-9 pr-9 text-xs text-white placeholder:text-white/50 focus:border-violet-300/40 focus:outline-none"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              aria-label="Limpar busca"
+              className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
+
+      <p role="status" aria-live="polite" className="sr-only">
+        {totalMatches} projetos encontrados
+      </p>
+
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">
+          {totalMatches} peças
+        </p>
+        <div className="inline-flex rounded-xl border border-white/10 bg-black/40 p-1">
+          {(
+            [
+              { id: "carousel", label: "Carrossel", Icon: GalleryHorizontal },
+              { id: "grid", label: "Grade", Icon: LayoutGrid },
+            ] as const
+          ).map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={viewMode === id}
+              onClick={() => setViewMode(id)}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                viewMode === id
+                  ? "bg-violet-gradient text-white shadow-violet-glow"
+                  : "text-white/60 hover:text-white"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {totalMatches === 0 && (
+        <div className="mb-10 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
+          <p className="mb-1 font-display text-lg font-bold text-white">
+            Nenhuma peça encontrada
+          </p>
+          <p className="mb-5 text-sm text-muted-foreground">
+            Tente outro termo ou limpe a busca para ver todo o acervo.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery("");
+              setActiveTab("all");
+            }}
+            className="rounded-xl bg-violet-gradient px-5 py-2 text-xs font-semibold text-white shadow-violet-glow"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      )}
 
       {/* Galerias */}
       <div className="space-y-20">
         {visibleGalleries.map((gallery) => {
           const filteredWorks = gallery.works.filter((filename) =>
-            formatWorkTitle(filename)
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
+            formatWorkTitle(filename).toLowerCase().includes(normalizedQuery)
           );
+          if (filteredWorks.length === 0) return null;
+          const works: DesignWork[] = filteredWorks.map((filename) => ({
+            src: `/images/${gallery.folder}/${encodeURIComponent(filename)}`,
+            title: formatWorkTitle(filename),
+            category: gallery.title,
+            kind: gallery.id === "design-grafico" ? "Print" : "Digital",
+          }));
 
           return (
             <section key={gallery.id} id={gallery.id} className="scroll-mt-28">
@@ -808,58 +1085,29 @@ export function DesignPageContent() {
                   </p>
                 </div>
                 <span className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 font-mono text-xs text-violet-200">
-                  {filteredWorks.length} projetos exibidos
+                  {filteredWorks.length} projetos
+                  {viewMode === "carousel" ? " · arraste ou use as setas" : ""}
                 </span>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredWorks.map((filename) => {
-                  const title = formatWorkTitle(filename);
-                  const imgSrc = `/images/${gallery.folder}/${encodeURIComponent(
-                    filename
-                  )}`;
-
-                  return (
-                    <figure
-                      key={filename}
-                      onClick={() =>
-                        setLightboxItem({
-                          src: imgSrc,
-                          title,
-                          category: gallery.title,
-                        })
-                      }
-                      className="group cursor-pointer overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#0c0e14]/80 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/35 hover:shadow-xl"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden bg-[#080a0f]">
-                        <NextImage
-                          src={imgSrc}
-                          alt={`${gallery.title}: ${title}`}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2 text-xs font-semibold text-white">
-                            <ZoomIn className="h-3.5 w-3.5 text-violet-300" />
-                            Ampliar Peça
-                          </span>
-                        </div>
-                      </div>
-                      <figcaption className="flex items-center justify-between gap-2 border-t border-white/[0.06] px-5 py-3.5">
-                        <span className="truncate text-sm font-medium capitalize text-foreground/90 group-hover:text-violet-100">
-                          {title}
-                        </span>
-                        <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-white/35">
-                          {gallery.id === "design-grafico"
-                            ? "Print"
-                            : "Digital"}
-                        </span>
-                      </figcaption>
-                    </figure>
-                  );
-                })}
-              </div>
+              {viewMode === "carousel" ? (
+                <WorksCarousel
+                  label={`Carrossel: ${gallery.title}`}
+                  works={works}
+                  onOpen={(index) => setLightbox({ items: works, index })}
+                />
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {works.map((work, index) => (
+                    <Reveal key={work.src} delay={(index % 3) * 0.06}>
+                      <WorkCard
+                        work={work}
+                        onOpen={() => setLightbox({ items: works, index })}
+                      />
+                    </Reveal>
+                  ))}
+                </div>
+              )}
             </section>
           );
         })}
@@ -872,10 +1120,14 @@ export function DesignPageContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setLightboxItem(null)}
+            onClick={closeLightbox}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl sm:p-8"
           >
             <motion.div
+              ref={lightboxTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${lightboxItem.category}: ${lightboxItem.title}`}
               initial={{ scale: 0.94, y: 12 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.94, y: 12 }}
@@ -893,7 +1145,7 @@ export function DesignPageContent() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setLightboxItem(null)}
+                  onClick={closeLightbox}
                   className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
                   aria-label="Fechar visualização"
                 >
@@ -902,12 +1154,39 @@ export function DesignPageContent() {
               </div>
               <div className="relative h-[65vh] w-full bg-[#06080c] p-6">
                 <NextImage
+                  key={lightboxItem.src}
                   src={lightboxItem.src}
                   alt={lightboxItem.title}
                   fill
                   sizes="90vw"
                   className="object-contain p-4"
                 />
+                {lightbox && lightbox.items.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => stepLightbox(-1)}
+                      aria-label="Peça anterior"
+                      className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/60 text-white backdrop-blur hover:bg-violet-500/40"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stepLightbox(1)}
+                      aria-label="Próxima peça"
+                      className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/60 text-white backdrop-blur hover:bg-violet-500/40"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                    <span
+                      role="status"
+                      className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/70 px-3 py-1 font-mono text-[11px] text-white/80"
+                    >
+                      {lightbox.index + 1} / {lightbox.items.length}
+                    </span>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -1027,7 +1306,87 @@ export function TemplatesPageContent() {
       ],
       stack: ["Next.js App Router", "Firebase Auth", "Firestore Lock", "Light UI System"],
     },
-    
+    {
+      number: "05",
+      code: "ARCH // 3D-ATELIER",
+      category: "Arte 3D & Colecionáveis",
+      title: "Impressão 3D & Miniaturas",
+      brandName: "Alchemist Voxel",
+      description:
+        "Estúdio criativo de impressão em resina 12K e pintura de miniaturas com Raio-X de 3 estágios, receitas de tintas e calculadora de encomendas.",
+      href: "/templates/miniaturas",
+      theme: "from-fuchsia-500/25 via-[#140d1f] to-[#08060c]",
+      badgeColor: "border-fuchsia-400/35 bg-fuchsia-500/10 text-fuchsia-200",
+      accentText: "text-fuchsia-300",
+      btnGradient: "from-fuchsia-500 to-pink-400 text-slate-950",
+      palette: [
+        { name: "Resin Fuchsia", hex: "#D946EF" },
+        { name: "Pigment Pink", hex: "#F472B6" },
+        { name: "Void", hex: "#08060C" },
+      ],
+      conversionFocus: "Orçamentos de Encomenda & Venda de Peças Autorais",
+      modules: [
+        "Raio-X de 3 Estágios: Impressão, Base e Pintura",
+        "Receitas de Tintas e Galeria com Lightbox",
+        "Calculadora de Encomendas por Escala",
+        "Busca e Filtros com Feedback em Tempo Real",
+      ],
+      stack: ["Next.js App Router", "Framer Motion", "Web Audio (opcional)", "Tailwind CSS"],
+    },
+    {
+      number: "06",
+      code: "ARCH // GUIDED-JOURNEY",
+      category: "Bem-estar & Experiência",
+      title: "Jornadas Guiadas & Leitura Interativa",
+      brandName: "Oráculo Connection",
+      description:
+        "Fluxo em 3 etapas (monte, intenção e revelação) com barra de progresso, perguntas prontas e celebração ao desbloquear o resultado.",
+      href: "/templates/connection",
+      theme: "from-amber-500/20 via-[#14110a] to-[#070709]",
+      badgeColor: "border-amber-400/35 bg-amber-500/10 text-amber-200",
+      accentText: "text-amber-300",
+      btnGradient: "from-amber-500 to-amber-300 text-slate-950",
+      palette: [
+        { name: "Amber Glow", hex: "#F59E0B" },
+        { name: "Parchment", hex: "#F4F1EA" },
+        { name: "Midnight", hex: "#070709" },
+      ],
+      conversionFocus: "Captura de Contato no Momento de Maior Engajamento",
+      modules: [
+        "Stepper com Progresso e Navegação por Teclado",
+        "Perguntas Prontas e Contador de Caracteres",
+        "Revelação com Confete e Desbloqueio por Contato",
+        "Formulário com Preenchimento Automático",
+      ],
+      stack: ["Next.js App Router", "Framer Motion", "Form UX", "Tailwind CSS"],
+    },
+    {
+      number: "07",
+      code: "ARCH // TABLE-BOOKING",
+      category: "Restaurantes & Reservas",
+      title: "Reservas de Mesa & Comanda Digital",
+      brandName: "Kobra Fire Reservas",
+      description:
+        "Painel único de reservas VIP, comanda digital e pedidos com toasts de feedback, personalização de produto e modais acessíveis.",
+      href: "/templates/reservas",
+      theme: "from-red-500/20 via-[#1c0f0e] to-[#0c0807]",
+      badgeColor: "border-red-400/35 bg-red-500/10 text-red-200",
+      accentText: "text-red-300",
+      btnGradient: "from-red-500 to-orange-400 text-slate-950",
+      palette: [
+        { name: "Fire Red", hex: "#EF4444" },
+        { name: "Ember", hex: "#F97316" },
+        { name: "Charcoal", hex: "#0C0807" },
+      ],
+      conversionFocus: "Mais Reservas Diretas & Menos No-Show",
+      modules: [
+        "Escolha de Horário e Mesa em Tempo Real",
+        "Comanda Digital com Personalização de Produto",
+        "Toasts de Confirmação e Feedback Visual",
+        "Modais com Foco Preso e Escape para Fechar",
+      ],
+      stack: ["Next.js App Router", "Framer Motion", "Cart State", "Tailwind CSS"],
+    },
   ];
 
   const [selectedIndex, setSelectedIndex] = useState<number>(3); // Inicia destacando o novo Prime Motors (ou altere para 0)
