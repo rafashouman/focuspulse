@@ -38,7 +38,13 @@ export type AnalyticsEvent =
   | { eventName: "page_view" }
   | {
       eventName: "pilot_cta_click" | "pilot_whatsapp_click";
-      placement: "header" | "hero" | "footer" | "floating" | "success";
+      placement:
+        | "header"
+        | "hero"
+        | "footer"
+        | "floating"
+        | "success"
+        | "sticky_bar";
     }
   | { eventName: "pilot_form_start" | "pilot_lead_save_error" }
   | {
