@@ -122,3 +122,102 @@
     animation: none;
   }
 }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Base compartilhada dos templates/hotsites (.demo-shell envolve todas as rotas de (demos)) */
+@layer base {
+  :where(.demo-shell)
+    :is(a, button, summary, select, [role="button"], [tabindex]:not([tabindex="-1"]), input[type="checkbox"], input[type="radio"], input[type="range"]):focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.65);
+  }
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1000;
+  transform: translateY(-200%);
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #0a0a0a;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Templates escuros: texto secundário com contraste mínimo de 4.5:1 */
+@layer utilities {
+  :where(.demo-dark) .text-zinc-500 {
+    color: #a1a1aa;
+  }
+  :where(.demo-dark) .text-zinc-600 {
+    color: #8e8e97;
+  }
+  :where(.demo-dark) .text-zinc-700 {
+    color: #7c7c85;
+  }
+}
+
+/* Templates claros: texto secundário e placeholders com contraste mínimo de 4.5:1 */
+@layer utilities {
+  .demo-light .text-slate-400 {
+    color: #64748b;
+  }
+  .demo-light .text-zinc-400 {
+    color: #71717a;
+  }
+  .demo-light :is(.bg-slate-900, .bg-slate-950, .bg-zinc-900, .bg-zinc-950) .text-slate-400 {
+    color: #94a3b8;
+  }
+  .demo-light :is(.bg-slate-900, .bg-slate-950, .bg-zinc-900, .bg-zinc-950) .text-zinc-400 {
+    color: #a1a1aa;
+  }
+  .demo-light input::placeholder,
+  .demo-light textarea::placeholder {
+    color: #64748b;
+    opacity: 1;
+  }
+}
+
+/* Letreiro: 4 cópias, desloca 25% para um loop exato; pausa no hover e no foco */
+@keyframes marquee-x {
+  to {
+    transform: translateX(-25%);
+  }
+}
+.marquee-track {
+  animation: marquee-x 22s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .demo-shell *,
+  .demo-shell *::before,
+  .demo-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

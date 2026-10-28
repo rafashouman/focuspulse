@@ -82,7 +82,10 @@ export function FAQ() {
                 >
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="flex items-center justify-between w-full p-6 text-left focus:outline-none"
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-panel-${index}`}
+                    id={`faq-trigger-${index}`}
+                    className="flex items-center justify-between w-full p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 rounded-2xl"
                   >
                     <span className="font-bold font-display text-foreground pr-4">
                       {faq.q}
@@ -96,6 +99,9 @@ export function FAQ() {
                   <AnimatePresence>
                     {isOpen && (
                       <motion.div
+                        id={`faq-panel-${index}`}
+                        role="region"
+                        aria-labelledby={`faq-trigger-${index}`}
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}

@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -43,7 +44,7 @@ import { trackMetaEvent } from "@/components/MetaPixel";
 // ==========================================
 class KobraSoundEngine {
   private ctx: AudioContext | null = null;
-  public enabled: boolean = true;
+  public enabled: boolean = false;
 
   private init() {
     if (typeof window === "undefined") return;
@@ -252,7 +253,7 @@ export const KOBRA_MENU_ITEMS: KobraMenuItem[] = [
       "Batatas corte rústico fritas em três tempos, finalizadas com azeite trufado, chuva de grana padano ralado na hora e alecrim fresco.",
     price: 24.9,
     category: "sides",
-    image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=900&q=80",
     calories: "420 kcal",
     prepTime: "8 min",
     badge: "Imperdível",
@@ -385,7 +386,7 @@ export default function KobraTableBooking({
   initialTab = "pos",
 }: KobraTableBookingProps) {
   const soundRef = useRef<KobraSoundEngine | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState<"pos" | "booking" | "dashboard">(initialTab);
   const [visualToast, setVisualToast] = useState<{ title: string; subtitle: string } | null>(null);
 
@@ -407,6 +408,9 @@ export default function KobraTableBooking({
   const [modalDoneness, setModalDoneness] = useState("Ao Ponto do Chef (Rosado)");
   const [modalAddons, setModalAddons] = useState<KobraAddon[]>([]);
   const [modalNotes, setModalNotes] = useState("");
+  const customizeTrapRef = useFocusTrap<HTMLDivElement>(!!customizingProduct, () =>
+    setCustomizingProduct(null)
+  );
   const [customerName, setCustomerName] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
 
@@ -705,7 +709,7 @@ export default function KobraTableBooking({
 
   return (
     <div
-      className={`${embedded
+      className={`demo-dark ${embedded
         ? "w-full rounded-[2.5rem] bg-[#0B0908] border border-orange-500/30 shadow-[0_0_90px_rgba(234,88,12,0.12)]"
         : "min-h-screen bg-[#070605] flex items-center justify-center p-4 sm:p-8"
         } text-zinc-100 font-sans relative overflow-hidden`}
@@ -714,6 +718,7 @@ export default function KobraTableBooking({
       <AnimatePresence>
         {visualToast && (
           <motion.div
+            role="status"
             initial={{ opacity: 0, y: -25, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
@@ -767,13 +772,14 @@ export default function KobraTableBooking({
 
           {/* Interactive Mode Switcher */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 p-1.5 rounded-2xl">
+            <div role="group" aria-label="Modo de operação" className="flex items-center bg-zinc-900/90 border border-zinc-800 p-1.5 rounded-2xl">
               <button
                 type="button"
                 onClick={() => {
                   soundRef.current?.playClick();
                   setActiveTab("pos");
                 }}
+                aria-pressed={activeTab === "pos"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === "pos"
                   ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_20px_rgba(234,88,12,0.35)]"
                   : "text-zinc-400 hover:text-white"
@@ -792,6 +798,7 @@ export default function KobraTableBooking({
                   soundRef.current?.playClick();
                   setActiveTab("dashboard");
                 }}
+                aria-pressed={activeTab === "dashboard"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === "dashboard"
                   ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_20px_rgba(234,88,12,0.35)]"
                   : "text-zinc-400 hover:text-white"
@@ -810,6 +817,7 @@ export default function KobraTableBooking({
                   soundRef.current?.playClick();
                   setActiveTab("booking");
                 }}
+                aria-pressed={activeTab === "booking"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === "booking"
                   ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_20px_rgba(234,88,12,0.35)]"
                   : "text-zinc-400 hover:text-white"
@@ -825,6 +833,8 @@ export default function KobraTableBooking({
               type="button"
               onClick={toggleSound}
               title={soundEnabled ? "Sons de Cozinha Ativos" : "Sons Silenciados"}
+              aria-pressed={soundEnabled}
+              aria-label={soundEnabled ? "Silenciar sons de cozinha" : "Ativar sons de cozinha"}
               className={`p-3 rounded-2xl border transition-all ${soundEnabled
                 ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
                 : "bg-zinc-900 border-zinc-800 text-zinc-500"
@@ -836,6 +846,7 @@ export default function KobraTableBooking({
             {onClose && (
               <button
                 onClick={onClose}
+                aria-label="Fechar"
                 className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-orange-500 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -893,7 +904,7 @@ export default function KobraTableBooking({
 
               {/* Products Grid (All with High-Res Images) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredProducts.map((item) => (
+                {filteredProducts.map((item, index) => (
                   <motion.div
                     layout
                     key={item.id}
@@ -907,6 +918,8 @@ export default function KobraTableBooking({
                           alt={item.name}
                           fill
                           unoptimized
+                          loading={!embedded && index < 2 ? "eager" : "lazy"}
+                          fetchPriority={!embedded && index < 2 ? "high" : "auto"}
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/30" />
@@ -1060,6 +1073,7 @@ export default function KobraTableBooking({
                         <button
                           type="button"
                           onClick={() => updateCartItemQty(item.cartItemId, -1)}
+                          aria-label={`Diminuir quantidade de ${item.product.name}`}
                           className="text-zinc-400 hover:text-white"
                         >
                           <Minus className="w-3 h-3" />
@@ -1070,6 +1084,7 @@ export default function KobraTableBooking({
                         <button
                           type="button"
                           onClick={() => updateCartItemQty(item.cartItemId, 1)}
+                          aria-label={`Aumentar quantidade de ${item.product.name}`}
                           className="text-zinc-400 hover:text-white"
                         >
                           <Plus className="w-3 h-3" />
@@ -1519,6 +1534,10 @@ export default function KobraTableBooking({
         {customizingProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
+              ref={customizeTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Personalizar ${customizingProduct.name}`}
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}

@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import KobraTableBooking from "@/components/KobraTableBooking";
 import { trackMetaEvent } from "@/components/MetaPixel";
+import { ScrollProgress } from "@/components/ui/MotionKit";
+import { StickyMobileCta } from "@/components/ui/StickyMobileCta";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 
 // ==========================================
 // CONFIGURAÇÕES & DADOS DO CARDÁPIO
@@ -143,7 +146,7 @@ const MENU_ITEMS: MenuItem[] = [
       "Batatas corte rústico fritas em três tempos, finalizadas com azeite trufado, chuva de grana padano ralado na hora e alecrim fresco.",
     price: 24.9,
     category: "sides",
-    image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=900&q=80",
     calories: "420 kcal",
     prepTime: "8 min",
     badge: "Imperdível",
@@ -255,6 +258,32 @@ export default function DeliveryMenuPage() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("PIX (5% de Desconto)");
 
+  const [toast, setToast] = useState<string | null>(null);
+  const productTrapRef = useFocusTrap<HTMLDivElement>(!!selectedProduct);
+  const cartTrapRef = useFocusTrap<HTMLDivElement>(isCartOpen);
+  const [cartBump, setCartBump] = useState(0);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    setCartBump((n) => n + 1);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2600);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setSelectedProduct(null);
+      setIsCartOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
   const openProductModal = (item: MenuItem) => {
     setSelectedProduct(item);
     setModalQty(1);
@@ -328,7 +357,7 @@ export default function DeliveryMenuPage() {
 
     setCart((prev) => [...prev, newItem]);
     setSelectedProduct(null);
-    setIsCartOpen(true);
+    showToast(`${modalQty}x ${selectedProduct.name} adicionado à sacola`);
   };
 
   const handleAddComboToCart = () => {
@@ -366,7 +395,7 @@ export default function DeliveryMenuPage() {
         unitFinalPrice: discountedPrice,
       },
     ]);
-    setIsCartOpen(true);
+    showToast("KOBRA BOX adicionada à sacola");
   };
 
   const handleCheckoutWhatsApp = (e: React.FormEvent) => {
@@ -414,8 +443,31 @@ export default function DeliveryMenuPage() {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
   };
   return (
-    <div className="min-h-screen bg-[#080606] text-zinc-100 selection:bg-orange-500 selection:text-white font-sans antialiased pb-20 sm:pb-0">
+    <main id="conteudo" className="demo-dark min-h-screen bg-[#080606] text-zinc-100 selection:bg-orange-500 selection:text-white font-sans antialiased pb-20 sm:pb-0">
+      <ScrollProgress />
       <FloatingWhatsApp />
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 top-24 z-[70] flex justify-center px-4">
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast}
+              initial={{ opacity: 0, y: -16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12 }}
+              className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-orange-500/40 bg-zinc-950/95 px-4 py-3 text-sm font-bold text-white shadow-[0_10px_40px_rgba(234,88,12,0.35)] backdrop-blur-xl"
+            >
+              <Check className="h-4 w-4 text-orange-400" />
+              {toast}
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="ml-2 rounded-lg bg-orange-500 px-3 py-1 text-xs font-black uppercase text-zinc-950 hover:bg-orange-400"
+              >
+                Ver sacola
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* ==========================================
           1. HEADER TELEMETRY (FIRE & EMBER THEME)
@@ -481,16 +533,22 @@ export default function DeliveryMenuPage() {
 
             <button
               onClick={() => setIsCartOpen(true)}
+              aria-label={`Abrir sacola, ${totalItemsCount} itens`}
               className="relative inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-white transition-all group"
             >
-              <div className="relative">
+              <motion.div
+                key={cartBump}
+                animate={cartBump ? { scale: [1, 1.35, 1], rotate: [0, -12, 0] } : undefined}
+                transition={{ duration: 0.5 }}
+                className="relative"
+              >
                 <ShoppingBag className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
                 {totalItemsCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-orange-500 text-zinc-950 font-mono text-[10px] font-black flex items-center justify-center">
                     {totalItemsCount}
                   </span>
                 )}
-              </div>
+              </motion.div>
               <div className="text-left hidden md:block">
                 <span className="text-[10px] font-mono uppercase text-zinc-400 block leading-none">
                   Sua Sacola
@@ -546,15 +604,15 @@ export default function DeliveryMenuPage() {
 
               <div className="mt-12 pt-8 border-t border-zinc-900 grid grid-cols-3 gap-4 max-w-lg">
                 <div>
-                  <span className="text-xs font-mono text-orange-400 block">// EMBALAGEM</span>
+                  <span className="text-xs font-mono text-orange-400 block">{"// EMBALAGEM"}</span>
                   <span className="text-sm sm:text-base font-bold text-white">Térmica Anti-Vapor</span>
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-orange-400 block">// BLEND</span>
+                  <span className="text-xs font-mono text-orange-400 block">{"// BLEND"}</span>
                   <span className="text-sm sm:text-base font-bold text-white">100% Wagyu & Angus</span>
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-orange-400 block">// FRETE GRÁTIS</span>
+                  <span className="text-xs font-mono text-orange-400 block">{"// FRETE GRÁTIS"}</span>
                   <span className="text-sm sm:text-base font-bold text-white">
                     Acima de R$ {FREE_DELIVERY_THRESHOLD}
                   </span>
@@ -698,10 +756,12 @@ export default function DeliveryMenuPage() {
       ========================================== */}
       <section id="cardapio" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="sticky top-20 z-30 bg-[#080606]/90 backdrop-blur-xl py-4 border-b border-zinc-800/80 mb-10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+          <div className="relative min-w-0 md:flex-1">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar" role="group" aria-label="Categorias">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
+                aria-pressed={activeCategory === cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id
                     ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]"
@@ -720,31 +780,77 @@ export default function DeliveryMenuPage() {
               </button>
             ))}
           </div>
+          <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#080606] to-transparent md:hidden" />
+          </div>
           <div className="relative w-full md:w-72 shrink-0">
             <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Buscar na vitrine"
               placeholder="Buscar na vitrine..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+              className="w-full pl-10 pr-9 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar busca"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-zinc-400 hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
+
+        <p aria-live="polite" className="mb-6 -mt-4 text-xs font-mono uppercase tracking-widest text-zinc-500">
+          {filteredItems.length} {filteredItems.length === 1 ? "item" : "itens"} na vitrine
+        </p>
+
+        {filteredItems.length === 0 && (
+          <div className="rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/30 py-16 text-center">
+            <Search className="mx-auto mb-4 h-8 w-8 text-orange-500" />
+            <p className="mb-1 text-lg font-black uppercase text-white">Nada saiu da brasa</p>
+            <p className="mb-5 text-sm text-zinc-400">Nenhum item corresponde à sua busca.</p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setActiveCategory("todos");
+              }}
+              className="rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-black uppercase text-zinc-950 hover:bg-orange-400"
+            >
+              Limpar filtros
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => (
             <motion.div
               layout
               key={item.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`${item.name}, R$ ${item.price.toFixed(2)}. Ver detalhes`}
               onClick={() => openProductModal(item)}
-              className="group cursor-pointer rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-orange-500/50 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_10px_40px_rgba(234,88,12,0.15)]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openProductModal(item);
+                }
+              }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              whileTap={{ scale: 0.98 }}
+              className="group cursor-pointer rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-orange-500/50 hover:-translate-y-1 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_10px_40px_rgba(234,88,12,0.15)]"
             >
               <div>
                 <div className="relative h-56 w-full overflow-hidden bg-zinc-950">
                   <Image
                     src={item.image}
-                    alt={item.name}
+                    alt=""
                     fill
                     unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -906,6 +1012,10 @@ export default function DeliveryMenuPage() {
         {selectedProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
+              ref={productTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Personalizar ${selectedProduct.name}`}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -1011,6 +1121,7 @@ export default function DeliveryMenuPage() {
                   <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5">
                     <button
                       onClick={() => setModalQty(Math.max(1, modalQty - 1))}
+                      aria-label="Diminuir quantidade"
                       className="text-zinc-400 hover:text-white"
                     >
                       <Minus className="w-4 h-4" />
@@ -1018,6 +1129,7 @@ export default function DeliveryMenuPage() {
                     <span className="font-mono font-bold text-sm w-5 text-center">{modalQty}</span>
                     <button
                       onClick={() => setModalQty(modalQty + 1)}
+                      aria-label="Aumentar quantidade"
                       className="text-zinc-400 hover:text-white"
                     >
                       <Plus className="w-4 h-4" />
@@ -1048,6 +1160,10 @@ export default function DeliveryMenuPage() {
         {isCartOpen && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm">
             <motion.div
+              ref={cartTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sua sacola"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -1135,6 +1251,7 @@ export default function DeliveryMenuPage() {
                           <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1">
                             <button
                               onClick={() => updateCartQty(item.cartItemId, -1)}
+                              aria-label={`Diminuir quantidade de ${item.product.name}`}
                               className="text-zinc-400 hover:text-white"
                             >
                               <Minus className="w-3.5 h-3.5" />
@@ -1144,6 +1261,7 @@ export default function DeliveryMenuPage() {
                             </span>
                             <button
                               onClick={() => updateCartQty(item.cartItemId, 1)}
+                              aria-label={`Aumentar quantidade de ${item.product.name}`}
                               className="text-zinc-400 hover:text-white"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -1222,6 +1340,12 @@ export default function DeliveryMenuPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+      <StickyMobileCta
+        label="Ver cardápio e pedir"
+        href="#cardapio"
+        hideWhenVisibleId="cardapio"
+        className="bg-gradient-to-r from-orange-500 to-red-600 text-white"
+      />
+    </main>
   );
 }

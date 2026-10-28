@@ -6,6 +6,7 @@ import {
   motion,
   AnimatePresence,
   useMotionValue,
+  useReducedMotion,
   useSpring,
   useTransform,
 } from "framer-motion";
@@ -119,6 +120,7 @@ const AUTOPLAY_TIME = 6000;
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -133,12 +135,12 @@ export function Hero() {
   });
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || reduceMotion) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % projects.length);
     }, AUTOPLAY_TIME);
     return () => clearInterval(timer);
-  }, [isHovered, activeIndex]);
+  }, [isHovered, reduceMotion, activeIndex]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -260,6 +262,8 @@ export function Hero() {
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={handleMouseLeave}
+          onFocusCapture={() => setIsHovered(true)}
+          onBlurCapture={() => setIsHovered(false)}
           style={{ perspective: 1200 }}
         >
           <motion.div
@@ -444,6 +448,7 @@ export function Hero() {
                   <button
                     key={proj.number}
                     onClick={() => setActiveIndex(idx)}
+                    aria-pressed={isActive}
                     className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs transition-all ${
                       isActive
                         ? "bg-white/10 font-semibold text-white"

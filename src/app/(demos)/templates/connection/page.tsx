@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { drawReadingCards, generateReadingForUser } from "@/lib/hotsites/tarot-site-engine";
 import { readLastDraw, rememberDraw } from "@/lib/hotsites/tarot-draw-history";
 import { downloadTarotReadingPdf } from "@/lib/hotsites/tarot-pdf";
@@ -19,8 +19,10 @@ import {
   RotateCcw,
   Eye,
   Compass,
-  Flame
+  Flame,
+  Check
 } from "lucide-react";
+import { Confetti } from "@/components/ui/MotionKit";
 
 // --- DADOS MOCKADOS DOS MONTES E CARTAS ---
 const DECKS = [
@@ -81,6 +83,10 @@ export default function TarotLeadHotsite() {
   }, [selectedDeck, question, drawnCardIds]);
 
   const selectedDeckTitle = DECKS.find((d) => d.id === selectedDeck)?.title ?? "";
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   const handleSelectDeck = (id: string) => {
     setSelectedDeck(id);
@@ -168,7 +174,7 @@ export default function TarotLeadHotsite() {
   };
 
   return (
-    <main className="min-h-screen bg-[#070709] text-[#F4F1EA] selection:bg-amber-500/30 selection:text-amber-200 font-sans overflow-x-hidden relative">
+    <main id="conteudo" className="demo-dark min-h-screen bg-[#070709] text-[#F4F1EA] selection:bg-amber-500/30 selection:text-amber-200 font-sans overflow-x-hidden relative">
       {/* Glow Ambiental Sutil */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-amber-500/5 blur-[140px] rounded-full" />
@@ -186,13 +192,29 @@ export default function TarotLeadHotsite() {
           </div>
 
           {/* Indicador de Progresso */}
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <span className={step >= 1 ? "text-amber-400 font-medium" : ""}>01. Monte</span>
-            <span>/</span>
-            <span className={step >= 2 ? "text-amber-400 font-medium" : ""}>02. Intenção</span>
-            <span>/</span>
-            <span className={step === 3 ? "text-amber-400 font-medium" : ""}>03. Revelação</span>
-          </div>
+          <ol aria-label="Etapas da leitura" className="flex items-center gap-2 text-xs text-zinc-500">
+            {["01. Monte", "02. Intenção", "03. Revelação"].map((label, i) => {
+              const n = i + 1;
+              const done = step > n;
+              return (
+                <li
+                  key={label}
+                  aria-current={step === n ? "step" : undefined}
+                  className={`flex items-center gap-1.5 ${step >= n ? "text-amber-400 font-medium" : ""}`}
+                >
+                  {done && <Check className="h-3 w-3" aria-hidden />}
+                  <span className={step === n ? "" : "hidden sm:inline"}>{label}</span>
+                  {n < 3 && <span aria-hidden className="text-zinc-700">/</span>}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+        <div className="h-px w-full bg-white/5">
+          <div
+            className="h-full bg-gradient-to-r from-amber-500 to-amber-300 shadow-[0_0_10px_#f59e0b] transition-all duration-700"
+            style={{ width: `${(step / 3) * 100}%` }}
+          />
         </div>
       </header>
 
@@ -303,10 +325,14 @@ export default function TarotLeadHotsite() {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     maxLength={600}
+                    aria-label="Sua pergunta para as cartas"
                     placeholder="Ex: Qual caminho devo tomar em relação a..."
-                    className="w-full rounded-xl bg-[#111116] border border-white/15 focus:border-amber-400/70 focus:outline-none p-4 text-white placeholder:text-zinc-600 text-sm md:text-base transition-colors resize-none"
+                    className="w-full rounded-xl bg-[#111116] border border-white/15 focus:border-amber-400/70 focus:outline-none p-4 text-white placeholder:text-zinc-500 text-sm md:text-base transition-colors resize-none"
                     required
                   />
+                  <span className="mt-1.5 block text-right font-mono text-[11px] text-zinc-500">
+                    {question.length}/600
+                  </span>
                 </div>
 
                 {/* Sugestões Pré-definidas */}
@@ -320,6 +346,7 @@ export default function TarotLeadHotsite() {
                         type="button"
                         key={i}
                         onClick={() => setQuestion(preset)}
+                        aria-pressed={question === preset}
                         className={`text-left text-xs md:text-sm p-3.5 rounded-xl border transition-all ${
                           question === preset
                             ? "bg-amber-500/15 border-amber-400/60 text-amber-200"
@@ -465,6 +492,8 @@ export default function TarotLeadHotsite() {
                     <input
                       type="text"
                       placeholder="Seu primeiro nome"
+                      aria-label="Seu primeiro nome"
+                      autoComplete="given-name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       maxLength={100}
@@ -474,6 +503,8 @@ export default function TarotLeadHotsite() {
                     <input
                       type="tel"
                       placeholder="Seu WhatsApp com DDD (Ex: 51 99999-9999)"
+                      aria-label="Seu WhatsApp com DDD"
+                      autoComplete="tel"
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
                       maxLength={24}
@@ -522,8 +553,9 @@ export default function TarotLeadHotsite() {
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-3xl bg-gradient-to-br from-emerald-950/30 via-[#111116] to-[#111116] border border-emerald-500/30 p-8 md:p-10 text-center space-y-6"
+                  className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-950/30 via-[#111116] to-[#111116] border border-emerald-500/30 p-8 md:p-10 text-center space-y-6"
                 >
+                  <Confetti />
                   <div className="space-y-2">
                     <span className="text-xs uppercase tracking-[0.2em] text-emerald-400">
                       Leitura Completa Desbloqueada, {name}!

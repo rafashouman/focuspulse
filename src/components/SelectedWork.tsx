@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, MoveUpRight } from "lucide-react";
+import { Reveal } from "@/components/ui/MotionKit";
 
 const projects = [
   {
@@ -71,10 +72,10 @@ export function SelectedWork() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {projects.map((project) => (
+          {projects.map((project, i) => (
+            <Reveal key={project.number} delay={(i % 2) * 0.1}>
             <article
-              key={project.number}
-              className="group min-w-0 overflow-hidden rounded-[1.6rem] border border-white/[0.1] bg-white/[0.035] shadow-xl shadow-black/10 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 hover:border-violet-200/20"
+              className="group h-full min-w-0 overflow-hidden rounded-[1.6rem] border border-white/[0.1] bg-white/[0.035] shadow-xl shadow-black/10 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 hover:border-violet-200/20"
             >
               <Link
                 href={project.href}
@@ -131,6 +132,7 @@ export function SelectedWork() {
                 </div>
               </Link>
             </article>
+            </Reveal>
           ))}
         </div>
 

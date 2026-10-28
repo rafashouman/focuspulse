@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -8,27 +8,24 @@ import {
   Layers,
   Palette,
   Cpu,
-  Eye,
-  Sliders,
   Volume2,
   VolumeX,
   MessageCircle,
-  ArrowUpRight,
-  CheckCircle2,
   ZoomIn,
   X,
-  Clock,
   ShieldCheck,
   Flame,
   Wand2,
   Droplets,
   Box,
-  Maximize2,
   Menu,
   Search,
   ChevronRight,
 } from "lucide-react";
 import { trackMetaEvent } from "@/components/MetaPixel";
+import { ScrollProgress } from "@/components/ui/MotionKit";
+import { StickyMobileCta } from "@/components/ui/StickyMobileCta";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 
 // ==========================================
 // CONFIGURAÇÕES GERAIS
@@ -41,7 +38,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 // ==========================================
 class AtelierSoundEngine {
   private ctx: AudioContext | null = null;
-  public enabled: boolean = true;
+  public enabled: boolean = false;
 
   private init() {
     if (typeof window === "undefined") return;
@@ -417,7 +414,7 @@ const BASE_STYLES = [
 
 export default function ResinAndMiniatureStudioPage() {
   const soundRef = useRef<AtelierSoundEngine | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Estado do Inspektor de Estágios (Workbench)
@@ -429,6 +426,7 @@ export default function ResinAndMiniatureStudioPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewPriceMode, setViewPriceMode] = useState<"painted" | "raw">("painted");
   const [lightboxWork, setLightboxWork] = useState<MiniatureWork | null>(null);
+  const lightboxTrapRef = useFocusTrap<HTMLDivElement>(!!lightboxWork);
 
   // Estado da Calculadora de Encomendas (Custom Forge)
   const [selectedScale, setSelectedScale] = useState(SCALE_OPTIONS[2]); // 75mm
@@ -439,6 +437,14 @@ export default function ResinAndMiniatureStudioPage() {
 
   useEffect(() => {
     soundRef.current = new AtelierSoundEngine();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxWork(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   const toggleSound = () => {
@@ -502,7 +508,8 @@ export default function ResinAndMiniatureStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08060C] text-zinc-100 selection:bg-fuchsia-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <main id="conteudo" className="demo-dark min-h-screen bg-[#08060C] text-zinc-100 selection:bg-fuchsia-500 selection:text-white font-sans antialiased overflow-x-hidden">
+      <ScrollProgress />
       {/* ==========================================
           1. FLOATING ATELIER NAVBAR
       ========================================== */}
@@ -545,6 +552,8 @@ export default function ResinAndMiniatureStudioPage() {
             <button
               type="button"
               onClick={toggleSound}
+              aria-pressed={soundEnabled}
+              aria-label={soundEnabled ? "Desligar áudio de bancada" : "Ligar áudio de bancada"}
               title="Áudio de Bancada (Laser UV & Aerógrafo)"
               className={`p-2.5 rounded-xl border transition-all ${
                 soundEnabled
@@ -567,6 +576,8 @@ export default function ResinAndMiniatureStudioPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -668,17 +679,17 @@ export default function ResinAndMiniatureStudioPage() {
               {/* Telemetry Strip */}
               <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-3 gap-6 max-w-lg">
                 <div>
-                  <span className="text-[10px] font-mono text-fuchsia-400 block">// RESOLUÇÃO</span>
+                  <span className="text-[10px] font-mono text-fuchsia-400 block">{"// RESOLUÇÃO"}</span>
                   <span className="text-xl sm:text-2xl font-black text-white">12K MSLA</span>
                   <span className="text-xs text-zinc-400 block">Zero linhas de camada</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono text-amber-300 block">// PINTURA</span>
+                  <span className="text-[10px] font-mono text-amber-300 block">{"// PINTURA"}</span>
                   <span className="text-xl sm:text-2xl font-black text-white">NMM & OSL</span>
                   <span className="text-xs text-zinc-400 block">Kolinsky & Aerógrafo</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono text-indigo-400 block">// ARQUIVOS</span>
+                  <span className="text-[10px] font-mono text-indigo-400 block">{"// ARQUIVOS"}</span>
                   <span className="text-xl sm:text-2xl font-black text-white">Seu STL ou Nosso</span>
                   <span className="text-xs text-zinc-400 block">Suporte tático incluso</span>
                 </div>
@@ -693,6 +704,8 @@ export default function ResinAndMiniatureStudioPage() {
                   alt={GALLERY_WORKS[0].title}
                   fill
                   unoptimized
+                  loading="eager"
+                  fetchPriority="high"
                   className="object-cover group-hover:scale-105 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#08060C] via-[#08060C]/30 to-transparent" />
@@ -758,7 +771,7 @@ export default function ResinAndMiniatureStudioPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6">
             <div>
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-fuchsia-400 block mb-2">
-                // 01. ALQUIMIA DE PRODUÇÃO INTERATIVA
+                {"// 01. ALQUIMIA DE PRODUÇÃO INTERATIVA"}
               </span>
               <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white">
                 Inspektor de <span className="text-amber-300 italic">Bancada (3 Estágios)</span>
@@ -878,7 +891,7 @@ export default function ResinAndMiniatureStudioPage() {
               {activeStage.swatches && (
                 <div className="p-4 rounded-2xl bg-zinc-950/90 border border-amber-400/30">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-amber-300 block mb-2.5">
-                    // RECEITA CROMÁTICA APLICADA NO ESTÁGIO 03
+                    {"// RECEITA CROMÁTICA APLICADA NO ESTÁGIO 03"}
                   </span>
                   <div className="flex flex-wrap gap-2.5">
                     {activeStage.swatches.map((sw, i) => (
@@ -908,7 +921,7 @@ export default function ResinAndMiniatureStudioPage() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-6">
           <div>
             <span className="font-mono text-xs uppercase tracking-[0.25em] text-fuchsia-400 block mb-2">
-              // 02. PORTFÓLIO DE PEÇAS & COLEÇÕES
+              {"// 02. PORTFÓLIO DE PEÇAS & COLEÇÕES"}
             </span>
             <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white">
               Galeria de <span className="text-fuchsia-400 italic">Miniaturas & Resina</span>
@@ -961,6 +974,7 @@ export default function ResinAndMiniatureStudioPage() {
               <button
                 key={cat.id}
                 type="button"
+                aria-pressed={activeCategory === cat.id}
                 onClick={() => {
                   soundRef.current?.playSwitch();
                   setActiveCategory(cat.id as GalleryCategory);
@@ -982,11 +996,44 @@ export default function ResinAndMiniatureStudioPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Buscar técnica"
               placeholder="Buscar técnica (NMM, OSL, Keycap)..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-950 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-400"
+              className="w-full pl-10 pr-9 py-2 rounded-xl bg-zinc-950 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-400"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar busca"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-zinc-400 hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
+
+        <p aria-live="polite" className="mb-6 -mt-6 font-mono text-xs uppercase tracking-widest text-zinc-500">
+          {filteredGallery.length} {filteredGallery.length === 1 ? "obra" : "obras"} no portfólio
+        </p>
+
+        {filteredGallery.length === 0 && (
+          <div className="rounded-3xl border border-dashed border-white/15 bg-zinc-900/30 py-16 text-center">
+            <Search className="mx-auto mb-4 h-8 w-8 text-fuchsia-400" />
+            <p className="mb-1 text-lg font-black uppercase text-white">Nenhuma peça encontrada</p>
+            <p className="mb-5 text-sm text-zinc-400">Tente outra técnica ou categoria.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setActiveCategory("todos");
+              }}
+              className="rounded-xl bg-fuchsia-500 px-5 py-2.5 text-xs font-black uppercase text-zinc-950 hover:bg-fuchsia-400"
+            >
+              Limpar filtros
+            </button>
+          </div>
+        )}
 
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
@@ -998,17 +1045,30 @@ export default function ResinAndMiniatureStudioPage() {
               <motion.div
                 layout
                 key={work.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`${work.title}. Abrir inspeção e receita`}
                 onClick={() => {
                   soundRef.current?.playAirbrushSpray();
                   setLightboxWork(work);
                 }}
-                className="group cursor-pointer rounded-3xl bg-[#110C1D]/70 border border-white/10 hover:border-fuchsia-400/60 overflow-hidden flex flex-col justify-between transition-all hover:shadow-[0_15px_50px_rgba(217,70,239,0.15)]"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    soundRef.current?.playAirbrushSpray();
+                    setLightboxWork(work);
+                  }
+                }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                className="group cursor-pointer rounded-3xl bg-[#110C1D]/70 border border-white/10 hover:border-fuchsia-400/60 hover:-translate-y-1 overflow-hidden flex flex-col justify-between transition-all hover:shadow-[0_15px_50px_rgba(217,70,239,0.15)]"
               >
                 <div>
                   <div className="relative h-64 w-full overflow-hidden bg-zinc-950">
                     <Image
                       src={work.image}
-                      alt={work.title}
+                      alt=""
                       fill
                       unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -1394,6 +1454,10 @@ export default function ResinAndMiniatureStudioPage() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           >
             <motion.div
+              ref={lightboxTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Inspeção: ${lightboxWork.title}`}
               initial={{ opacity: 0, scale: 0.94, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 15 }}
@@ -1412,6 +1476,7 @@ export default function ResinAndMiniatureStudioPage() {
                 <button
                   type="button"
                   onClick={() => setLightboxWork(null)}
+                  aria-label="Fechar inspeção"
                   className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/80 border border-white/15 text-white flex items-center justify-center hover:bg-fuchsia-500 hover:text-zinc-950 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -1445,7 +1510,7 @@ export default function ResinAndMiniatureStudioPage() {
                 {/* Paint Swatches Recipe */}
                 <div className="p-4 rounded-2xl bg-zinc-950 border border-white/10">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-amber-300 block mb-3">
-                    // PALETA DE PIGMENTOS USADOS NESTA OBRA
+                    {"// PALETA DE PIGMENTOS USADOS NESTA OBRA"}
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {lightboxWork.paintsUsed.map((sw, i) => (
@@ -1489,6 +1554,12 @@ export default function ResinAndMiniatureStudioPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+      <StickyMobileCta
+        label="Orçar minha peça"
+        href="#forja"
+        hideWhenVisibleId="forja"
+        className="bg-gradient-to-r from-fuchsia-600 to-indigo-600 text-white"
+      />
+    </main>
   );
 }

@@ -40,7 +40,7 @@ import {
   Reveal,
   ScrollProgress,
   TiltCard,
-} from "./motion-kit";
+} from "@/components/ui/MotionKit";
 
 const WHATSAPP_NUMBER = "5511993182472";
 const CURRENT_YEAR = new Date().getFullYear();
@@ -363,7 +363,7 @@ export default function PilotosLanding() {
     document.getElementById("cotacao")?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <div className="min-h-screen bg-[#050B16] font-sans text-white antialiased">
+    <main id="conteudo" className="min-h-screen bg-[#050B16] font-sans text-white antialiased">
       <ScrollProgress />
       <div className="bg-gradient-to-r from-[#FF5500] to-[#FF8A00] px-4 py-2 text-center text-xs font-bold uppercase tracking-wide sm:text-sm">
         <Zap className="mr-1 inline h-4 w-4 animate-pulse" />
@@ -1144,6 +1144,6 @@ export default function PilotosLanding() {
           Falar com a Costi
         </span>
       </a>
-    </div>
+    </main>
   );
 }

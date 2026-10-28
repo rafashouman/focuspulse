@@ -75,7 +75,7 @@ export function CountUp({
       duration: 1.4,
       ease: "easeOut",
       onUpdate: (value) => {
-        node.textContent = `${prefix}${Math.round(value)}${suffix}`;
+        node.textContent = `${prefix}${Math.round(value).toLocaleString("pt-BR")}${suffix}`;
       },
     });
     return () => controls.stop();
@@ -84,7 +84,7 @@ export function CountUp({
   return (
     <span ref={ref}>
       {prefix}
-      {to}
+      {to.toLocaleString("pt-BR")}
       {suffix}
     </span>
   );

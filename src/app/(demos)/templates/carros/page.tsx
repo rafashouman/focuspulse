@@ -31,6 +31,9 @@ import { onAuthStateChanged, signInWithPopup, User } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/client";
 import { bookAppointment } from "@/app/actions/bookAppointment";
 import { trackMetaEvent } from "@/components/MetaPixel";
+import { ScrollProgress } from "@/components/ui/MotionKit";
+import { StickyMobileCta } from "@/components/ui/StickyMobileCta";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 
 // ==========================================
 // CONFIGURAÇÕES GERAIS
@@ -249,6 +252,7 @@ export default function CarDealershipPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [onlyBelowFipe, setOnlyBelowFipe] = useState(false);
   const [selectedVehicleModal, setSelectedVehicleModal] = useState<Vehicle | null>(null);
+  const vehicleTrapRef = useFocusTrap<HTMLDivElement>(!!selectedVehicleModal);
 
   // Simulador Financeiro CDC & Avaliação de Troca
   const [simVehicle, setSimVehicle] = useState<Vehicle>(INVENTORY[2]); // Default Nivus Highline
@@ -286,6 +290,14 @@ export default function CarDealershipPage() {
       unsub();
       cancelAnimationFrame(frameId);
     };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedVehicleModal(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   // Filtragem de estoque
@@ -404,7 +416,8 @@ export default function CarDealershipPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+    <main id="conteudo" className="demo-light min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+      <ScrollProgress />
       {/* ==========================================
           0. TOP UTILITY BAR (CONCESSIONÁRIA REAL)
       ========================================== */}
@@ -484,6 +497,8 @@ export default function CarDealershipPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -601,6 +616,8 @@ export default function CarDealershipPage() {
                     alt={INVENTORY[0].model}
                     fill
                     unoptimized
+                    loading="eager"
+                    fetchPriority="high"
                     className="object-cover"
                   />
                   <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
@@ -699,6 +716,7 @@ export default function CarDealershipPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
                 type="button"
+                aria-pressed={onlyBelowFipe}
                 onClick={() => setOnlyBelowFipe(!onlyBelowFipe)}
                 className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                   onlyBelowFipe
@@ -716,9 +734,20 @@ export default function CarDealershipPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Buscar veículo"
                   placeholder="Buscar Hilux, Compass, Nivus, BYD..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-600 focus:bg-white"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Limpar busca"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-500 hover:text-slate-900"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -732,6 +761,7 @@ export default function CarDealershipPage() {
               <button
                 key={cat.id}
                 type="button"
+                aria-pressed={activeCategory === cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   activeCategory === cat.id
@@ -745,6 +775,29 @@ export default function CarDealershipPage() {
           </div>
         </div>
 
+        <p aria-live="polite" className="mb-6 -mt-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+          {filteredVehicles.length} {filteredVehicles.length === 1 ? "veículo encontrado" : "veículos encontrados"}
+        </p>
+
+        {filteredVehicles.length === 0 && (
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-16 text-center">
+            <Search className="mx-auto mb-4 h-8 w-8 text-blue-600" />
+            <p className="mb-1 text-lg font-black text-slate-900">Nenhum veículo encontrado</p>
+            <p className="mb-5 text-sm text-slate-600">Ajuste a busca ou os filtros para ver mais opções.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setActiveCategory("todos");
+                setOnlyBelowFipe(false);
+              }}
+              className="rounded-xl bg-blue-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-800"
+            >
+              Limpar filtros
+            </button>
+          </div>
+        )}
+
         {/* Grid de Carros */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
           {filteredVehicles.map((car) => {
@@ -753,15 +806,26 @@ export default function CarDealershipPage() {
               <motion.article
                 layout
                 key={car.id}
+                tabIndex={0}
+                aria-label={`${car.brand} ${car.model} ${car.year}, ${formatBRL(car.price)}. Pressione Enter para ver a ficha`}
                 onClick={() => setSelectedVehicleModal(car)}
-                className="group cursor-pointer rounded-3xl bg-white border border-slate-200 hover:border-blue-600 overflow-hidden flex flex-col justify-between transition-all shadow-sm hover:shadow-xl"
+                onKeyDown={(e) => {
+                  if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    setSelectedVehicleModal(car);
+                  }
+                }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                className="group cursor-pointer rounded-3xl bg-white border border-slate-200 hover:border-blue-600 hover:-translate-y-1 overflow-hidden flex flex-col justify-between transition-all shadow-sm hover:shadow-xl"
               >
                 <div>
                   {/* Imagem do Carro */}
                   <div className="relative h-56 w-full overflow-hidden bg-slate-100">
                     <Image
                       src={car.image}
-                      alt={`${car.brand} ${car.model}`}
+                      alt=""
                       fill
                       unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1393,6 +1457,10 @@ export default function CarDealershipPage() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm"
           >
             <motion.div
+              ref={vehicleTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Ficha técnica ${selectedVehicleModal.brand} ${selectedVehicleModal.model}`}
               initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
@@ -1410,6 +1478,7 @@ export default function CarDealershipPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedVehicleModal(null)}
+                  aria-label="Fechar ficha"
                   className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/95 border border-slate-200 text-slate-900 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-colors shadow"
                 >
                   <X className="w-5 h-5" />
@@ -1523,6 +1592,12 @@ export default function CarDealershipPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+      <StickyMobileCta
+        label="Simular financiamento"
+        href="#financiamento"
+        hideWhenVisibleId="financiamento"
+        className="bg-blue-700 text-white"
+      />
+    </main>
   );
 }

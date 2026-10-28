@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
@@ -12,7 +12,6 @@ import {
   Ruler,
   ShieldCheck,
   Truck,
-  ArrowUpRight,
   ArrowDown,
   Check,
   Sliders,
@@ -23,6 +22,9 @@ import {
   QrCode,
   Box,
 } from "lucide-react";
+import { ScrollProgress } from "@/components/ui/MotionKit";
+import { StickyMobileCta } from "@/components/ui/StickyMobileCta";
+import { useFocusTrap } from "@/components/ui/useFocusTrap";
 
 // ==========================================
 // CONFIGURAÇÕES & DADOS DO DROP
@@ -281,6 +283,27 @@ export default function StreetwearEcommerceLightPage() {
   }, [userHeight, userWeight, fitPreference]);
 
   // Funções da Sacola
+  const [toast, setToast] = useState<string | null>(null);
+  const [cartBump, setCartBump] = useState(0);
+  const productTrapRef = useFocusTrap<HTMLDivElement>(!!selectedProductModal);
+  const cartTrapRef = useFocusTrap<HTMLDivElement>(isCartOpen);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setSelectedProductModal(null);
+      setIsCartOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const addToCart = (product: ProductItem, size: SizeType, color?: string) => {
     const chosenColor = color || product.colors[0].name;
     const cartId = `${product.id}-${size}-${chosenColor}`;
@@ -296,7 +319,8 @@ export default function StreetwearEcommerceLightPage() {
     });
 
     setSelectedProductModal(null);
-    setIsCartOpen(true);
+    setToast(`${product.name} (${size}) adicionado à sacola`);
+    setCartBump((n) => n + 1);
   };
 
   const updateCartQty = (cartId: string, delta: number) => {
@@ -356,8 +380,31 @@ export default function StreetwearEcommerceLightPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] text-zinc-900 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
-      <FloatingWhatsApp />
+    <main id="conteudo" className="demo-light min-h-screen bg-[#FAF9F5] text-zinc-900 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+          <ScrollProgress />
+          <FloatingWhatsApp />
+          <div aria-live="polite" className="pointer-events-none fixed inset-x-0 top-20 z-[70] flex justify-center px-4">
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  key={toast}
+                  initial={{ opacity: 0, y: -16, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  className="pointer-events-auto flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-950 px-5 py-3 text-xs font-bold text-white shadow-2xl"
+                >
+                  <Check className="h-4 w-4 text-blue-400" />
+                  {toast}
+                  <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase text-zinc-950 hover:bg-blue-100"
+                  >
+                    Ver sacola
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
       {/* ==========================================
           1. FLOATING GLASS NAVBAR (SOBRE O HERO FULLPAGE)
@@ -371,7 +418,7 @@ export default function StreetwearEcommerceLightPage() {
             </div>
             <div>
               <span className="text-base sm:text-lg font-black tracking-tighter text-zinc-950 block leading-none">
-                VORTEX<span className="text-blue-600">//</span>ATELIER
+                VORTEX<span className="text-blue-600">{"//"}</span>ATELIER
               </span>
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-zinc-500">
                 Heavyweight Garments
@@ -410,9 +457,17 @@ export default function StreetwearEcommerceLightPage() {
 
             <button
               onClick={() => setIsCartOpen(true)}
+              aria-label={`Abrir sacola, ${totalCount} itens`}
               className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-zinc-950 hover:bg-blue-600 text-white transition-all group"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <motion.span
+                key={cartBump}
+                animate={cartBump ? { scale: [1, 1.35, 1], rotate: [0, -12, 0] } : undefined}
+                transition={{ duration: 0.5 }}
+                className="inline-flex"
+              >
+                <ShoppingBag className="w-4 h-4" />
+              </motion.span>
               <span className="text-xs font-bold hidden sm:inline">Sacola</span>
               <span className="px-2 py-0.5 rounded-full bg-white/20 text-[11px] font-mono font-bold">
                 {totalCount}
@@ -584,7 +639,7 @@ export default function StreetwearEcommerceLightPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div>
             <span className="text-xs font-mono uppercase tracking-widest text-blue-600 font-bold block mb-2">
-              // ARQUIVO TÊXTIL 2026 • TIRAGEM LIMITADA
+              {"// ARQUIVO TÊXTIL 2026 • TIRAGEM LIMITADA"}
             </span>
             <h2 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-zinc-950">
               Peças do <span className="italic font-light text-blue-600">Drop #04</span>
@@ -602,6 +657,7 @@ export default function StreetwearEcommerceLightPage() {
             ].map((cat) => (
               <button
                 key={cat.id}
+                aria-pressed={activeCategory === cat.id}
                 onClick={() => setActiveCategory(cat.id as CategoryFilter)}
                 className={`px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
                   activeCategory === cat.id
@@ -624,13 +680,27 @@ export default function StreetwearEcommerceLightPage() {
               <motion.div
                 layout
                 key={product.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
                 onMouseEnter={() => setHoveredProductId(product.id)}
                 onMouseLeave={() => setHoveredProductId(null)}
-                className="group rounded-[2rem] bg-white border border-zinc-200/90 hover:border-zinc-400 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)]"
+                className="group rounded-[2rem] bg-white border border-zinc-200/90 hover:border-zinc-400 hover:-translate-y-1 overflow-hidden transition-all flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)]"
               >
                 <div>
                   {/* Image Container */}
                   <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ver ficha técnica de ${product.name}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedProductModal(product);
+                        setModalSize(recommendedSize);
+                        setModalColor(product.colors[0].name);
+                      }
+                    }}
                     onClick={() => {
                       setSelectedProductModal(product);
                       setModalSize(recommendedSize);
@@ -640,7 +710,7 @@ export default function StreetwearEcommerceLightPage() {
                   >
                     <Image
                       src={isHovered ? product.backImage : product.image}
-                      alt={product.name}
+                      alt=""
                       fill
                       unoptimized
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -734,6 +804,7 @@ export default function StreetwearEcommerceLightPage() {
                     {SIZES.map((sz) => (
                       <button
                         key={sz}
+                        aria-label={`Adicionar ${product.name} tamanho ${sz} à sacola`}
                         onClick={() => addToCart(product, sz)}
                         className="py-2 rounded-xl bg-white hover:bg-zinc-950 border border-zinc-200 hover:border-zinc-950 text-xs font-mono font-bold text-zinc-800 hover:text-white transition-all shadow-2xs"
                       >
@@ -813,7 +884,7 @@ export default function StreetwearEcommerceLightPage() {
                     ].map((style) => (
                       <button
                         key={style.id}
-                        onClick={() => setFitPreference(style.id as any)}
+                        onClick={() => setFitPreference(style.id as "regular" | "oversized" | "baggy")}
                         className={`p-3.5 rounded-2xl border text-left transition-all ${
                           fitPreference === style.id
                             ? "bg-blue-600 border-blue-600 text-white shadow-md"
@@ -866,7 +937,7 @@ export default function StreetwearEcommerceLightPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <span className="text-xs font-mono uppercase tracking-widest text-blue-600 font-bold block mb-2">
-              // CAMPANHA ARQUITETURA SOLAR 2026
+              {"// CAMPANHA ARQUITETURA SOLAR 2026"}
             </span>
             <h2 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-zinc-950">
               Lookbook <span className="italic font-light text-blue-600">Interativo</span>
@@ -890,6 +961,8 @@ export default function StreetwearEcommerceLightPage() {
             {/* Hotspot 1 */}
             <button
               onClick={() => setActiveHotspot(0)}
+              aria-label="Ver peça 1 do lookbook"
+              aria-pressed={activeHotspot === 0}
               className={`absolute top-[38%] left-[45%] w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg ${
                 activeHotspot === 0
                   ? "bg-blue-600 text-white scale-125 ring-4 ring-white"
@@ -902,6 +975,8 @@ export default function StreetwearEcommerceLightPage() {
             {/* Hotspot 2 */}
             <button
               onClick={() => setActiveHotspot(1)}
+              aria-label="Ver peça 2 do lookbook"
+              aria-pressed={activeHotspot === 1}
               className={`absolute top-[62%] left-[58%] w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg ${
                 activeHotspot === 1
                   ? "bg-blue-600 text-white scale-125 ring-4 ring-white"
@@ -1073,7 +1148,7 @@ export default function StreetwearEcommerceLightPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-10 border-b border-zinc-300/80">
             <div>
               <span className="text-xl font-black tracking-tighter text-zinc-950">
-                VORTEX<span className="text-blue-600">//</span>ATELIER
+                VORTEX<span className="text-blue-600">{"//"}</span>ATELIER
               </span>
               <p className="text-xs text-zinc-600 mt-1 max-w-sm">
                 Estúdio independente de engenharia têxtil e vestuário pesado. Produzido eticamente
@@ -1114,8 +1189,16 @@ export default function StreetwearEcommerceLightPage() {
       ========================================== */}
       <AnimatePresence>
         {selectedProductModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm">
+          <div
+            onClick={() => setSelectedProductModal(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm"
+          >
             <motion.div
+              ref={productTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Ficha técnica ${selectedProductModal.name}`}
+              onClick={(e) => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -1139,6 +1222,7 @@ export default function StreetwearEcommerceLightPage() {
                     </span>
                     <button
                       onClick={() => setSelectedProductModal(null)}
+                      aria-label="Fechar ficha"
                       className="p-1.5 rounded-full bg-zinc-100 text-zinc-600 hover:text-zinc-950"
                     >
                       <X className="w-4 h-4" />
@@ -1215,8 +1299,16 @@ export default function StreetwearEcommerceLightPage() {
       ========================================== */}
       <AnimatePresence>
         {isCartOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/50 backdrop-blur-xs">
+          <div
+            onClick={() => setIsCartOpen(false)}
+            className="fixed inset-0 z-50 flex justify-end bg-zinc-950/50 backdrop-blur-xs"
+          >
             <motion.div
+              ref={cartTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sua sacola"
+              onClick={(e) => e.stopPropagation()}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -1233,6 +1325,7 @@ export default function StreetwearEcommerceLightPage() {
                   </div>
                   <button
                     onClick={() => setIsCartOpen(false)}
+                    aria-label="Fechar sacola"
                     className="p-2 rounded-full bg-zinc-100 text-zinc-600 hover:text-zinc-950"
                   >
                     <X className="w-5 h-5" />
@@ -1306,6 +1399,7 @@ export default function StreetwearEcommerceLightPage() {
                           <div className="flex items-center gap-2 bg-white border border-zinc-200 rounded-full px-2.5 py-1">
                             <button
                               onClick={() => updateCartQty(item.cartId, -1)}
+                              aria-label={`Diminuir quantidade de ${item.product.name}`}
                               className="text-zinc-500 hover:text-zinc-950"
                             >
                               <Minus className="w-3.5 h-3.5" />
@@ -1315,6 +1409,7 @@ export default function StreetwearEcommerceLightPage() {
                             </span>
                             <button
                               onClick={() => updateCartQty(item.cartId, 1)}
+                              aria-label={`Aumentar quantidade de ${item.product.name}`}
                               className="text-zinc-500 hover:text-zinc-950"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -1424,6 +1519,12 @@ export default function StreetwearEcommerceLightPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+      <StickyMobileCta
+        label="Ver peças do Drop #04"
+        href="#vitrine"
+        hideWhenVisibleId="vitrine"
+        className="bg-zinc-950 text-white"
+      />
+    </main>
   );
 }

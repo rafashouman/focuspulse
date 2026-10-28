@@ -67,7 +67,7 @@ export default function DaemonArcanaGamePage() {
   const stages: SpreadStage[] = ['PAST', 'PRESENT', 'FUTURE'];
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#07080B] text-slate-100 font-mono select-none">
+    <main id="conteudo" className="relative w-screen h-screen overflow-hidden bg-[#07080B] text-slate-100 font-mono select-none">
       {/* PALCO 3D */}
       <div className="absolute inset-0 z-0">
         <TarotTableScene />

@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import {
   Dumbbell,
   Zap,
@@ -26,6 +32,13 @@ import {
 } from "lucide-react";
 
 import { trackMetaEvent } from "@/components/MetaPixel";
+import {
+  Confetti,
+  CountUp,
+  ScrollProgress,
+} from "@/components/ui/MotionKit";
+import { StickyMobileCta } from "@/components/ui/StickyMobileCta";
+import { useActiveSection } from "@/components/ui/useActiveSection";
 
 // ==========================================
 // UTILS & CONFIGURATIONS
@@ -58,6 +71,7 @@ const SectionTag = ({ children, index }: { children: React.ReactNode; index?: st
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const activeSection = useActiveSection(["vantagens", "galeria", "planos", "faq", "contato"]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -98,15 +112,28 @@ const Navbar = () => {
               { label: "O Espaço", href: "#galeria" },
               { label: "Passaportes", href: "#planos" },
               { label: "Dúvidas", href: "#faq" },
-            ].map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="px-4 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all"
-              >
-                {item.label}
-              </a>
-            ))}
+            ].map((item) => {
+              const isActive = activeSection === item.href.slice(1);
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  aria-current={isActive ? "true" : undefined}
+                  className={`relative px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${isActive
+                    ? "text-lime-300 bg-lime-400/10"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    }`}
+                >
+                  {item.label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active-dot"
+                      className="absolute left-1/2 -bottom-0.5 h-0.5 w-5 -translate-x-1/2 rounded-full bg-lime-400"
+                    />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* CTA & Live Status */}
@@ -144,7 +171,8 @@ const Navbar = () => {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
-            aria-label="Abrir Menu"
+            aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={isOpen}
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -206,6 +234,14 @@ const Navbar = () => {
 // 2. HERO SECTION (EDITORIAL + HUD TELEMETRY)
 // ==========================================
 const Hero = () => {
+  const imageWrapRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: imageWrapRef,
+    offset: ["start end", "end start"],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["-5%", "5%"]);
+
   return (
     <section className="relative min-h-screen pt-32 pb-20 md:pt-40 md:pb-28 flex items-center overflow-hidden">
       {/* Architectural Technical Grid Background */}
@@ -290,7 +326,7 @@ const Hero = () => {
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative inline-flex items-center justify-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-400 text-zinc-950 font-black uppercase tracking-wider text-sm transition-all shadow-[0_0_40px_rgba(163,230,53,0.35)] hover:shadow-[0_0_60px_rgba(163,230,53,0.55)] hover:scale-[1.02]"
+                className="group relative inline-flex items-center justify-center gap-4 overflow-hidden px-8 py-4 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-400 text-zinc-950 font-black uppercase tracking-wider text-sm transition-all shadow-[0_0_40px_rgba(163,230,53,0.35)] hover:shadow-[0_0_60px_rgba(163,230,53,0.55)] hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() =>
                   trackMetaEvent("Lead", {
                     content_name: "Day Pass Experimental Grátis",
@@ -300,8 +336,12 @@ const Hero = () => {
                   })
                 }
               >
-                <span>Agendar Sessão Experimental</span>
-                <div className="w-8 h-8 rounded-xl bg-black/15 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 -left-1/3 w-1/4 -skew-x-12 bg-white/40 transition-transform duration-700 group-hover:translate-x-[700%]"
+                />
+                <span className="relative">Agendar Sessão Experimental</span>
+                <div className="relative w-8 h-8 rounded-xl bg-black/15 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </a>
@@ -323,26 +363,30 @@ const Hero = () => {
               className="mt-14 pt-8 border-t border-zinc-800/80 grid grid-cols-3 gap-6 max-w-lg"
             >
               {[
-                { val: "1.200m²", label: "Área Climatizada", code: "ZONE_01" },
+                { count: 1200, suffix: "m²", label: "Área Climatizada", code: "ZONE_01" },
                 { val: "Zero", label: "Filas em Horário Pico", code: "FLOW_99%" },
                 { val: "Hammer", label: "& Life Fitness Pro", code: "GEAR_MAX" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col">
                   <span className="text-[10px] font-mono text-lime-400/80 mb-1">
-                    //{stat.code}
+                    {`//${stat.code}`}
                   </span>
-                  <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    {stat.val}
+                  <span className="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-nums">
+                    {stat.count ? <CountUp to={stat.count} suffix={stat.suffix} /> : stat.val}
                   </span>
-                  <span className="text-xs text-zinc-500 font-medium mt-0.5">{stat.label}</span>
+                  <span className="text-xs text-zinc-400 font-medium mt-0.5">{stat.label}</span>
                 </div>
               ))}
             </motion.div>
+            <p className="mt-4 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+              * Dados ilustrativos de demonstração
+            </p>
           </div>
 
           {/* Right Column: Architectural Image + Floating HUDs (5 cols) */}
           <div className="lg:col-span-5 relative">
             <motion.div
+              ref={imageWrapRef}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
@@ -352,14 +396,19 @@ const Hero = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-[#060807] via-transparent to-zinc-950/40 z-10" />
               <div className="absolute inset-0 bg-lime-500/10 mix-blend-overlay z-10" />
 
-              <Image
-                src="/images/templates/academia/hero-gym.png"
-                alt="Ambiente de alta performance PulseFit"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
-              />
+              <motion.div
+                style={reduceMotion ? undefined : { y: imageY }}
+                className="absolute inset-x-0 -top-[8%] h-[116%]"
+              >
+                <Image
+                  src="/images/templates/academia/hero-gym.png"
+                  alt="Ambiente de alta performance PulseFit"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                />
+              </motion.div>
 
               {/* Top Right HUD Badge */}
               <div className="absolute top-5 right-5 z-20 px-3.5 py-2 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 flex items-center gap-2">
@@ -436,12 +485,11 @@ const Marquee = () => {
   ];
 
   return (
-    <div className="relative py-6 bg-[#060807] overflow-hidden select-none border-y border-zinc-900">
+    <div className="marquee relative py-6 bg-[#060807] overflow-hidden select-none border-y border-zinc-900">
       <div className="bg-gradient-to-r from-lime-400 via-emerald-400 to-lime-400 py-3.5 -rotate-1 scale-105 shadow-[0_0_50px_rgba(163,230,53,0.25)]">
-        <motion.div
-          className="flex whitespace-nowrap gap-8 font-black italic tracking-tighter text-zinc-950 uppercase text-lg sm:text-xl"
-          animate={{ x: [0, -1000] }}
-          transition={{ repeat: Infinity, duration: 22, ease: "linear" }}
+        <div
+          aria-hidden
+          className="marquee-track flex w-max whitespace-nowrap gap-8 font-black italic tracking-tighter text-zinc-950 uppercase text-lg sm:text-xl"
         >
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-8 shrink-0 items-center">
@@ -452,7 +500,7 @@ const Marquee = () => {
               ))}
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -486,7 +534,7 @@ const Features = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="md:col-span-7 relative p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950 border border-zinc-800/80 hover:border-lime-400/40 transition-all group overflow-hidden flex flex-col justify-between min-h-[320px]"
+            className="md:col-span-7 relative p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950 border border-zinc-800/80 hover:border-lime-400/40 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(163,230,53,0.08)] transition-all group overflow-hidden flex flex-col justify-between min-h-[320px]"
           >
             <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-lime-400/10 rounded-full blur-3xl group-hover:bg-lime-400/20 transition-all" />
 
@@ -516,7 +564,7 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="md:col-span-5 relative p-8 sm:p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/40 transition-all group flex flex-col justify-between min-h-[320px]"
+            className="md:col-span-5 relative p-8 sm:p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/40 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(163,230,53,0.08)] transition-all group flex flex-col justify-between min-h-[320px]"
           >
             <div className="flex items-start justify-between">
               <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-zinc-700 text-lime-400 flex items-center justify-center group-hover:bg-lime-400 group-hover:text-zinc-950 transition-colors">
@@ -544,9 +592,9 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
+            className="md:col-span-4 group p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/40 hover:-translate-y-1 transition-all flex flex-col justify-between"
           >
-            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6 group-hover:bg-lime-400 group-hover:text-zinc-950 group-hover:rotate-6 transition-all">
               <Zap className="w-6 h-6" />
             </div>
             <div>
@@ -564,9 +612,9 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="md:col-span-4 p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between"
+            className="md:col-span-4 group p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 hover:border-lime-400/40 hover:-translate-y-1 transition-all flex flex-col justify-between"
           >
-            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/80 text-lime-400 flex items-center justify-center mb-6 group-hover:bg-lime-400 group-hover:text-zinc-950 group-hover:rotate-6 transition-all">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -674,26 +722,50 @@ const Gallery = () => {
         </div>
 
         {/* Interactive Horizontal Accordion */}
-        <div className="flex flex-col lg:flex-row gap-4 h-[620px] lg:h-[520px] w-full">
+        <div
+          role="group"
+          aria-label="Zonas da academia"
+          onKeyDown={(event) => {
+            const forward = event.key === "ArrowRight" || event.key === "ArrowDown";
+            const backward = event.key === "ArrowLeft" || event.key === "ArrowUp";
+            if (!forward && !backward) return;
+            event.preventDefault();
+            const next = (activeIdx + (forward ? 1 : -1) + zones.length) % zones.length;
+            setActiveIdx(next);
+            event.currentTarget
+              .querySelectorAll<HTMLButtonElement>("button[data-zone]")
+              [next]?.focus();
+          }}
+          className="flex flex-col lg:flex-row gap-4 h-[620px] lg:h-[520px] w-full"
+        >
           {zones.map((zone, idx) => {
             const isActive = activeIdx === idx;
             return (
-              <div
+              <article
                 key={zone.id}
-                onMouseEnter={() => setActiveIdx(idx)}
-                onClick={() => setActiveIdx(idx)}
-                className={`relative rounded-3xl overflow-hidden cursor-pointer border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive
+                className={`relative rounded-3xl overflow-hidden border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive
                   ? "flex-[4] border-lime-400/60 shadow-[0_0_40px_rgba(163,230,53,0.15)]"
                   : "flex-[1] border-zinc-800/80 hover:border-zinc-700 opacity-70 hover:opacity-100"
                   }`}
               >
                 <Image
                   src={zone.src}
-                  alt={zone.title}
+                  alt=""
                   fill
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   className={`object-cover transition-transform duration-1000 ${isActive ? "scale-105" : "scale-100 grayscale-[50%]"
                     }`}
+                />
+
+                <button
+                  type="button"
+                  data-zone
+                  aria-expanded={isActive}
+                  aria-label={`${zone.title}: ${zone.subtitle}`}
+                  onMouseEnter={() => setActiveIdx(idx)}
+                  onFocus={() => setActiveIdx(idx)}
+                  onClick={() => setActiveIdx(idx)}
+                  className="absolute inset-0 z-[5] cursor-pointer rounded-3xl"
                 />
 
                 {/* Dark Gradient Overlay */}
@@ -705,7 +777,7 @@ const Gallery = () => {
                 />
 
                 {/* Content Container */}
-                <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
+                <div className="pointer-events-none absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
                   <div className="flex items-center justify-between">
                     <span
                       className={`font-mono text-sm font-bold px-3 py-1 rounded-lg border transition-colors ${isActive
@@ -753,7 +825,7 @@ const Gallery = () => {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors self-start sm:self-auto"
+                            className="pointer-events-auto relative z-20 shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-lime-400 transition-colors self-start sm:self-auto"
                             onClick={() =>
                               trackMetaEvent("Lead", {
                                 content_name: "Day Pass Experimental Grátis",
@@ -770,7 +842,7 @@ const Gallery = () => {
                     </AnimatePresence>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
@@ -857,6 +929,7 @@ const Pricing = () => {
           <div className="inline-flex items-center p-1.5 rounded-2xl bg-zinc-900 border border-zinc-800 self-start lg:self-auto">
             <button
               onClick={() => setBilling("mensal")}
+              aria-pressed={billing === "mensal"}
               className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${billing === "mensal"
                 ? "bg-zinc-800 text-white shadow"
                 : "text-zinc-400 hover:text-white"
@@ -866,6 +939,7 @@ const Pricing = () => {
             </button>
             <button
               onClick={() => setBilling("anual")}
+              aria-pressed={billing === "anual"}
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${billing === "anual"
                 ? "bg-lime-400 text-zinc-950 shadow-[0_0_25px_rgba(163,230,53,0.3)]"
                 : "text-zinc-400 hover:text-white"
@@ -890,6 +964,7 @@ const Pricing = () => {
               <button
                 key={g.id}
                 onClick={() => setSelectedGoal(g.id)}
+                aria-pressed={selectedGoal === g.id}
                 className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${selectedGoal === g.id
                   ? "bg-lime-400/20 text-lime-400 border border-lime-400/40"
                   : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700"
@@ -953,6 +1028,18 @@ const Pricing = () => {
                       </AnimatePresence>
                       <span className="text-zinc-500 text-xs font-mono">/mês</span>
                     </div>
+                    <AnimatePresence initial={false}>
+                      {billing === "anual" && (
+                        <motion.p
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-3 overflow-hidden text-xs font-bold text-lime-400"
+                        >
+                          Você economiza R$ {(plan.monthlyPrice - plan.annualPrice) * 12} por ano
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Features List */}
@@ -1075,6 +1162,7 @@ const FAQ = () => {
                 >
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : idx)}
+                    aria-expanded={isOpen}
                     className="w-full text-left p-6 flex justify-between items-center gap-4 text-white font-bold text-base sm:text-lg"
                   >
                     <span className="flex items-center gap-4">
@@ -1118,15 +1206,22 @@ const FAQ = () => {
 const Contact = () => {
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("Hipertrofia & Estética");
+  const [touched, setTouched] = useState(false);
+  const [issued, setIssued] = useState<{ name: string; goal: string; link: string } | null>(null);
+  const nameValid = name.trim().length >= 3;
 
   const handleVipPassSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched(true);
+    if (!nameValid) return;
+
+    const guestName = name.trim();
 
     // Dispara Lead + Schedule qualificado com o objetivo do aluno
     trackMetaEvent("Lead", {
       content_name: "Credencial VIP Pass 1 Dia Free",
       content_category: goal,
-      customer_name: name || "Visitante",
+      customer_name: guestName,
       value: 49.9, // Valor estimado do Day Pass para otimização de ROAS
       currency: "BRL",
     });
@@ -1136,9 +1231,11 @@ const Contact = () => {
     });
 
     const customMsg = encodeURIComponent(
-      `Olá! Meu nome é ${name || "Visitante"}. Gerei meu VIP Pass pelo site com foco em [${goal}] e gostaria de agendar meu treino experimental.`
+      `Olá! Meu nome é ${guestName}. Gerei meu VIP Pass pelo site com foco em [${goal}] e gostaria de agendar meu treino experimental.`
     );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${customMsg}`, "_blank");
+    const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${customMsg}`;
+    window.open(link, "_blank", "noopener,noreferrer");
+    setIssued({ name: guestName, goal, link });
   };
 
   return (
@@ -1187,9 +1284,77 @@ const Contact = () => {
             </div>
 
             {/* Interactive Ticket / Form */}
-            <div className="lg:col-span-6">
+            <div id="vip-pass" className="lg:col-span-6">
+              {issued ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                  className="relative overflow-hidden p-8 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-lime-400/40 shadow-[0_0_50px_rgba(163,230,53,0.15)] space-y-6"
+                >
+                  <Confetti />
+                  <div className="flex items-center justify-between border-b border-dashed border-lime-400/30 pb-4">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-lime-400 block">
+                        CREDENCIAL EMITIDA
+                      </span>
+                      <h3 className="text-lg font-black uppercase text-white">
+                        1 DIA DE ACESSO TOTAL FREE
+                      </h3>
+                    </div>
+                    <motion.div
+                      initial={{ scale: 0, rotate: -30 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 14, delay: 0.1 }}
+                    >
+                      <CheckCircle2 className="w-9 h-9 text-lime-400" />
+                    </motion.div>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                        Convidado(a)
+                      </dt>
+                      <dd className="font-bold text-white break-words">{issued.name}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                        Foco
+                      </dt>
+                      <dd className="font-bold text-white">{issued.goal}</dd>
+                    </div>
+                  </dl>
+                  <p className="text-sm text-zinc-400" role="status">
+                    Abrimos a conversa com a recepção no WhatsApp. Se o navegador bloqueou a
+                    janela, use o botão abaixo.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href={issued.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-3.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Abrir WhatsApp
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIssued(null);
+                        setTouched(false);
+                        setName("");
+                      }}
+                      className="flex-1 py-3.5 rounded-xl border border-zinc-700 hover:border-zinc-500 text-white font-bold uppercase tracking-wider text-xs transition-colors"
+                    >
+                      Emitir outra credencial
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
               <form
                 onSubmit={handleVipPassSubmit}
+                noValidate
                 className="p-8 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800 shadow-2xl space-y-6 relative"
               >
                 <div className="flex items-center justify-between border-b border-dashed border-zinc-800 pb-4">
@@ -1205,17 +1370,46 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                  <label
+                    htmlFor="vip-name"
+                    className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2"
+                  >
                     Nome do Convidado(a)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Digite seu nome..."
-                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-lime-400 transition-colors text-sm"
-                  />
+                  <div className="relative">
+                    <input
+                      id="vip-name"
+                      type="text"
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onBlur={() => setTouched(true)}
+                      aria-invalid={touched && !nameValid}
+                      aria-describedby={touched && !nameValid ? "vip-name-error" : undefined}
+                      placeholder="Digite seu nome..."
+                      className={`w-full px-4 py-3.5 pr-11 rounded-xl bg-zinc-950 border text-white placeholder-zinc-600 focus:outline-none transition-colors text-sm ${nameValid
+                        ? "border-lime-400/60 focus:border-lime-400"
+                        : touched
+                          ? "border-red-500/70 focus:border-red-400"
+                          : "border-zinc-800 focus:border-lime-400"
+                        }`}
+                    />
+                    {nameValid && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-lime-400" />
+                      </motion.span>
+                    )}
+                  </div>
+                  {touched && !nameValid && (
+                    <p id="vip-name-error" role="alert" className="mt-1.5 text-xs text-red-400">
+                      Informe seu nome com pelo menos 3 letras.
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -1238,12 +1432,17 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-zinc-950 font-black uppercase tracking-wider text-xs transition-all shadow-[0_0_30px_rgba(163,230,53,0.3)] flex items-center justify-center gap-2"
+                  className="group relative w-full overflow-hidden py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-zinc-950 font-black uppercase tracking-wider text-xs transition-all shadow-[0_0_30px_rgba(163,230,53,0.3)] flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  Emitir Credencial via WhatsApp
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-0 -left-1/3 w-1/4 -skew-x-12 bg-white/40 transition-transform duration-700 group-hover:translate-x-[700%]"
+                  />
+                  <MessageCircle className="relative w-4 h-4" />
+                  <span className="relative">Emitir Credencial via WhatsApp</span>
                 </button>
               </form>
+              )}
             </div>
           </div>
         </div>
@@ -1280,9 +1479,10 @@ const Footer = () => {
 // ==========================================
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#060807] text-zinc-100 selection:bg-lime-400 selection:text-zinc-950 font-sans antialiased overflow-x-hidden">
+    <div className="demo-dark min-h-screen bg-[#060807] text-zinc-100 selection:bg-lime-400 selection:text-zinc-950 font-sans antialiased overflow-x-hidden">
+      <ScrollProgress />
       <Navbar />
-      <main>
+      <main id="conteudo">
         <Hero />
         <Marquee />
         <Features />
@@ -1292,6 +1492,20 @@ export default function LandingPage() {
         <Contact />
       </main>
       <Footer />
+      <StickyMobileCta
+        label="Agendar sessão grátis"
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
+        hideWhenVisibleId="contato"
+        className="bg-gradient-to-r from-lime-400 to-emerald-400 text-zinc-950 shadow-[0_0_30px_rgba(163,230,53,0.35)]"
+        onClick={() =>
+          trackMetaEvent("Lead", {
+            content_name: "Day Pass Experimental Grátis",
+            content_category: "PulseFit Sticky Bar",
+            value: 0,
+            currency: "BRL",
+          })
+        }
+      />
     </div>
   );
 }

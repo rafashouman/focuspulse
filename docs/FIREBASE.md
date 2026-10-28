@@ -54,7 +54,7 @@ production submissions.
 
 - `leads`: name, company, message, selected project type and plan, source page,
   consent flag, creation timestamp, and expiry timestamp.
-- `pilot_leads`: leads from `/templates/seguro-pilotos` (name, WhatsApp,
+- `pilot_leads`: leads from `/templates/seguro-piloto` (name, WhatsApp,
   flight modality, desired insured capital, consent, status, timestamps,
   180-day `deleteAfter` target). Public visitors can only create; the company
   account can read, update status, and delete from `/admin/pilotos`. Use
