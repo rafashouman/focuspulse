@@ -1027,6 +1027,7 @@ export function TemplatesPageContent() {
       ],
       stack: ["Next.js App Router", "Firebase Auth", "Firestore Lock", "Light UI System"],
     },
+    
   ];
 
   const [selectedIndex, setSelectedIndex] = useState<number>(3); // Inicia destacando o novo Prime Motors (ou altere para 0)

@@ -9,6 +9,12 @@ service cloud.firestore {
           <= request.time + duration.value(days + 1, 'd');
     }
 
+    function isCostiStaff() {
+      return request.auth != null
+        && request.auth.uid == 'eEzzUtmxqjfr4Z8q4R6WNR66qqG2'
+        && request.auth.token.email == 'contato@focuspulse.site';
+    }
+
     match /leads/{leadId} {
       allow create: if request.resource.data.keys().hasAll([
           'name',
@@ -63,5 +69,148 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    match /tarot_leads/{leadId} {
+      allow create: if request.resource.data.keys().hasAll([
+          'name',
+          'whatsapp',
+          'chosenDeck',
+          'question',
+          'drawnCards',
+          'consent',
+          'createdAt',
+          'deleteAfter',
+          'source',
+          'status'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'whatsapp',
+          'chosenDeck',
+          'question',
+          'drawnCards',
+          'consent',
+          'createdAt',
+          'deleteAfter',
+          'source',
+          'status'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.whatsapp is string
+        && request.resource.data.whatsapp.matches('^[0-9+() -]{8,24}$')
+        && request.resource.data.chosenDeck in ['obsidian', 'mercury', 'gold']
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 0
+        && request.resource.data.question.size() <= 600
+        && request.resource.data.drawnCards is list
+        && request.resource.data.drawnCards.size() == 3
+        && request.resource.data.drawnCards[0] is string
+        && request.resource.data.drawnCards[0].size() > 0
+        && request.resource.data.drawnCards[0].size() <= 100
+        && request.resource.data.drawnCards[1] is string
+        && request.resource.data.drawnCards[1].size() > 0
+        && request.resource.data.drawnCards[1].size() <= 100
+        && request.resource.data.drawnCards[2] is string
+        && request.resource.data.drawnCards[2].size() > 0
+        && request.resource.data.drawnCards[2].size() <= 100
+        && request.resource.data.consent == true
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.source == 'hotsite_3_montes'
+        && request.resource.data.status == 'novo'
+        && hasValidExpiry(180);
+
+      allow read, update, delete: if false;
+    }
+
+    match /pilot_leads/{leadId} {
+      allow create: if request.resource.data.keys().hasAll([
+          'name',
+          'whatsapp',
+          'modality',
+          'capitalInsured',
+          'consent',
+          'createdAt',
+          'deleteAfter',
+          'source',
+          'status'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'whatsapp',
+          'modality',
+          'capitalInsured',
+          'consent',
+          'createdAt',
+          'deleteAfter',
+          'source',
+          'status'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.whatsapp is string
+        && request.resource.data.whatsapp.matches('^[0-9+() -]{8,24}$')
+        && request.resource.data.modality in [
+          'agricola',
+          'executivo',
+          'comercial',
+          'helicoptero',
+          'instrucao'
+        ]
+        && request.resource.data.capitalInsured is int
+        && request.resource.data.capitalInsured >= 100000
+        && request.resource.data.capitalInsured <= 5000000
+        && request.resource.data.consent == true
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.source == 'hotsite_seguro_pilotos'
+        && request.resource.data.status == 'novo'
+        && hasValidExpiry(180);
+
+      allow read, delete: if isCostiStaff();
+      allow update: if isCostiStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in [
+          'novo',
+          'contatado',
+          'cotado',
+          'fechado',
+          'perdido'
+        ];
+    }
+
+    match /daemon_runs/{runId} {
+      allow create: if request.resource.data.keys().hasAll([
+          'spreadReached',
+          'finalScore',
+          'creditsEarned',
+          'victory',
+          'createdAt',
+          'deleteAfter'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'spreadReached',
+          'finalScore',
+          'creditsEarned',
+          'victory',
+          'createdAt',
+          'deleteAfter'
+        ])
+        && request.resource.data.spreadReached in [
+          'PAST',
+          'PRESENT',
+          'FUTURE',
+          'ACT_1_CLEARED'
+        ]
+        && request.resource.data.finalScore is int
+        && request.resource.data.finalScore >= 0
+        && request.resource.data.creditsEarned is int
+        && request.resource.data.creditsEarned >= 0
+        && request.resource.data.victory is bool
+        && request.resource.data.createdAt == request.time
+        && hasValidExpiry(180);
+
+      allow read, update, delete: if false;
+    }
   }
 }

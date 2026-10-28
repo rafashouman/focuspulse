@@ -22,7 +22,7 @@ export default function PrivacyPage() {
         <p className="mb-10 leading-relaxed text-muted-foreground">
           Este aviso explica quais dados são registrados neste site, para que
           são usados e como você pode exercer seus direitos. Última atualização:
-          22 de outubro de 2026.
+          28 de outubro de 2026.
         </p>
 
         <div className="space-y-8 text-sm leading-7 text-muted-foreground">
@@ -39,9 +39,57 @@ export default function PrivacyPage() {
               esse serviço.
             </p>
             <p className="mt-2">
-              Os briefings são removidos automaticamente após 180 dias, desde
-              que a política de expiração do Firestore esteja ativada no
-              projeto.
+              Os registros recebem um prazo-alvo de 180 dias, mas a exclusão
+              automática ainda não está ativa neste projeto. Até a configuração
+              de uma política TTL, eles podem permanecer armazenados além desse
+              prazo e dependem de remoção manual.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-2 font-display text-xl font-semibold text-foreground">
+              Leituras e mini-game de tarot
+            </h2>
+            <p>
+              Se você optar por desbloquear a leitura no hotsite de tarot,
+              armazenamos seu nome, WhatsApp, monte escolhido, pergunta,
+              cartas sorteadas e registro do consentimento para liberar o
+              conteúdo e permitir contato relacionado à leitura. Os registros
+              recebem um prazo-alvo de 180 dias, mas a exclusão automática ainda
+              não está ativa neste projeto. Até a configuração de uma política
+              TTL, eles podem permanecer armazenados além desse prazo e
+              dependem de remoção manual.
+            </p>
+            <p className="mt-2">
+              O mini-game registra de forma anônima o estágio alcançado, a
+              pontuação final, os créditos e o resultado da partida. Não são
+              enviados nome, WhatsApp ou pergunta do hotsite nesse registro.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-2 font-display text-xl font-semibold text-foreground">
+              Seguro de vida para pilotos
+            </h2>
+            <p>
+              Se você solicitar uma cotação no hotsite Costi, armazenamos seu
+              nome, WhatsApp, modalidade de voo, capital segurado solicitado e
+              consentimento para contato na coleção pilot_leads do Firestore.
+              A equipe Costi acessa esses dados em um painel protegido; o
+              navegador público não pode ler os registros. Os documentos
+              recebem um prazo-alvo de 180 dias, mas a exclusão automática ainda
+              não está ativa neste projeto; até a configuração de uma política
+              TTL, eles podem permanecer armazenados além desse prazo e
+              dependem de remoção manual. A equipe Costi consulta os registros
+              em um painel protegido; não enviamos os dados da cotação por
+              e-mail.
+            </p>
+            <p className="mt-2">
+              Após autorizar estatísticas, também registramos eventos gerais do
+              funil (posição dos CTAs, início do formulário, modalidade,
+              capital solicitado, FAQ aberto e cotação enviada) no Firebase
+              Analytics. Esses eventos não incluem nome, WhatsApp ou texto
+              digitado.
             </p>
           </section>
 
@@ -65,11 +113,12 @@ export default function PrivacyPage() {
             </h2>
             <p>
               Somente após sua autorização, registramos no Firebase Analytics
-              páginas visitadas, início e fim de partidas do Arknoid, pontuação
-              e ações gerais no Image Blend. Esses eventos não incluem nome,
-              empresa, mensagem, endereço de e-mail ou conteúdo digitado nos
-              formulários. O Google Analytics pode processar identificadores
-              técnicos e informações do dispositivo para produzir estatísticas.
+              páginas visitadas, início e fim de partidas do Arknoid, pontuação,
+              ações gerais no Image Blend e eventos do funil de cotação Costi.
+              Esses eventos não incluem nome, WhatsApp, empresa, mensagem,
+              endereço de e-mail ou texto digitado nos formulários. O Google
+              Analytics pode processar identificadores técnicos e informações
+              do dispositivo para produzir estatísticas.
               O período de retenção é definido nas configurações do Google
               Analytics associado ao projeto.
             </p>
@@ -93,10 +142,13 @@ export default function PrivacyPage() {
               Armazenamento e compartilhamento
             </h2>
             <p>
-              Briefings são armazenados no Firestore, com regras que impedem
-              que visitantes leiam os registros. As estatísticas autorizadas
-              são processadas pelo Firebase/Google Analytics. Não vendemos os
-              dados nem os usamos para publicidade comportamental.
+              Briefings, leads de tarot, leads Costi e registros do mini-game
+              são armazenados no Firestore, com regras que impedem que
+              visitantes leiam os registros. A remoção automática dos leads
+              depende da política de expiração configurada no projeto. As
+              estatísticas autorizadas são processadas pelo Firebase/Google
+              Analytics. Não vendemos os dados nem os usamos para publicidade
+              comportamental.
             </p>
           </section>
 

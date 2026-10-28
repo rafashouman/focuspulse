@@ -78,10 +78,11 @@ export function AnalyticsConsent() {
         Privacidade e estatísticas
       </p>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        Com sua autorização, registramos páginas visitadas e interações gerais
-        com os miniapps para entender o uso do site. Não enviamos informações
-        do formulário ou seu nome nessas estatísticas. Você pode alterar sua
-        escolha quando quiser.
+        Com sua autorização, registramos páginas visitadas e interações gerais,
+        como cliques em CTAs, início do formulário, modalidade selecionada,
+        capital segurado e envio da cotação. Não enviamos seu nome, WhatsApp ou
+        texto digitado nessas estatísticas. Você pode alterar sua escolha
+        quando quiser.
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <a

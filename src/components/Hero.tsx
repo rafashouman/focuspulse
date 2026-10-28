@@ -74,6 +74,44 @@ const projects = [
     badgeColor: "border-blue-400/30 bg-blue-500/10 text-blue-200",
     barGradient: "from-blue-600 to-cyan-300",
   },
+  {
+  number: "05",
+  code: "ARCH // AVIATION-LIFE",
+  category: "Aviação & Seguros",
+  title: "Seguro de Vida & CMA p/ Pilotos",
+  brandName: "Aero.Shield",
+  description:
+    "Hotsite especializado para pilotos de pequeno e médio porte com comparativo de apólice, simulador de Perda de CMA e agendamento por CANAC.",
+  href: "/templates/seguro-piloto",
+  theme: "from-sky-500/25 via-[#0a192f] to-[#071120]",
+  badgeColor: "border-sky-400/35 bg-sky-500/10 text-sky-200",
+  accentText: "text-sky-300",
+  btnGradient: "from-sky-500 to-cyan-400 text-slate-950",
+  palette: [
+    { name: "Stratosphere", hex: "#F4F7FB" },
+    { name: "Garmin Navy", hex: "#0A192F" },
+    { name: "Horizon Sky", hex: "#0284C7" },
+  ],
+  conversionFocus: "Cotação Qualificada por Categoria RAB & Horas de Voo",
+  modules: [
+    "Comparativo Técnico: Seguro de Banco vs. Endosso Aeronáutico",
+    "Simulador por Equipamento (Pistão, Turboélice, Jato, Agrícola)",
+    "Cálculo de Perda Definitiva de CMA (ANAC) & Diária DIT",
+    "Agendamento de Subscrição com Código CANAC no Firestore",
+  ],
+  stack: ["Next.js App Router", "Firebase Auth", "Firestore Lock", "Aviation UI"],
+},
+{
+      number: "06",
+      category: "Arte 3D & Colecionáveis",
+      title: "Impressão 3D & Miniaturas",
+      brandName: "Alchemist Voxel",
+      description:
+        "Estúdio criativo de impressão em resina 12K e pintura de miniaturas com Raio-X de 3 estágios, receitas de tintas e calculadora de encomendas.",
+      href: "/templates/miniaturas",
+      theme: "from-fuchsia-500/25 via-[#140d1f] to-[#08060c]",
+      badgeColor: "border-fuchsia-400/35 bg-fuchsia-500/10 text-fuchsia-200",
+    },
 ];
 
 const AUTOPLAY_TIME = 6000;

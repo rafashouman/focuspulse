@@ -11,9 +11,10 @@ import {
   VolumeX,
 } from "lucide-react";
 import VoxelVadersGame from "@/components/games/VoxelVadersGame";
+import TarotGame from "@/components/games/TarotGame";
 import { arcadeSynth } from "@/lib/audio/arcadeSynth";
 
-type GameId = "voxelvaders" | "arkanoid";
+type GameId = "voxelvaders" | "arkanoid" | "tarot";
 type BootPhase = "INSERTING" | "CRT_WARMUP" | "RUNNING";
 
 interface CartridgeSpec {
@@ -44,6 +45,15 @@ const CARTRIDGES: CartridgeSpec[] = [
     engine: "HTML5 CANVAS 60FPS",
     accentHex: "#FFB800",
     badgeClass: "border-[#FFB800]/40 text-[#FFB800] bg-[#FFB800]/10",
+  },
+  {
+    id: "tarot",
+    code: "ROM-03 // 3D",
+    title: "CYBER TAROT",
+    subtitle: "Quebre o loop de M0IRA-8 em três tiragens",
+    engine: "THREE.JS WEBGL",
+    accentHex: "#8B5CF6",
+    badgeClass: "border-[#8B5CF6]/40 text-[#8B5CF6] bg-[#8B5CF6]/10",
   },
 ];
 
@@ -700,8 +710,10 @@ export default function ArcadeCabinetHub() {
                 >
                   {selectedGame === "voxelvaders" ? (
                     <VoxelVadersGame embedded />
-                  ) : (
+                  ) : selectedGame === "arkanoid" ? (
                     <PulseArkanoidBuiltIn />
+                  ) : (
+                    <TarotGame />
                   )}
                 </motion.div>
               )}
