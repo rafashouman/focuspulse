@@ -69,7 +69,7 @@ export async function bookAppointment(data: BookingPayload, idToken: string) {
   try {
     const db = getAdminDb();
     const slotRef = db.collection("appointments").doc(slotDocId);
-    await db.runTransaction(async (transaction) => {
+    await db.runTransaction(async (transaction:any ) => {
       const slotDoc = await transaction.get(slotRef);
 
       if (slotDoc.exists) {
