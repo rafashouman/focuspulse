@@ -12,7 +12,6 @@ import {
   deleteDoc,
   doc,
   getDocs,
-  getFirestore,
   limit,
   onSnapshot,
   orderBy,
@@ -25,9 +24,34 @@ import {
 } from "firebase/firestore";
 import { Lock, LogOut, MessageCircle, Trash2 } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
+import { getDatabase } from "@/lib/firebase";
 
 const ADMIN_EMAIL = "contato@focuspulse.site";
-const db = getFirestore(auth.app);
+const db = getDatabase();
+
+function loginErrorMessage(code: string) {
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/invalid-login-credentials":
+      return "E-mail ou senha incorretos.";
+    case "auth/user-not-found":
+      return "Usuário não encontrado neste projeto Firebase.";
+    case "auth/user-disabled":
+      return "Esta conta está desativada.";
+    case "auth/too-many-requests":
+      return "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
+    case "auth/network-request-failed":
+      return "Falha de rede. Verifique a conexão ou bloqueadores de anúncios.";
+    case "auth/operation-not-allowed":
+      return "Login por e-mail e senha não está ativado no Firebase.";
+    case "auth/api-key-not-valid.-please-pass-a-valid-api-key.":
+    case "auth/invalid-api-key":
+      return "Chave do Firebase inválida neste ambiente (confira as variáveis NEXT_PUBLIC_FIREBASE_*).";
+    default:
+      return `Não foi possível entrar (${code || "erro desconhecido"}).`;
+  }
+}
 const STATUSES = ["novo", "contatado", "cotado", "fechado", "perdido"];
 const MODALITY_LABELS: Record<string, string> = {
   agricola: "Aviação Agrícola",
@@ -169,7 +193,11 @@ export default function PilotAdminPanel() {
         setPassword("");
       } catch (loginError) {
         console.error("Could not sign into the Costi lead panel.", loginError);
-        setError("Senha inválida. Tente novamente.");
+        const code =
+          typeof loginError === "object" && loginError !== null && "code" in loginError
+            ? String((loginError as { code: unknown }).code)
+            : "";
+        setError(loginErrorMessage(code));
       }
     });
   };
@@ -225,13 +253,23 @@ export default function PilotAdminPanel() {
             <Lock size={20} />
             <h1 className="text-lg font-bold text-white">Leads Costi</h1>
           </div>
-          <p className="text-sm text-slate-400">{ADMIN_EMAIL}</p>
+          <input
+            type="email"
+            name="email"
+            autoComplete="username"
+            value={ADMIN_EMAIL}
+            readOnly
+            aria-label="E-mail do administrador"
+            className="w-full rounded-lg border border-white/10 bg-slate-800/60 px-4 py-3 text-sm text-slate-400 outline-none"
+          />
           <input
             type="password"
+            name="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Senha"
+            aria-label="Senha"
             required
             className="w-full rounded-lg border border-white/10 bg-slate-800 px-4 py-3 outline-none focus:border-orange-500"
           />

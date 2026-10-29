@@ -14,6 +14,7 @@ import {
   addDoc,
   collection,
   getFirestore,
+  initializeFirestore,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
@@ -119,8 +120,37 @@ export function getFirebaseApp() {
   return app;
 }
 
-function getDatabase() {
-  return getFirestore(getFirebaseApp());
+// Long polling automático evita que bloqueadores/proxies derrubem o WebChannel e deixem a gravação pendente em loop.
+export function getDatabase() {
+  const app = getFirebaseApp();
+  try {
+    return initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    });
+  } catch {
+    return getFirestore(app);
+  }
+}
+
+const SAVE_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("firestore/timeout")),
+      ms
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
 }
 
 function getAnalyticsClient() {
@@ -236,17 +266,20 @@ export async function savePilotLead(input: PilotLeadData) {
     throw new Error("Os dados da cotação estão incompletos ou inválidos.");
   }
 
-  const docRef = await addDoc(collection(getDatabase(), "pilot_leads"), {
-    name,
-    whatsapp,
-    modality: input.modality,
-    capitalInsured: input.capitalInsured,
-    consent: input.consent,
-    createdAt: serverTimestamp(),
-    deleteAfter: retentionDate(LEAD_RETENTION_DAYS),
-    source: "hotsite_seguro_pilotos",
-    status: "novo",
-  });
+  const docRef = await withTimeout(
+    addDoc(collection(getDatabase(), "pilot_leads"), {
+      name,
+      whatsapp,
+      modality: input.modality,
+      capitalInsured: input.capitalInsured,
+      consent: input.consent,
+      createdAt: serverTimestamp(),
+      deleteAfter: retentionDate(LEAD_RETENTION_DAYS),
+      source: "hotsite_seguro_pilotos",
+      status: "novo",
+    }),
+    SAVE_TIMEOUT_MS
+  );
 
   return { id: docRef.id };
 }

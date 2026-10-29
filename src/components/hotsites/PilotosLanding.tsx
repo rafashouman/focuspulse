@@ -205,9 +205,12 @@ export default function PilotosLanding() {
   const [done, setDone] = useState<{
     link: string;
     whatsappOpened: boolean;
+    whatsappRequested: boolean;
   } | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const formStartTracked = useRef(false);
+  const submitting = useRef(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [touched, setTouched] = useState({
     name: false,
     whatsapp: false,
@@ -263,8 +266,12 @@ export default function PilotosLanding() {
     setWhatsapp(out);
   };
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (
+    e: { preventDefault(): void },
+    openWhatsApp = false
+  ) => {
     e.preventDefault();
+    if (submitting.current) return;
     setError("");
 
     if (name.trim().length < 3) {
@@ -298,9 +305,12 @@ export default function PilotosLanding() {
     const whatsappUrl = waLink(
       `Olá, equipe Costi Seguros! Sou ${name.trim()} e quero a cotação de seguro de vida para piloto (${MODALITY_LABELS[modality]}) com capital de ${formatBRL(capital)}.`
     );
-    const whatsappWindow = window.open("about:blank", "_blank");
+    const whatsappWindow = openWhatsApp
+      ? window.open("about:blank", "_blank")
+      : null;
     if (whatsappWindow) whatsappWindow.opener = null;
 
+    submitting.current = true;
     setLoading(true);
     try {
       await savePilotLead({
@@ -313,12 +323,18 @@ export default function PilotosLanding() {
     } catch (saveError) {
       whatsappWindow?.close();
       console.error("Could not save the pilot lead.", saveError);
-      setError("Não foi possível salvar seu pedido. Tente novamente ou chame no WhatsApp.");
+      setError(
+        saveError instanceof Error && saveError.message === "firestore/timeout"
+          ? "A conexão demorou demais e não conseguimos confirmar o envio. Use o botão do WhatsApp abaixo."
+          : "Não foi possível salvar seu pedido. Tente novamente ou chame no WhatsApp."
+      );
+      setSaveFailed(true);
       try {
         trackAnalyticsEvent({ eventName: "pilot_lead_save_error" });
       } catch (analyticsError) {
         console.error("Could not track the pilot lead save error.", analyticsError);
       }
+      submitting.current = false;
       setLoading(false);
       return;
     }
@@ -337,7 +353,9 @@ export default function PilotosLanding() {
     setDone({
       link: whatsappUrl,
       whatsappOpened,
+      whatsappRequested: openWhatsApp,
     });
+    submitting.current = false;
     setLoading(false);
 
     try {
@@ -578,7 +596,9 @@ export default function PilotosLanding() {
                   <p className="text-slate-300">
                     {done.whatsappOpened
                       ? "Seu lead foi salvo e abrimos a conversa com a Costi no WhatsApp."
-                      : "Seu lead foi salvo, mas o navegador bloqueou a abertura automática do WhatsApp. Use o botão abaixo para enviar a mensagem."}
+                      : done.whatsappRequested
+                        ? "Seu lead foi salvo, mas o navegador bloqueou a abertura automática do WhatsApp. Use o botão abaixo para enviar a mensagem."
+                        : "Seu pedido foi salvo. Para agilizar, envie também a solicitação pelo WhatsApp com o botão abaixo."}
                   </p>
                   <a
                     href={done.link}
@@ -595,7 +615,7 @@ export default function PilotosLanding() {
                     <MessageCircle className="h-5 w-5" />
                     {done.whatsappOpened
                       ? "Abrir conversa novamente"
-                      : "Enviar mensagem pelo WhatsApp"}
+                      : "Enviar solicitação pelo WhatsApp"}
                   </a>
                 </motion.div>
               ) : (
@@ -830,6 +850,28 @@ export default function PilotosLanding() {
                       </>
                     )}
                   </button>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={(e) => submit(e, true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 text-sm font-bold shadow-lg shadow-green-600/30 transition hover:bg-green-500 active:scale-[0.98] disabled:opacity-60"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    ENVIAR SOLICITAÇÃO PELO WHATSAPP
+                  </button>
+                  {saveFailed && (
+                    <a
+                      href={waLink(
+                        `Olá, equipe Costi Seguros! Sou ${name.trim() || "piloto"} e quero a cotação de seguro de vida para piloto (${MODALITY_LABELS[modality]}) com capital de ${formatBRL(capital)}. WhatsApp: ${whatsapp}`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-500/50 py-3 text-sm font-bold text-green-300 transition hover:bg-green-500/10"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Falar direto no WhatsApp da Costi
+                    </a>
+                  )}
                   <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
                     <Lock className="h-3 w-3" /> Seus dados estão protegidos. Sem spam.
                   </p>
